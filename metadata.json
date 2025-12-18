@@ -1,0 +1,5 @@
+{
+  "name": "Lu Lu Sticker Tools_v3",
+  "description": "A cute LINE sticker generator and splitter tool using Gemini API. Create 8, 16, or 24-grid sticker sheets and cut them instantly.",
+  "requestFramePermissions": []
+}
