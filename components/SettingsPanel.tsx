@@ -11,6 +11,8 @@ interface SettingsPanelProps {
 // Preset Data Configuration
 const STYLE_PRESETS = [
   { value: "Classic Chibi Vector", label: "🎨 經典Q版 (Classic Chibi)", desc: "2D平面、粗線條、可愛比例" },
+  { value: "Minimalist Line Art", label: "✏️ 極簡線條 (Line Art)", desc: "線條小狗風：粗線條、極簡色塊、強調表情" },
+  { value: "Ugly-Cute Meme Style", label: "🤪 醜萌迷擬 (Ugly-Cute)", desc: "誇張比例、歪斜線條、高度迷因感" },
   { value: "Soft Hand-drawn Crayon", label: "🖍️ 軟萌手繪 (Soft Crayon)", desc: "蠟筆質感、粉嫩配色、溫暖氛圍" },
   { value: "Retro 8-bit Pixel Art", label: "👾 復古像素 (Pixel Art)", desc: "方塊感、懷舊遊戲風格" },
   { value: "American Cartoon", label: "📺 美式卡通 (Cartoon)", desc: "線條大膽、表情誇張、動感十足" },
@@ -27,12 +29,21 @@ const TEXT_PRESETS = [
 
 const VIBE_PRESETS = [
   { value: "High Energy & Cheerful", label: "⚡ 元氣滿滿 (High Energy)", desc: "閃亮、跳躍、極度快樂" },
-  { value: "Lazy & Chill", label: "💤 厭世慵懶 (Lazy/Chill)", desc: "垂眼、融化、動作緩慢" },
+  { value: "Lazy & Chill", label: "💤 懶散休閒 (Lazy/Chill)", desc: "垂眼、融化、動作緩慢" },
   { value: "Over-the-top Dramatic", label: "🎭 誇張顏藝 (Dramatic)", desc: "瀑布淚、掉下巴、凸眼" },
   { value: "Wholesome & Healing", label: "💖 溫馨療癒 (Wholesome)", desc: "微笑、小花、臉紅、擁抱" },
   { value: "Sarcastic & Funny", label: "😏 搞怪嘲諷 (Sarcastic)", desc: "眼神死、斜眼、迷因表情" },
+  { value: "Couple Sweet", label: "💕 甜蜜情侶 (Couple Sweet)", desc: "粉紅泡泡、愛心、臉紅互動" },
+  { value: "Office Survivor", label: "💼 社畜求生 (Office Survivor)", desc: "黑眼圈、枯萎、不想上班" },
   { value: "Custom", label: "✨ 自定義氛圍 (Custom Vibe)", desc: "描述您想要的獨特風格！" },
 ];
+
+const RELATIONSHIP_MODES = [
+  { value: 'general', label: '🌍 通用 (General)', icon: '✨' },
+  { value: 'couple', label: '👩‍❤️‍👨 情侶 (Couple)', icon: '❤️' },
+  { value: 'office', label: '🏢 職場 (Office)', icon: '💼' },
+  { value: 'friends', label: '🍻 好友 (Friends)', icon: '🤝' },
+] as const;
 
 export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isLoading, onGenerate }) => {
   const [prompt, setPrompt] = useState('');
@@ -40,32 +51,21 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isLoading, onGener
   const [model, setModel] = useState<ModelOption>(ModelOption.NanoBananaPro);
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [referenceImage2, setReferenceImage2] = useState<string | null>(null);
-  const [removeBackground, setRemoveBackground] = useState(true); // Default to TRUE for transparent stickers
+  const [removeBackground, setRemoveBackground] = useState(true);
 
-  // New State for Presets
   const [stylePreset, setStylePreset] = useState(STYLE_PRESETS[0].value);
   const [textStylePreset, setTextStylePreset] = useState(TEXT_PRESETS[0].value);
   const [vibePreset, setVibePreset] = useState(VIBE_PRESETS[0].value);
+  const [relationshipMode, setRelationshipMode] = useState<typeof RELATIONSHIP_MODES[number]['value']>('general');
   const [customVibeDesc, setCustomVibeDesc] = useState('');
 
-  // Custom Sticker List State
   const [isCustomizing, setIsCustomizing] = useState(false);
   const [editedIntents, setEditedIntents] = useState<StickerIntent[]>([]);
 
-  // Effect: Update intents when Vibe Preset OR Grid Size changes
   useEffect(() => {
-    // 1. Get the base list for the selected vibe
-    // If Custom, we default to High Energy list as a starting point, 
-    // but user is expected to edit.
     const baseIntents = getIntentsByVibe(vibePreset);
-    
-    // 2. Adjust length to match GridSize
     const targetLength = gridSize;
-    
-    setEditedIntents(prev => {
-        // We will overwrite whenever vibePreset changes (logic handled by dependency array).
-        return baseIntents.slice(0, targetLength);
-    });
+    setEditedIntents(baseIntents.slice(0, targetLength));
   }, [vibePreset, gridSize]);
 
   const handleIntentChange = (index: number, field: keyof StickerIntent, value: string) => {
@@ -83,7 +83,6 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isLoading, onGener
     const file = e.target.files?.[0];
     if (file) {
       try {
-        // Convert to standard format (JPEG) and resize if necessary
         const base64 = await processFileToBase64(file);
         if (isSecond) {
           setReferenceImage2(base64);
@@ -98,8 +97,6 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isLoading, onGener
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Use custom vibe description if 'Custom' is selected
     const finalVibe = vibePreset === 'Custom' ? customVibeDesc : vibePreset;
 
     onGenerate({ 
@@ -112,7 +109,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isLoading, onGener
       stylePreset,
       textStylePreset,
       vibePreset: finalVibe,
-      // Only send custom intents if the user actually opened the editor
+      relationshipMode,
       customIntents: isCustomizing ? editedIntents : undefined
     });
   };
@@ -155,9 +152,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isLoading, onGener
           </div>
         </div>
 
-        {/* --- NEW PRESET DROPDOWNS --- */}
+        {/* Style & Vibe Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Character Style */}
           <div>
             <label className="block text-sm font-bold text-slate-600 mb-2">角色風格</label>
             <div className="relative">
@@ -176,7 +172,6 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isLoading, onGener
             </div>
           </div>
 
-          {/* Text Style */}
           <div>
             <label className="block text-sm font-bold text-slate-600 mb-2">文字設計</label>
             <div className="relative">
@@ -195,7 +190,6 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isLoading, onGener
             </div>
           </div>
 
-           {/* Vibe/Emotion */}
            <div>
             <label className="block text-sm font-bold text-slate-600 mb-2">情感氛圍</label>
             <div className="relative">
@@ -215,6 +209,29 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isLoading, onGener
           </div>
         </div>
 
+        {/* Relationship Mode */}
+        <div className="bg-slate-50 p-4 rounded-2xl border-2 border-slate-100 space-y-3">
+          <label className="block text-sm font-bold text-slate-600">情境關係模式 (Relationship Mode)</label>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {RELATIONSHIP_MODES.map((mode) => (
+              <button
+                key={mode.value}
+                type="button"
+                onClick={() => setRelationshipMode(mode.value)}
+                className={`p-3 rounded-xl border-2 text-[11px] font-black transition-all flex flex-col items-center justify-center gap-1 ${
+                  relationshipMode === mode.value
+                    ? 'border-lulu-500 bg-white text-lulu-600 shadow-md transform -translate-y-0.5'
+                    : 'border-white text-slate-400 hover:border-slate-200 bg-white/50'
+                }`}
+              >
+                <span className="text-xl">{mode.icon}</span>
+                <span>{mode.label.split(' ')[1]}</span>
+              </button>
+            ))}
+          </div>
+          <p className="text-[10px] text-slate-400 font-medium">切換模式將自動調整預設貼圖語錄，使其符合對應的人際關係場景。</p>
+        </div>
+
         {/* Custom Vibe Input */}
         {vibePreset === 'Custom' && (
            <div className="animate-fade-in-down">
@@ -230,101 +247,50 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isLoading, onGener
            </div>
         )}
 
-        {/* Prompt - now purely for character description */}
+        {/* Prompt */}
         <div>
            <label className="block text-sm font-bold text-slate-600 mb-2">角色主題 (Prompt)</label>
            <textarea
              className="w-full p-4 rounded-2xl border-2 border-slate-200 focus:border-lulu-400 focus:ring-0 outline-none transition-colors resize-none bg-slate-800 text-white placeholder-slate-400 font-medium"
              rows={2}
-             placeholder="主角是誰？(例如：一隻戴著紅圍巾的可愛小企鵝 / A cute baby penguin with a red scarf)"
+             placeholder="主角是誰？(例如：一隻戴著紅圍巾的可愛小企鵝)"
              value={prompt}
              onChange={(e) => setPrompt(e.target.value)}
              required
            />
         </div>
 
-        {/* Reference Image Section (Dual) */}
+        {/* Reference Images */}
         <div>
           <label className="block text-sm font-bold text-slate-600 mb-2">參考圖片 (人物設定)</label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              
-              {/* Image 1: Protagonist */}
               <div className="relative group">
-                 <input
-                   type="file"
-                   accept="image/*"
-                   onChange={(e) => handleFileChange(e, false)}
-                   className="hidden"
-                   id="ref-image-input"
-                 />
-                 <label 
-                   htmlFor="ref-image-input"
-                   className="flex flex-col items-center gap-2 p-4 rounded-2xl border-2 border-dashed border-lulu-300 hover:bg-lulu-50 cursor-pointer transition-colors h-full justify-center"
-                 >
-                   <div className="w-20 h-20 bg-lulu-100 rounded-xl flex items-center justify-center overflow-hidden shrink-0 shadow-sm relative">
-                      {referenceImage ? (
-                        <img src={referenceImage} alt="Ref 1" className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-3xl text-lulu-400">👤</span>
-                      )}
-                      {referenceImage && <div className="absolute inset-0 bg-black/10"></div>}
-                   </div>
-                   <div className="text-center">
+                 <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, false)} className="hidden" id="ref-image-input" />
+                 <label htmlFor="ref-image-input" className="flex flex-col items-center gap-2 p-4 rounded-2xl border-2 border-dashed border-lulu-300 hover:bg-lulu-50 cursor-pointer transition-colors h-full justify-center">
+                    <div className="w-20 h-20 bg-lulu-100 rounded-xl flex items-center justify-center overflow-hidden shrink-0 shadow-sm relative">
+                       {referenceImage ? <img src={referenceImage} alt="Ref 1" className="w-full h-full object-cover" /> : <span className="text-3xl text-lulu-400">👤</span>}
+                    </div>
+                    <div className="text-center">
                         <div className="text-sm font-bold text-lulu-600">主角 (Main)</div>
-                        <div className="text-[10px] text-slate-400 font-medium mt-1">
-                            {referenceImage ? "點擊更換" : "上傳主角照片"}
-                        </div>
-                   </div>
+                        <div className="text-[10px] text-slate-400 font-medium mt-1">{referenceImage ? "點擊更換" : "上傳主角照片"}</div>
+                    </div>
                  </label>
-                 {referenceImage && (
-                     <button 
-                        type="button"
-                        onClick={() => setReferenceImage(null)}
-                        className="absolute top-2 right-2 text-xs bg-red-100 text-red-500 w-6 h-6 flex items-center justify-center rounded-full font-bold hover:bg-red-200"
-                     >
-                        ✕
-                     </button>
-                 )}
+                 {referenceImage && <button type="button" onClick={() => setReferenceImage(null)} className="absolute top-2 right-2 text-xs bg-red-100 text-red-500 w-6 h-6 flex items-center justify-center rounded-full font-bold hover:bg-red-200">✕</button>}
               </div>
 
-              {/* Image 2: Sidekick */}
               <div className="relative group">
-                 <input
-                   type="file"
-                   accept="image/*"
-                   onChange={(e) => handleFileChange(e, true)}
-                   className="hidden"
-                   id="ref-image-input-2"
-                 />
-                 <label 
-                   htmlFor="ref-image-input-2"
-                   className="flex flex-col items-center gap-2 p-4 rounded-2xl border-2 border-dashed border-slate-300 hover:bg-slate-50 cursor-pointer transition-colors h-full justify-center"
-                 >
-                   <div className="w-20 h-20 bg-slate-100 rounded-xl flex items-center justify-center overflow-hidden shrink-0 shadow-sm relative">
-                      {referenceImage2 ? (
-                        <img src={referenceImage2} alt="Ref 2" className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-3xl text-slate-400">👥</span>
-                      )}
-                   </div>
-                   <div className="text-center">
+                 <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, true)} className="hidden" id="ref-image-input-2" />
+                 <label htmlFor="ref-image-input-2" className="flex flex-col items-center gap-2 p-4 rounded-2xl border-2 border-dashed border-slate-300 hover:bg-slate-50 cursor-pointer transition-colors h-full justify-center">
+                    <div className="w-20 h-20 bg-slate-100 rounded-xl flex items-center justify-center overflow-hidden shrink-0 shadow-sm relative">
+                       {referenceImage2 ? <img src={referenceImage2} alt="Ref 2" className="w-full h-full object-cover" /> : <span className="text-3xl text-slate-400">👥</span>}
+                    </div>
+                    <div className="text-center">
                         <div className="text-sm font-bold text-slate-600">配角 (Sidekick)</div>
-                        <div className="text-[10px] text-slate-400 font-medium mt-1">
-                            {referenceImage2 ? "點擊更換" : "上傳配角 (選填)"}
-                        </div>
-                   </div>
+                        <div className="text-[10px] text-slate-400 font-medium mt-1">{referenceImage2 ? "點擊更換" : "上傳配角 (選填)"}</div>
+                    </div>
                  </label>
-                 {referenceImage2 && (
-                     <button 
-                        type="button"
-                        onClick={() => setReferenceImage2(null)}
-                        className="absolute top-2 right-2 text-xs bg-red-100 text-red-500 w-6 h-6 flex items-center justify-center rounded-full font-bold hover:bg-red-200"
-                     >
-                        ✕
-                     </button>
-                 )}
+                 {referenceImage2 && <button type="button" onClick={() => setReferenceImage2(null)} className="absolute top-2 right-2 text-xs bg-red-100 text-red-500 w-6 h-6 flex items-center justify-center rounded-full font-bold hover:bg-red-200">✕</button>}
               </div>
-
           </div>
         </div>
 
@@ -354,13 +320,9 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isLoading, onGener
           </div>
         </div>
 
-        {/* CUSTOM STICKER LIST SECTION */}
+        {/* Custom Intents */}
         <div className="border-t-2 border-slate-100 pt-4">
-            <button
-                type="button"
-                onClick={() => setIsCustomizing(!isCustomizing)}
-                className="flex items-center gap-2 text-sm font-bold text-lulu-500 hover:text-lulu-700 transition-colors"
-            >
+            <button type="button" onClick={() => setIsCustomizing(!isCustomizing)} className="flex items-center gap-2 text-sm font-bold text-lulu-500 hover:text-lulu-700 transition-colors">
                 {isCustomizing ? '🔽 隱藏詳細編輯器' : '✏️ 自訂貼圖文字與動作'}
             </button>
             
@@ -368,12 +330,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isLoading, onGener
                 <div className="mt-4 p-4 bg-slate-50 rounded-2xl border-2 border-lulu-100 animate-fade-in space-y-3">
                     <div className="flex items-center justify-between mb-2">
                         <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">貼圖內容編輯器</span>
-                        <button 
-                            type="button"
-                            onClick={handleResetIntents}
-                            className="text-xs text-red-400 hover:text-red-600 underline font-bold"
-                        >
-                            重置為 [{VIBE_PRESETS.find(v => v.value === vibePreset)?.label}] 預設值
+                        <button type="button" onClick={handleResetIntents} className="text-xs text-red-400 hover:text-red-600 underline font-bold">
+                            重置為預設值
                         </button>
                     </div>
                     <div className="grid grid-cols-1 gap-3 max-h-96 overflow-y-auto pr-1 custom-scrollbar">
@@ -385,54 +343,29 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isLoading, onGener
                                 </div>
                                 <div className="grid grid-cols-12 gap-2">
                                     <div className="col-span-3">
-                                        <label className="block text-[10px] font-bold text-slate-400 mb-1">顯示文字 (Text)</label>
-                                        <input 
-                                            type="text" 
-                                            value={item.text}
-                                            onChange={(e) => handleIntentChange(idx, 'text', e.target.value)}
-                                            className="w-full p-2 text-xs font-bold text-slate-700 bg-slate-50 border border-slate-200 rounded-lg focus:border-lulu-300 outline-none placeholder-slate-300"
-                                            placeholder="例如：早安"
-                                        />
+                                        <label className="block text-[10px] font-bold text-slate-400 mb-1">顯示文字</label>
+                                        <input type="text" value={item.text} onChange={(e) => handleIntentChange(idx, 'text', e.target.value)} className="w-full p-2 text-xs font-bold text-slate-700 bg-slate-50 border border-slate-200 rounded-lg focus:border-lulu-300 outline-none" />
                                     </div>
                                     <div className="col-span-4">
-                                        <label className="block text-[10px] font-bold text-slate-400 mb-1">情境提示 (Prompt)</label>
-                                        <input 
-                                            type="text" 
-                                            value={item.description}
-                                            onChange={(e) => handleIntentChange(idx, 'description', e.target.value)}
-                                            className="w-full p-2 text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-lg focus:border-lulu-300 outline-none placeholder-slate-300"
-                                            placeholder="例如：打招呼、有精神"
-                                        />
+                                        <label className="block text-[10px] font-bold text-slate-400 mb-1">情境提示</label>
+                                        <input type="text" value={item.description} onChange={(e) => handleIntentChange(idx, 'description', e.target.value)} className="w-full p-2 text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-lg focus:border-lulu-300 outline-none" />
                                     </div>
                                     <div className="col-span-5">
-                                        <label className="block text-[10px] font-bold text-slate-400 mb-1">畫面動作 (Visual)</label>
-                                        <input 
-                                            type="text" 
-                                            value={item.visual}
-                                            onChange={(e) => handleIntentChange(idx, 'visual', e.target.value)}
-                                            className="w-full p-2 text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-lg focus:border-lulu-300 outline-none placeholder-slate-300"
-                                            placeholder="例如：揮手微笑"
-                                        />
+                                        <label className="block text-[10px] font-bold text-slate-400 mb-1">畫面動作</label>
+                                        <input type="text" value={item.visual} onChange={(e) => handleIntentChange(idx, 'visual', e.target.value)} className="w-full p-2 text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-lg focus:border-lulu-300 outline-none" />
                                     </div>
                                 </div>
                             </div>
                         ))}
                     </div>
-                    <p className="text-[10px] text-slate-400 text-center pt-2">
-                        小撇步：「顯示文字」是圖上的字，「情境提示」是給 AI 看的感覺描述。
-                    </p>
                 </div>
             )}
         </div>
 
-        {/* Remove Background Option */}
+        {/* Remove Background */}
         <div className="flex items-center gap-3 p-4 border-2 border-slate-100 rounded-2xl bg-slate-50 hover:bg-white transition-colors cursor-pointer" onClick={() => setRemoveBackground(!removeBackground)}>
            <div className={`w-6 h-6 rounded-md border-2 flex items-center justify-center transition-colors ${removeBackground ? 'bg-lulu-500 border-lulu-500' : 'bg-white border-slate-300'}`}>
-              {removeBackground && (
-                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                </svg>
-              )}
+              {removeBackground && <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
            </div>
            <span className="text-sm font-bold text-slate-600">自動去背 (去除綠幕)</span>
         </div>
@@ -447,13 +380,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isLoading, onGener
               : 'bg-lulu-500 hover:bg-lulu-600 hover:shadow-xl hover:-translate-y-0.5'
           }`}
         >
-          {isLoading ? (
-            <span className="flex items-center justify-center gap-2">
-              <span className="animate-spin">🌀</span> 生成中...
-            </span>
-          ) : (
-            '立即生成貼圖！'
-          )}
+          {isLoading ? <span className="flex items-center justify-center gap-2"><span className="animate-spin">🌀</span> 生成中...</span> : '立即生成貼圖！'}
         </button>
       </form>
     </div>

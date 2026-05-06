@@ -8,9 +8,11 @@ const VIBE_KEYS = {
     DRAMATIC: "Over-the-top Dramatic",
     WHOLESOME: "Wholesome & Healing",
     SARCASTIC: "Sarcastic & Funny",
+    COUPLE: "Couple Sweet",
+    OFFICE: "Office Survivor",
 };
 
-// 1. High Energy (Default)
+// 1. High Energy (24 Intents)
 const INTENTS_HIGH_ENERGY: StickerIntent[] = [
     { text: "早安", description: "打招呼, 充滿朝氣", visual: "One hand waving high above head, energetic smile" },
     { text: "耶！", description: "開心, 慶祝", visual: "Jumping joyfully, Arms open wide, flowers background" },
@@ -38,7 +40,7 @@ const INTENTS_HIGH_ENERGY: StickerIntent[] = [
     { text: "拜拜", description: "再見, 揮手", visual: "Walking away waving back, happy exit" },
 ];
 
-// 2. Lazy & Chill
+// 2. Lazy & Chill (24 Intents)
 const INTENTS_LAZY: StickerIntent[] = [
     { text: "不想動", description: "懶惰, 癱軟", visual: "Lying flat on floor like liquid, melting" },
     { text: "累...", description: "疲憊, 嘆氣", visual: "Slumping shoulders, soul leaving body slightly" },
@@ -60,13 +62,13 @@ const INTENTS_LAZY: StickerIntent[] = [
     { text: "蛤?", description: "傻眼, 聽不懂", visual: "Tilting head, brain empty" },
     { text: "拒絕", description: "反對, 打叉", visual: "Arms crossed in X, deadpan face" },
     { text: "洗澡去", description: "洗澡, 鴨子", visual: "Soaking in tub/bucket, rubber duck on head" },
-    { text: "...", description: "無言, 沉默", visual: "Three dots ..., wind blowing leaves" },
+    { text: "明天見", description: "懶散告別", visual: "Half-hearted wave, walking slowly" },
     { text: "起床失敗", description: "賴床, 被窩", visual: "Burrito wrapped in blanket, refusing to emerge" },
     { text: "下線", description: "斷線, 離開", visual: "Character turns grey/black and white, disconnect symbol" },
     { text: "掰", description: "消失, 飄走", visual: "Floating away like a ghost, fading out" },
 ];
 
-// 3. Over-the-top Dramatic
+// 3. Over-the-top Dramatic (24 Intents)
 const INTENTS_DRAMATIC: StickerIntent[] = [
     { text: "崩潰", description: "崩潰, 吶喊", visual: "Screaming like Munch's The Scream, holding face" },
     { text: "嚇死", description: "驚恐, 魂飛魄散", visual: "Soul leaving the body from mouth, pale face" },
@@ -94,7 +96,7 @@ const INTENTS_DRAMATIC: StickerIntent[] = [
     { text: "救命", description: "求救, 溺水", visual: "Hand reaching out from water/quicksand" },
 ];
 
-// 4. Wholesome & Healing
+// 4. Wholesome & Healing (24 Intents)
 const INTENTS_WHOLESOME: StickerIntent[] = [
     { text: "抱抱", description: "擁抱, 溫暖", visual: "Hugging a teddy bear or invisible person, warm atmosphere" },
     { text: "辛苦了", description: "慰勞, 奉茶", visual: "Offering a cup of steaming tea, gentle smile" },
@@ -122,7 +124,7 @@ const INTENTS_WHOLESOME: StickerIntent[] = [
     { text: "明天見", description: "揮手, 夕陽", visual: "Soft wave goodbye, sunset background" },
 ];
 
-// 5. Sarcastic & Funny
+// 5. Sarcastic & Funny (24 Intents)
 const INTENTS_SARCASTIC: StickerIntent[] = [
     { text: "呵呵", description: "冷笑, 嘲諷", visual: "Smirking, half-lidded eyes, sarcastic text bubble" },
     { text: "確?", description: "懷疑, 挑眉", visual: "Raising one eyebrow, skeptical face (The Rock style)" },
@@ -150,12 +152,70 @@ const INTENTS_SARCASTIC: StickerIntent[] = [
     { text: "下去領500", description: "工讀生, 錢", visual: "Holding a coin, dismissing gesture" },
 ];
 
+// 6. Couple Sweet (24 Intents)
+const INTENTS_COUPLE: StickerIntent[] = [
+    { text: "想你", description: "思念, 甜蜜", visual: "Holding a phone close to heart, pink bubbles" },
+    { text: "親一個", description: "索吻, 嘟嘴", visual: "Puckered lips, eyes closed, flying hearts" },
+    { text: "等我", description: "期待見面", visual: "Running with flowers, blushing smile" },
+    { text: "愛你", description: "告白, 大心", visual: "Making a big heart with arms over head" },
+    { text: "在幹嘛", description: "關心, 偷看", visual: "Peeking from bottom of screen, curious eyes" },
+    { text: "我也要", description: "撒嬌, 拉衣角", visual: "Tugging at an invisible sleeve, puppy eyes" },
+    { text: "哼", description: "假裝生氣, 傲嬌", visual: "Puffed cheeks, arms crossed, looking away but peeking" },
+    { text: "笨蛋", description: "親暱稱呼", visual: "Poking viewer's cheek lightly, playful grin" },
+    { text: "可以嗎", description: "詢問, 期待", visual: "Clasped hands, sparkling background" },
+    { text: "早安親親", description: "晨間驚喜", visual: "Winking, blowing a kiss with a sun icon" },
+    { text: "晚安夢到我", description: "睡前情話", visual: "Hugging a pillow, sleepy but happy" },
+    { text: "抱緊處理", description: "渴望擁抱", visual: "Arms wide open, running towards viewer" },
+    { text: "你是我的", description: "佔有慾", visual: "Pointing at viewer with a smug, loving face" },
+    { text: "我錯了", description: "求饒, 哭哭", visual: "Holding a sign 'I'm sorry', kneeling" },
+    { text: "想吃那個", description: "一起去吃飯", visual: "Pointing at a menu/food, drooling cutely" },
+    { text: "牽手", description: "渴望親密", visual: "Reaching out hand towards the screen" },
+    { text: "最喜歡你", description: "直球告白", visual: "Surrounded by a giant exploding heart" },
+    { text: "你是最好", description: "崇拜, 誇獎", visual: "Clapping with starry eyes" },
+    { text: "快回來", description: "催促, 寂寞", visual: "Sitting by the door, looking like a lonely puppy" },
+    { text: "啾咪", description: "可愛表情", visual: "Winking, sticking out tongue slightly" },
+    { text: "我的寶", description: "寵溺", visual: "Patting the screen gently" },
+    { text: "不可以", description: "吃醋, 傲嬌", visual: "Making an X with fingers, pouting" },
+    { text: "帶我走", description: "想一起出門", visual: "Hanging onto someone's leg (or edge of screen)" },
+    { text: "永遠在一起", description: "約定", visual: "Pinky swear gesture, warm glow" },
+];
+
+// 7. Office Survivor (24 Intents)
+const INTENTS_OFFICE: StickerIntent[] = [
+    { text: "不想上班", description: "社畜心聲", visual: "Wrapped in blanket, crying, alarm clock in background" },
+    { text: "收到", description: "公事公辦", visual: "Deadpan face, robotic salute" },
+    { text: "救命", description: "工作太多", visual: "Buried under a mountain of papers" },
+    { text: "下班了!", description: "解放", visual: "Dashing out of a door, papers flying behind" },
+    { text: "沒錢了", description: "月底窮困", visual: "Pulling out empty pockets, moth flying out" },
+    { text: "咖啡救我", description: "依賴咖啡", visual: "Drinking coffee with huge dark circles under eyes" },
+    { text: "電腦當機", description: "崩潰", visual: "Staring at a blue screen, hair standing on end" },
+    { text: "開會中", description: "靈魂出竅", visual: "Sitting at desk, soul floating out of mouth" },
+    { text: "好的123", description: "敷衍回覆", visual: "Typing extremely fast with a bored face" },
+    { text: "想睡覺", description: "疲勞", visual: "Eyelids held up by toothpicks" },
+    { text: "薪水呢", description: "渴望發薪", visual: "Staring at a calendar, drooling over money" },
+    { text: "又是這句", description: "對主管不滿", visual: "Rolling eyes behind a computer monitor" },
+    { text: "我太難了", description: "壓力大", visual: "Crumpled like a piece of paper" },
+    { text: "已讀不回", description: "逃避公事", visual: "Hiding under the desk with a phone" },
+    { text: "加油吧", description: "自勉", visual: "Wiping a single tear, holding a fist up weakly" },
+    { text: "週一憂鬱", description: "Monday Blue", visual: "Blue character, melting into the chair" },
+    { text: "倒數下班", description: "期待", visual: "Staring at a giant clock, sweating" },
+    { text: "感謝大大", description: "求救成功", visual: "Bowing deeply towards the screen" },
+    { text: "這份誰的", description: "甩鍋", visual: "Pointing away, looking suspicious" },
+    { text: "沒問題...", description: "硬撐", visual: "Smiling while twitching, background on fire" },
+    { text: "五點見", description: "準時下班", visual: "Ready to run, wearing a backpack" },
+    { text: "我要離職", description: "幻想", visual: "Imagining flying away on a bird" },
+    { text: "忙到炸", description: "極度忙碌", visual: "Character has 4 arms, all typing/calling" },
+    { text: "平安退勤", description: "每日目標", visual: "Walking out into a sunset, exhausted but safe" },
+];
+
 export const getIntentsByVibe = (vibe: string): StickerIntent[] => {
     switch (vibe) {
         case VIBE_KEYS.LAZY: return INTENTS_LAZY;
         case VIBE_KEYS.DRAMATIC: return INTENTS_DRAMATIC;
         case VIBE_KEYS.WHOLESOME: return INTENTS_WHOLESOME;
         case VIBE_KEYS.SARCASTIC: return INTENTS_SARCASTIC;
+        case VIBE_KEYS.COUPLE: return INTENTS_COUPLE;
+        case VIBE_KEYS.OFFICE: return INTENTS_OFFICE;
         case VIBE_KEYS.HIGH_ENERGY:
         default: 
             return INTENTS_HIGH_ENERGY;
@@ -164,21 +224,9 @@ export const getIntentsByVibe = (vibe: string): StickerIntent[] => {
 
 const getIntentsForSettings = (settings: GenerationSettings): StickerIntent[] => {
     const { gridSize, customIntents, vibePreset } = settings;
-    
-    // 1. If user provided custom intents (via Detailed Editor), use them strictly.
-    if (customIntents && customIntents.length > 0) {
-        return customIntents;
-    }
-
-    // 2. Otherwise, fetch defaults based on Vibe.
+    if (customIntents && customIntents.length > 0) return customIntents;
     const fullList = getIntentsByVibe(vibePreset);
-
-    // 3. Slice according to grid size.
-    let count = 16;
-    if (gridSize === GridOption.Grid8) count = 8;
-    else if (gridSize === GridOption.Grid24) count = 24;
-    
-    // Fallback if list is too short (shouldn't happen if we defined 24 for all)
+    let count = gridSize as number;
     return fullList.slice(0, count);
 };
 
@@ -186,156 +234,74 @@ export const generateStickerImage = async (
   settings: GenerationSettings,
   apiKey: string
 ): Promise<string> => {
-  const { prompt, referenceImage, referenceImage2, gridSize, model, stylePreset, textStylePreset, vibePreset } = settings;
+  const { prompt, referenceImage, referenceImage2, gridSize, model, stylePreset, textStylePreset, vibePreset, relationshipMode } = settings;
 
-  // Map Models
   const isPro = model === ModelOption.NanoBananaPro || model === ModelOption.Gemini3Pro;
   const actualModelId = isPro ? 'gemini-3-pro-image-preview' : 'gemini-2.5-flash-image';
 
-  // LINE Stickers: 8 (4x2), 16 (4x4), or 24 (4x6)
-  let rows = 4;
-  let cols = 4;
-  let aspectRatio = "1:1";
-  
-  // Logic to determine intents (now Vibe-aware)
+  let rows = 4, cols = 4, aspectRatio = "1:1";
   let selectedIntents = getIntentsForSettings(settings);
 
-  if (gridSize === GridOption.Grid8) {
-    rows = 2; cols = 4; aspectRatio = "16:9";
-  } else if (gridSize === GridOption.Grid24) {
-    rows = 6; cols = 4; aspectRatio = "3:4"; 
-  } else {
-    rows = 4; cols = 4; aspectRatio = "1:1";
-  }
+  if (gridSize === GridOption.Grid8) { rows = 2; cols = 4; aspectRatio = "16:9"; }
+  else if (gridSize === GridOption.Grid24) { rows = 6; cols = 4; aspectRatio = "3:4"; }
 
-  // Build prompt with visual enforcement and SEPARATE text/context
   const specList = selectedIntents.map((s, i) => 
-    `Slot ${i+1} Context: [${s.description}]. Text to Write: [${s.text}]. Required Visual: [${s.visual}].`
+    `Slot ${i+1}: [Text: "${s.text}"] [Context: ${s.description}] [Visual: ${s.visual}]`
   ).join("\n  ");
 
-  // Construct Instruction based on whether reference image is provided
-  // Handle Single vs Dual Character Scenarios
-  let referenceInstruction = `[Character Description] Create a new character based on: ${prompt}`;
-
+  let referenceInstruction = `[Character Description] Create characters based on: ${prompt}`;
   if (referenceImage && referenceImage2) {
-      // DUAL CHARACTER MODE
-      referenceInstruction = `[PRIORITY INSTRUCTION: DUAL REFERENCE IMAGES]
-       1. **CRITICAL**: You have been provided with TWO reference images.
-          - **IMAGE 1 (First)**: THE MAIN PROTAGONIST (主角).
-          - **IMAGE 2 (Second)**: THE SIDEKICK (配角).
-       2. **USAGE RULES**: 
-          - Most stickers should feature the **Main Protagonist** alone.
-          - If the Visual/Context implies interaction (e.g. hugging, high-five, playing), show **BOTH characters** interacting.
-          - You may occasionally use the Sidekick alone if the mood fits perfectly.
-       3. **LIKENESS**: Capture the exact "spirit" (face, hair, clothing) of BOTH characters from their respective images.
-       4. **STYLIZATION**: Apply the [${stylePreset}] style to both characters consistently.`;
+      referenceInstruction = `[DUAL REFERENCE] IMAGE 1: MAIN PROTAGONIST. IMAGE 2: SIDEKICK. Maintain strict likeness. Use both for interactions.`;
   } else if (referenceImage) {
-      // SINGLE CHARACTER MODE
-      referenceInstruction = `[PRIORITY INSTRUCTION: REFERENCE IMAGE LIKENESS]
-       1. **CRITICAL**: A reference image is provided. You MUST base the character's visual identity STRICTLY on this image.
-       2. **LIKENESS (神韻)**: Capture the specific facial features, eye shape, hair style, hair color, and overall "spirit" of the subject in the photo.
-       3. **STYLIZATION**: Convert the subject into the requested [${stylePreset}] style, but keep them clearly recognizable as the person/character in the photo.
-       4. **CONSISTENCY**: The character must look identical in every sticker slot.
-       5. **CLOTHING**: Maintain the clothing style from the reference unless the visual action requires otherwise.`;
+      referenceInstruction = `[SINGLE REFERENCE] Use the provided image for the character's facial and hair features. Ensure consistency.`;
   }
 
-  const systemPrompt = `You are an expert LINE sticker artist.
+  const systemPrompt = `You are a LINE sticker artist.
   
-  [Task]
-  Create a sticker sheet for a character (or characters).
-  
+  [Task] Create a sticker sheet.
   ${referenceInstruction}
   
-  [Generation Settings]
-  - **Art Style**: ${stylePreset}
-  - **Vibe/Personality**: ${vibePreset}
-  - **Subject Description**: ${prompt} (Use for context, but visual details from reference images take precedence).
-
-  [Design Rules]
-  1. **Text Rendering**: You MUST write the EXACT text provided in 'Text to Write' on the sticker. 
-     - **DO NOT** write the 'Context' description.
-     - Text should be legible, Traditional Chinese favored (unless specified otherwise in 'Text to Write').
-     - Integrated into the design with a White outline.
-  2. **Anatomy & Quality**: 
-     - NO DUPLICATE POSES.
-     - Strictly 2 arms, 2 legs per character.
-     - Pure Green (#00FF00) background.
-  3. **Layout**: Exactly ${gridSize} stickers in a ${rows}x${cols} grid.
+  [Character DNA & Context]
+  - Subject: ${prompt}
+  - Style: ${stylePreset}
+  - Vibe: ${vibePreset}
+  - Relationship Context: ${relationshipMode}
   
-  [Sticker Slots to Generate]
-  Follow this grid order (Left->Right, Top->Bottom):
+  [Rules]
+  1. Write the EXACT text provided for each slot. Integrated with WHITE outline.
+  2. Art Style: ${stylePreset}.
+  3. No duplicates. Pure Green (#00FF00) background.
+  4. Layout: ${gridSize} stickers in a ${rows}x${cols} grid.
   
+  [Slots]
   ${specList}
   
-  [Text Style]
-  - Font: ${textStylePreset}
+  [Text Style] Font: ${textStylePreset}
   
-  Generate the single image sheet now.`;
+  Generate the sheet.`;
 
-  const parts: any[] = [
-    { text: systemPrompt }
-  ];
-
-  // Push Image 1 (Protagonist)
+  const parts: any[] = [{ text: systemPrompt }];
   if (referenceImage) {
-    const matches = referenceImage.match(/^data:(.+);base64,(.+)$/);
-    if (matches) {
-        parts.push({
-            inlineData: {
-                mimeType: matches[1],
-                data: matches[2]
-            }
-        });
-    }
+    const m = referenceImage.match(/^data:(.+);base64,(.+)$/);
+    if (m) parts.push({ inlineData: { mimeType: m[1], data: m[2] } });
   }
-
-  // Push Image 2 (Sidekick)
   if (referenceImage2) {
-    const matches = referenceImage2.match(/^data:(.+);base64,(.+)$/);
-    if (matches) {
-        parts.push({
-            inlineData: {
-                mimeType: matches[1],
-                data: matches[2]
-            }
-        });
-    }
+    const m = referenceImage2.match(/^data:(.+);base64,(.+)$/);
+    if (m) parts.push({ inlineData: { mimeType: m[1], data: m[2] } });
   }
 
-  const config: any = {
-      imageConfig: {
-          aspectRatio: aspectRatio,
-      }
-  };
+  const ai = new GoogleGenAI({ apiKey });
+  const config: any = { imageConfig: { aspectRatio } };
+  if (isPro) config.imageConfig.imageSize = "2K";
 
-  if (isPro) {
-      config.imageConfig.imageSize = "2K"; 
-  }
+  const response = await ai.models.generateContent({ model: actualModelId, contents: { parts }, config });
 
-  // Execute Function
-  const executeRequest = async () => {
-     // Use the provided API Key instead of process.env
-     const ai = new GoogleGenAI({ apiKey: apiKey });
-     
-     const response = await ai.models.generateContent({
-      model: actualModelId,
-      contents: {
-        parts: parts,
-      },
-      config: config
-    });
-
-    if (response.candidates && response.candidates[0].content.parts) {
-      for (const part of response.candidates[0].content.parts) {
-        if (part.inlineData) {
-          return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
-        }
-      }
+  if (response.candidates && response.candidates[0].content.parts) {
+    for (const part of response.candidates[0].content.parts) {
+      if (part.inlineData) return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
     }
-    throw new Error("No image generated.");
-  };
-
-  return await executeRequest();
+  }
+  throw new Error("Generation failed.");
 };
 
 export const generateSingleSticker = async (
@@ -343,100 +309,35 @@ export const generateSingleSticker = async (
     targetIndex: number,
     apiKey: string
   ): Promise<string> => {
-    const { prompt, referenceImage, referenceImage2, model, stylePreset, textStylePreset, vibePreset } = settings;
-    
-    // Retrieve the specific intent for this slot based on Settings
+    const { prompt, referenceImage, referenceImage2, model, stylePreset, textStylePreset, vibePreset, relationshipMode } = settings;
     const allIntents = getIntentsForSettings(settings);
     const targetIntent = allIntents[targetIndex];
     
-    // Fallback safely
-    const intentText = targetIntent?.text || "Hi";
-    const intentContext = targetIntent?.description || "Sticker";
-    const intentVisual = targetIntent?.visual || "Cute pose";
-  
     const isPro = model === ModelOption.NanoBananaPro || model === ModelOption.Gemini3Pro;
     const actualModelId = isPro ? 'gemini-3-pro-image-preview' : 'gemini-2.5-flash-image';
   
-    let referenceInstruction = `[Character] Create a character based on: ${prompt}`;
-
-    if (referenceImage && referenceImage2) {
-         // DUAL CHARACTER MODE for Single Sticker
-         referenceInstruction = `[PRIORITY: DUAL REFERENCE]
-           1. **IMAGE 1**: PROTAGONIST. **IMAGE 2**: SIDEKICK.
-           2. **Spirit (神韻)**: Capture the likeness of the characters provided.
-           3. **Selection**: If the Visual description implies interaction, use BOTH. Otherwise, default to PROTAGONIST unless requested otherwise.`;
-    } else if (referenceImage) {
-         referenceInstruction = `[PRIORITY: REFERENCE IMAGE LIKENESS]
-           1. **CRITICAL**: Use the PROVIDED REFERENCE IMAGE as the absolute source of truth for the character's face and hair.
-           2. **Capture the Spirit (神韻)**: The character must look like the person in the photo, adapted to the [${stylePreset}] style.`;
-    }
-
-    // We request a square image for a single sticker
-    const systemPrompt = `You are an expert LINE sticker artist.
-    
-    [Task]
-    Create a SINGLE sticker for a character.
-    
-    ${referenceInstruction}
-    
-    [Style & Context]
-    - **Vibe/Personality**: ${vibePreset}
-    - **Art Style**: ${stylePreset}
-    
-    [Sticker Requirements]
-    - **Text to Write**: [${intentText}] (Strictly write this text only)
-    - **Context/Mood**: [${intentContext}]
-    - **Required Visual**: [${intentVisual}]
-    - **Composition**: Character + Text. Pure Green (#00FF00) background. Thick WHITE OUTLINE.
-    - **Anatomy**: Strictly 2 arms, 2 legs.
-    
-    [Text Style]
-    - Font: ${textStylePreset}
-    
-    Generate the single sticker image now.`;
+    const systemPrompt = `Create a SINGLE sticker.
+    [Character DNA] Subject: ${prompt}, Style: ${stylePreset}, Vibe: ${vibePreset}, Context: ${relationshipMode}
+    [Target] Text: "${targetIntent?.text}", Visual: ${targetIntent?.visual}
+    [Rules] Pure Green (#00FF00) bg, Thick White outline, Style: ${stylePreset}, Font: ${textStylePreset}`;
   
     const parts: any[] = [{ text: systemPrompt }];
-  
-    // Push Image 1
     if (referenceImage) {
-      const matches = referenceImage.match(/^data:(.+);base64,(.+)$/);
-      if (matches) {
-          parts.push({
-              inlineData: { mimeType: matches[1], data: matches[2] }
-          });
-      }
+      const m = referenceImage.match(/^data:(.+);base64,(.+)$/);
+      if (m) parts.push({ inlineData: { mimeType: m[1], data: m[2] } });
     }
-    // Push Image 2
     if (referenceImage2) {
-      const matches = referenceImage2.match(/^data:(.+);base64,(.+)$/);
-      if (matches) {
-          parts.push({
-              inlineData: { mimeType: matches[1], data: matches[2] }
-          });
-      }
+      const m = referenceImage2.match(/^data:(.+);base64,(.+)$/);
+      if (m) parts.push({ inlineData: { mimeType: m[1], data: m[2] } });
     }
   
-    // Use the provided API Key
-    const ai = new GoogleGenAI({ apiKey: apiKey });
-    const config: any = {
-        imageConfig: {
-            aspectRatio: "1:1", // Single sticker is square
-        }
-    };
-    if (isPro) config.imageConfig.imageSize = "1K"; // 1K is sufficient for single sticker
-  
-    const response = await ai.models.generateContent({
-      model: actualModelId,
-      contents: { parts: parts },
-      config: config
-    });
+    const ai = new GoogleGenAI({ apiKey });
+    const response = await ai.models.generateContent({ model: actualModelId, contents: { parts }, config: { imageConfig: { aspectRatio: "1:1" } } });
   
     if (response.candidates && response.candidates[0].content.parts) {
       for (const part of response.candidates[0].content.parts) {
-        if (part.inlineData) {
-          return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
-        }
+        if (part.inlineData) return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
       }
     }
-    throw new Error("No image generated.");
+    throw new Error("Generation failed.");
   };

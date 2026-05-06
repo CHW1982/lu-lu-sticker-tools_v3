@@ -33,7 +33,20 @@ export interface GenerationSettings {
   stylePreset: string;
   textStylePreset: string;
   vibePreset: string;
+  relationshipMode: 'general' | 'couple' | 'office' | 'friends';
   
   // Customization
   customIntents?: StickerIntent[];
+}
+
+export interface ValidationIssue {
+  type: 'margin' | 'chroma_residue' | 'dimension' | 'filesize';
+  severity: 'error' | 'warning';
+  message: string;
+  autoFixable: boolean;
+}
+
+export interface ValidationResult {
+  passed: boolean;
+  issues: ValidationIssue[];
 }
