@@ -145,16 +145,42 @@ export const splitImage = (
           }
       }
 
+      // --- 優化：對密度進行平滑處理 (Moving Average) 以過濾雜訊像素 ---
+      const smoothDensity = (arr: Int32Array, windowSize: number) => {
+        const result = new Float32Array(arr.length);
+        const half = Math.floor(windowSize / 2);
+        for (let i = 0; i < arr.length; i++) {
+          let sum = 0;
+          let count = 0;
+          for (let j = i - half; j <= i + half; j++) {
+            if (j >= 0 && j < arr.length) {
+              sum += arr[j];
+              count++;
+            }
+          }
+          result[i] = sum / count;
+        }
+        return result;
+      };
+
+      const smoothedCols = smoothDensity(colDensity, 5); // 5px 窗口平滑
+      const smoothedRows = smoothDensity(rowDensity, 5);
+
       // 2. Valley Finding: 尋找最佳切割線 (避免切到突出的圖案或文字)
       const cutX = [0];
       for (let c = 1; c < cols; c++) {
           const expected = Math.floor(c * (img.width / cols));
-          const searchRange = Math.floor((img.width / cols) * 0.15); // 允許 15% 的偏移尋找縫隙
+          const searchRange = Math.floor((img.width / cols) * 0.2); // 擴大搜索範圍至 20%
+          
           let bestX = expected;
           let minD = Infinity;
+          
+          // 尋找範圍內「平滑密度最低」且「最靠近預期中心」的點
           for (let x = Math.max(0, expected - searchRange); x <= Math.min(img.width - 1, expected + searchRange); x++) {
-              if (colDensity[x] < minD) {
-                  minD = colDensity[x];
+              // 權重計算：密度優先，距離次之
+              const score = smoothedCols[x] * 100 + Math.abs(x - expected);
+              if (score < minD) {
+                  minD = score;
                   bestX = x;
               }
           }
@@ -165,12 +191,15 @@ export const splitImage = (
       const cutY = [0];
       for (let r = 1; r < rows; r++) {
           const expected = Math.floor(r * (img.height / rows));
-          const searchRange = Math.floor((img.height / rows) * 0.15);
+          const searchRange = Math.floor((img.height / rows) * 0.2);
+          
           let bestY = expected;
           let minD = Infinity;
+          
           for (let y = Math.max(0, expected - searchRange); y <= Math.min(img.height - 1, expected + searchRange); y++) {
-              if (rowDensity[y] < minD) {
-                  minD = rowDensity[y];
+              const score = smoothedRows[y] * 100 + Math.abs(y - expected);
+              if (score < minD) {
+                  minD = score;
                   bestY = y;
               }
           }
