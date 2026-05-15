@@ -26,6 +26,72 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
   const [isValidating, setIsValidating] = useState(false);
   const [bgMode, setBgMode] = useState<'transparent' | 'red' | 'black' | 'white'>('transparent');
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [isBatchMode, setIsBatchMode] = useState(false);
+  const [batchTexts, setBatchTexts] = useState<string>('');
+
+  const handleBatchApply = async () => {
+    const lines = batchTexts.split('\n').filter(l => l.trim() !== '');
+    if (lines.length === 0) {
+      alert("請輸入至少一行文字。");
+      return;
+    }
+
+    setIsValidating(true);
+    
+    // Process each slice
+    for (let i = 0; i < slices.length; i++) {
+      const text = lines[i % lines.length];
+      try {
+        const processed = await applyTextToImage(slices[i], text);
+        onReplaceSlice(i, processed);
+      } catch (err) {
+        console.error(`Failed to apply text to slice ${i}`, err);
+      }
+    }
+    
+    setIsBatchMode(false);
+    setIsValidating(false);
+    alert("批次文字合成完成！");
+  };
+
+  const applyTextToImage = (base64: string, text: string): Promise<string> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.src = base64;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) { resolve(base64); return; }
+        
+        ctx.drawImage(img, 0, 0);
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        
+        // Dynamic font size based on image height (approx 15%)
+        const fontSize = Math.floor(img.height * 0.15);
+        ctx.font = `bold ${fontSize}px "Inter", "Microsoft JhengHei", sans-serif`;
+        
+        const x = canvas.width / 2;
+        const y = canvas.height * 0.82; // Position at bottom area
+
+        // Dark Stroke
+        ctx.strokeStyle = '#333333';
+        ctx.lineWidth = Math.floor(fontSize * 0.2);
+        ctx.lineJoin = 'round';
+        ctx.strokeText(text, x, y);
+
+        // White Fill
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(text, x, y);
+        
+        resolve(canvas.toDataURL('image/png'));
+      };
+      img.onerror = () => resolve(base64);
+    });
+  };
 
   const handleValidateAll = async () => {
     setIsValidating(true);
@@ -72,19 +138,25 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
         </h2>
         <div className="flex flex-wrap bg-lulu-50 p-1 rounded-xl">
            <button 
-             onClick={() => setActiveTab('sheet')}
+             onClick={() => { setActiveTab('sheet'); setIsBatchMode(false); }}
              className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'sheet' ? 'bg-white text-lulu-600 shadow-sm' : 'text-lulu-300'}`}
            >
              完整大圖
            </button>
            <button 
-             onClick={() => setActiveTab('cuts')}
-             className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'cuts' ? 'bg-white text-lulu-600 shadow-sm' : 'text-lulu-300'}`}
+             onClick={() => { setActiveTab('cuts'); setIsBatchMode(false); }}
+             className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'cuts' && !isBatchMode ? 'bg-white text-lulu-600 shadow-sm' : 'text-lulu-300'}`}
            >
              貼圖切片 ({slices.length})
            </button>
            <button 
-              onClick={() => setActiveTab('chat')}
+             onClick={() => { setActiveTab('cuts'); setIsBatchMode(true); }}
+             className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${isBatchMode ? 'bg-white text-lulu-600 shadow-sm' : 'text-lulu-300'}`}
+           >
+             批次加字 ⚡
+           </button>
+           <button 
+              onClick={() => { setActiveTab('chat'); setIsBatchMode(false); }}
               className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'chat' ? 'bg-white text-lulu-600 shadow-sm' : 'text-lulu-300'}`}
             >
               💬 聊天預覽
@@ -92,6 +164,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
            <button 
               onClick={() => {
                 setActiveTab('review');
+                setIsBatchMode(false);
                 if (Object.keys(validationResults).length === 0) handleValidateAll();
               }}
               className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'review' ? 'bg-white text-lulu-600 shadow-sm' : 'text-lulu-300'}`}
@@ -116,7 +189,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
         </div>
       )}
 
-      {activeTab === 'cuts' && (
+      {activeTab === 'cuts' && !isBatchMode && (
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                <div className="bg-green-50 p-3 rounded-xl border border-green-200 text-xs text-green-700 font-bold text-center flex justify-between items-center px-6 flex-grow">
@@ -209,6 +282,57 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
             打包下載 LINE 貼圖包 (ZIP)
           </button>
           <p className="text-center text-xs text-slate-400">包含 main.png, tab.png 以及所有貼圖圖檔。</p>
+        </div>
+      )}
+
+      {activeTab === 'cuts' && isBatchMode && (
+        <div className="space-y-6 animate-fade-in">
+          <div className="bg-lulu-50 p-6 rounded-3xl border-2 border-lulu-100 shadow-inner">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="bg-lulu-500 text-white p-2 rounded-lg shadow-lg shadow-lulu-200">
+                <i className="fa-solid fa-bolt"></i>
+              </div>
+              <div>
+                <h3 className="font-black text-lulu-700 text-lg">批次加字工作台</h3>
+                <p className="text-xs text-slate-500">每一行文字將依序對應到一張貼圖。如果行數不足，則會循環套用。</p>
+              </div>
+            </div>
+
+            <textarea 
+              value={batchTexts}
+              onChange={(e) => setBatchTexts(e.target.value)}
+              placeholder="例如：&#10;早安&#10;晚安&#10;收到&#10;好的&#10;..."
+              className="w-full h-48 p-5 rounded-2xl border-2 border-slate-100 focus:border-lulu-400 outline-none text-base font-bold shadow-sm transition-all"
+            />
+            
+            <div className="mt-6 flex flex-col sm:flex-row gap-3">
+              <button 
+                onClick={handleBatchApply}
+                disabled={isValidating}
+                className="flex-[2] py-4 rounded-2xl bg-lulu-500 text-white text-lg font-black shadow-xl shadow-lulu-200 hover:bg-lulu-600 active:scale-95 transition-all disabled:opacity-50"
+              >
+                {isValidating ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <i className="fa-solid fa-circle-notch animate-spin"></i> 合成中...
+                  </span>
+                ) : '開始批次合成'}
+              </button>
+              <button 
+                onClick={() => setIsBatchMode(false)}
+                className="flex-1 py-4 rounded-2xl bg-white border-2 border-slate-100 text-slate-400 font-bold hover:bg-slate-50 transition-colors"
+              >
+                取消
+              </button>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-4 sm:grid-cols-6 gap-3 opacity-40 grayscale pointer-events-none">
+            {slices.map((slice, idx) => (
+              <div key={idx} className="aspect-square rounded-xl border-2 border-slate-100 overflow-hidden bg-slate-50 p-1 flex items-center justify-center">
+                <img src={slice} className="max-w-full max-h-full object-contain" />
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

@@ -229,16 +229,27 @@ export const splitImage = (
 
           tempCtx.drawImage(img, x0, y0, bw, bh, 0, 0, bw, bh);
 
-          // 去背
+          // 去背 (優化版：包含邊緣消色處理)
           if (removeBackground) {
             const imageData = tempCtx.getImageData(0, 0, bw, bh);
             const data = imageData.data;
             for (let i = 0; i < data.length; i += 4) {
-              const red = data[i];
-              const green = data[i + 1];
-              const blue = data[i + 2];
-              if (green > 100 && green > red * 1.3 && green > blue * 1.3) {
-                 data[i + 3] = 0;
+              const r = data[i];
+              const g = data[i + 1];
+              const b = data[i + 2];
+              
+              // 1. 偵測綠幕程度 (Greeness)
+              // 使用更高的權重判斷綠色
+              const isGreen = g > 90 && g > r * 1.2 && g > b * 1.2;
+              const isStrongGreen = g > 140 && g > r * 1.4 && g > b * 1.4;
+
+              if (isStrongGreen) {
+                data[i + 3] = 0; // 完全透明
+              } else if (isGreen) {
+                // 2. 邊緣消色處理 (Desaturation)
+                // 對於可能是綠色邊緣的像素，降低其綠色分量並大幅提高透明度
+                data[i + 3] = Math.max(0, data[i + 3] - 150); 
+                data[i + 1] = (r + b) / 2; // 將綠色分量降至紅藍平均值，消除綠暈
               }
             }
             tempCtx.putImageData(imageData, 0, 0);
@@ -345,9 +356,9 @@ export const validateSticker = async (stickerBase64: string): Promise<Validation
         const g = data[i + 1];
         const b = data[i + 2];
         const a = data[i + 3];
-        if (a > 0) {
-          // Check for pure green or near green
-          if (g > 150 && g > r * 1.2 && g > b * 1.2) {
+        if (a > 50) { // 只檢查較明顯的像素
+          // 嚴格檢查綠色殘留：綠色顯著大於紅藍
+          if (g > 120 && g > r * 1.5 && g > b * 1.5) {
             greenPixels++;
           }
         }
