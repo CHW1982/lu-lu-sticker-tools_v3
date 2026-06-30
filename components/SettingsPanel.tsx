@@ -133,7 +133,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isLoading, onGener
         {/* Model Selection */}
         <div>
           <label className="block text-sm font-bold text-slate-600 mb-2">生成引擎 (AI Model)</label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <button
               type="button"
               onClick={() => setModel(ModelOption.NanoBananaPro)}
@@ -157,6 +157,18 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isLoading, onGener
             >
               🤖 Gemini 3 pro
               <span className="block text-[10px] font-normal opacity-70">替代 Pro 模式</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setModel(ModelOption.FlashImage)}
+              className={`p-3 rounded-2xl border-2 text-sm font-bold transition-all ${
+                model === ModelOption.FlashImage
+                  ? 'border-lulu-500 bg-lulu-50 text-lulu-600 shadow-md transform scale-[1.02]'
+                  : 'border-slate-200 text-slate-400 hover:border-lulu-200'
+              }`}
+            >
+              ⚡ Gemini 2.5 Flash
+              <span className="block text-[10px] font-normal opacity-70">快速/省額度 (2.5 Flash Image)</span>
             </button>
           </div>
         </div>
