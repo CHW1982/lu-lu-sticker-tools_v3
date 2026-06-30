@@ -118,6 +118,33 @@ export const splitImage = (
       fullCtx.drawImage(img, 0, 0);
       const fullData = fullCtx.getImageData(0, 0, img.width, img.height).data;
 
+      // 自動偵測背景顏色 (藉由取樣外圍與角落像素)
+      const borderPixels = [
+        [fullData[0], fullData[1], fullData[2], fullData[3]],
+        [fullData[(img.width - 1) * 4], fullData[(img.width - 1) * 4 + 1], fullData[(img.width - 1) * 4 + 2], fullData[(img.width - 1) * 4 + 3]],
+        [fullData[(img.height - 1) * img.width * 4], fullData[(img.height - 1) * img.width * 4 + 1], fullData[(img.height - 1) * img.width * 4 + 2], fullData[(img.height - 1) * img.width * 4 + 3]],
+        [fullData[((img.height - 1) * img.width + (img.width - 1)) * 4], fullData[((img.height - 1) * img.width + (img.width - 1)) * 4 + 1], fullData[((img.height - 1) * img.width + (img.width - 1)) * 4 + 2], fullData[((img.height - 1) * img.width + (img.width - 1)) * 4 + 3]],
+      ];
+      
+      let rBg = 0, gBg = 255, bBg = 0; // 預設純綠
+      let validBgCount = 0;
+      for (const p of borderPixels) {
+        if (p[3] > 10) {
+          rBg += p[0];
+          gBg += p[1];
+          bBg += p[2];
+          validBgCount++;
+        }
+      }
+      if (validBgCount > 0) {
+        rBg = Math.round(rBg / validBgCount);
+        gBg = Math.round(gBg / validBgCount);
+        bBg = Math.round(bBg / validBgCount);
+      }
+
+      // 檢查偵測到的顏色是否偏綠 (允許各種莫蘭迪綠、淺綠、草綠、深綠)
+      const isBgGreenish = gBg > 65 && gBg - rBg > 8 && gBg - bBg > 8;
+
       // 判斷像素是否為背景 (透明 或 綠幕)
       const isBg = (x: number, y: number) => {
           const idx = (y * img.width + x) * 4;
@@ -127,8 +154,14 @@ export const splitImage = (
           const a = fullData[idx+3];
           if (a < 10) return true; // 透明
           if (removeBackground) {
-              // 綠幕判斷
-              if (g > 100 && g > r * 1.3 && g > b * 1.3) return true;
+              if (isBgGreenish) {
+                  // 根據與偵測背景色的色差平方判定
+                  const distSq = (r - rBg) ** 2 + (g - gBg) ** 2 + (b - bBg) ** 2;
+                  if (distSq < 3600) return true; // 容許值 60 的色彩距離
+              } else {
+                  // 備用：寬鬆綠色過濾
+                  if (g > 75 && g - r > 10 && g - b > 10) return true;
+              }
           }
           return false;
       };
@@ -251,19 +284,36 @@ export const splitImage = (
               const r = data[i];
               const g = data[i + 1];
               const b = data[i + 2];
+              const a = data[i + 3];
+              if (a < 10) continue;
               
-              // 1. 偵測綠幕程度 (Greeness)
-              // 使用更高的權重判斷綠色
-              const isGreen = g > 90 && g > r * 1.2 && g > b * 1.2;
-              const isStrongGreen = g > 140 && g > r * 1.4 && g > b * 1.4;
+              let isTargetBg = false;
+              let isWeakTargetBg = false;
 
-              if (isStrongGreen) {
+              if (isBgGreenish) {
+                const distSq = (r - rBg) ** 2 + (g - gBg) ** 2 + (b - bBg) ** 2;
+                if (distSq < 2700) {
+                  isTargetBg = true;
+                } else if (distSq < 4800) {
+                  isWeakTargetBg = true;
+                }
+              } else {
+                // 備用：寬鬆綠色判斷
+                const isGreen = g > 75 && g - r > 10 && g - b > 10;
+                const isStrongGreen = g > 90 && g - r > 20 && g - b > 20;
+                if (isStrongGreen) {
+                  isTargetBg = true;
+                } else if (isGreen) {
+                  isWeakTargetBg = true;
+                }
+              }
+
+              if (isTargetBg) {
                 data[i + 3] = 0; // 完全透明
-              } else if (isGreen) {
-                // 2. 邊緣消色處理 (Desaturation)
-                // 對於可能是綠色邊緣的像素，降低其綠色分量並大幅提高透明度
+              } else if (isWeakTargetBg) {
+                // 邊緣消色處理
                 data[i + 3] = Math.max(0, data[i + 3] - 150); 
-                data[i + 1] = (r + b) / 2; // 將綠色分量降至紅藍平均值，消除綠暈
+                data[i + 1] = (r + b) / 2; // 消色
               }
             }
             tempCtx.putImageData(imageData, 0, 0);
@@ -371,8 +421,9 @@ export const validateSticker = async (stickerBase64: string): Promise<Validation
         const b = data[i + 2];
         const a = data[i + 3];
         if (a > 50) { // 只檢查較明顯的像素
-          // 嚴格檢查綠色殘留：綠色顯著大於紅藍
-          if (g > 120 && g > r * 1.5 && g > b * 1.5) {
+          // 嚴格檢查綠色殘留
+          const isGreen = g > 75 && g - r > 10 && g - b > 10;
+          if (isGreen) {
             greenPixels++;
           }
         }
@@ -474,18 +525,62 @@ export const removeSingleImageBackground = (base64Str: string): Promise<string> 
       const imageData = ctx.getImageData(0, 0, img.width, img.height);
       const data = imageData.data;
 
+      // 自適應偵測單圖角落背景色
+      const borderPixels = [
+        [data[0], data[1], data[2], data[3]],
+        [data[(img.width - 1) * 4], data[(img.width - 1) * 4 + 1], data[(img.width - 1) * 4 + 2], data[(img.width - 1) * 4 + 3]],
+        [data[(img.height - 1) * img.width * 4], data[(img.height - 1) * img.width * 4 + 1], data[(img.height - 1) * img.width * 4 + 2], data[(img.height - 1) * img.width * 4 + 3]],
+        [data[((img.height - 1) * img.width + (img.width - 1)) * 4], data[((img.height - 1) * img.width + (img.width - 1)) * 4 + 1], data[((img.height - 1) * img.width + (img.width - 1)) * 4 + 2], data[((img.height - 1) * img.width + (img.width - 1)) * 4 + 3]],
+      ];
+
+      let rBg = 0, gBg = 255, bBg = 0;
+      let validBgCount = 0;
+      for (const p of borderPixels) {
+        if (p[3] > 10) {
+          rBg += p[0];
+          gBg += p[1];
+          bBg += p[2];
+          validBgCount++;
+        }
+      }
+      if (validBgCount > 0) {
+        rBg = Math.round(rBg / validBgCount);
+        gBg = Math.round(gBg / validBgCount);
+        bBg = Math.round(bBg / validBgCount);
+      }
+
+      const isBgGreenish = gBg > 65 && gBg - rBg > 8 && gBg - bBg > 8;
+
       for (let i = 0; i < data.length; i += 4) {
         const r = data[i];
         const g = data[i + 1];
         const b = data[i + 2];
+        const a = data[i + 3];
+        if (a < 10) continue;
 
-        // 偵測綠幕程度
-        const isGreen = g > 90 && g > r * 1.2 && g > b * 1.2;
-        const isStrongGreen = g > 140 && g > r * 1.4 && g > b * 1.4;
+        let isTargetBg = false;
+        let isWeakTargetBg = false;
 
-        if (isStrongGreen) {
+        if (isBgGreenish) {
+          const distSq = (r - rBg) ** 2 + (g - gBg) ** 2 + (b - bBg) ** 2;
+          if (distSq < 2700) {
+            isTargetBg = true;
+          } else if (distSq < 4800) {
+            isWeakTargetBg = true;
+          }
+        } else {
+          const isGreen = g > 75 && g - r > 10 && g - b > 10;
+          const isStrongGreen = g > 90 && g - r > 20 && g - b > 20;
+          if (isStrongGreen) {
+            isTargetBg = true;
+          } else if (isGreen) {
+            isWeakTargetBg = true;
+          }
+        }
+
+        if (isTargetBg) {
           data[i + 3] = 0; // 完全透明
-        } else if (isGreen) {
+        } else if (isWeakTargetBg) {
           data[i + 3] = Math.max(0, data[i + 3] - 150); 
           data[i + 1] = (r + b) / 2; // 消色
         }
