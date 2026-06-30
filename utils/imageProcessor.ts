@@ -459,6 +459,46 @@ export const autoFixMargin = async (stickerBase64: string, padding: number = 10)
   });
 };
 
+export const removeSingleImageBackground = (base64Str: string): Promise<string> => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) { resolve(base64Str); return; }
+
+      ctx.drawImage(img, 0, 0);
+      const imageData = ctx.getImageData(0, 0, img.width, img.height);
+      const data = imageData.data;
+
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+
+        // 偵測綠幕程度
+        const isGreen = g > 90 && g > r * 1.2 && g > b * 1.2;
+        const isStrongGreen = g > 140 && g > r * 1.4 && g > b * 1.4;
+
+        if (isStrongGreen) {
+          data[i + 3] = 0; // 完全透明
+        } else if (isGreen) {
+          data[i + 3] = Math.max(0, data[i + 3] - 150); 
+          data[i + 1] = (r + b) / 2; // 消色
+        }
+      }
+
+      ctx.putImageData(imageData, 0, 0);
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.onerror = () => resolve(base64Str);
+    img.src = base64Str;
+  });
+};
+
 export const downloadImage = (dataUrl: string, filename: string) => {
   const link = document.createElement('a');
   link.href = dataUrl;

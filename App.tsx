@@ -4,7 +4,7 @@ import { SettingsPanel } from './components/SettingsPanel';
 import { ResultsView } from './components/ResultsView';
 import { ApiKeyModal } from './components/ApiKeyModal';
 import { generateStickerImage, generateSingleSticker } from './services/geminiService';
-import { splitImage } from './utils/imageProcessor';
+import { splitImage, removeSingleImageBackground, autoFixMargin } from './utils/imageProcessor';
 import { GenerationSettings } from './types';
 
 function App() {
@@ -113,6 +113,10 @@ function App() {
       const newImageBase64 = await generateSingleSticker(lastSettings, index, apiKey);
 
       let processedImage = newImageBase64;
+      if (lastSettings.removeBackground) {
+        processedImage = await removeSingleImageBackground(processedImage);
+      }
+      processedImage = await autoFixMargin(processedImage, 10);
 
       setResult(prev => {
         if (!prev) return null;
