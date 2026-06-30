@@ -170,7 +170,7 @@ export const splitImage = (
       const cutX = [0];
       for (let c = 1; c < cols; c++) {
           const expected = Math.floor(c * (img.width / cols));
-          const searchRange = Math.floor((img.width / cols) * 0.2); // 擴大搜索範圍至 20%
+          const searchRange = Math.floor((img.width / cols) * 0.15); // 使用較為保守的 15% 搜尋範圍
           
           let bestX = expected;
           let minD = Infinity;
@@ -184,6 +184,13 @@ export const splitImage = (
                   bestX = x;
               }
           }
+          
+          // 【安全閥值】：如果選出來的切割線依然包含過多前景像素 (大於高度的 5%)，代表沒有足夠乾淨的谷地，強行使用均分線
+          const maxAllowedDensityX = img.height * 0.05;
+          if (colDensity[bestX] > maxAllowedDensityX) {
+              bestX = expected;
+          }
+          
           cutX.push(bestX);
       }
       cutX.push(img.width);
@@ -191,7 +198,7 @@ export const splitImage = (
       const cutY = [0];
       for (let r = 1; r < rows; r++) {
           const expected = Math.floor(r * (img.height / rows));
-          const searchRange = Math.floor((img.height / rows) * 0.2);
+          const searchRange = Math.floor((img.height / rows) * 0.15); // 使用較為保守的 15% 搜尋範圍
           
           let bestY = expected;
           let minD = Infinity;
@@ -203,6 +210,13 @@ export const splitImage = (
                   bestY = y;
               }
           }
+          
+          // 【安全閥值】：如果選出來的切割線依然包含過多前景像素 (大於寬度的 5%)，代表沒有足夠乾淨的谷地，強行使用均分線
+          const maxAllowedDensityY = img.width * 0.05;
+          if (rowDensity[bestY] > maxAllowedDensityY) {
+              bestY = expected;
+          }
+          
           cutY.push(bestY);
       }
       cutY.push(img.height);
