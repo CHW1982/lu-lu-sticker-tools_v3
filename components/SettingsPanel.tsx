@@ -13,6 +13,9 @@ const STYLE_PRESETS = [
   { value: "Classic Chibi Vector", label: "🎨 經典Q版 (Classic Chibi)", desc: "2D平面、粗線條、可愛比例" },
   { value: "Minimalist Line Art", label: "✏️ 極簡線條 (Line Art)", desc: "線條小狗風：粗線條、極簡色塊、強調表情" },
   { value: "Ugly-Cute Meme Style", label: "🤪 醜萌迷擬 (Ugly-Cute)", desc: "誇張比例、歪斜線條、高度迷因感" },
+  { value: "Scribble Lo-Fi Doodle", label: "🥴 潦草醜萌風 (Lo-Fi Doodle)", desc: "隨性塗鴉、歪斜比例、2026最夯精神鬆弛感" },
+  { value: "Fluffy Pastel Healing", label: "🥺 軟萌療癒風 (Fluffy Pastel)", desc: "吉伊卡哇式溫柔、水汪汪委屈大眼、療癒粉嫩" },
+  { value: "Y2K Retro Pop", label: "💿 Y2K千禧潮流 (Y2K Pop)", desc: "高對比酸性色、復古Y2K美學、潮流貼紙質感" },
   { value: "Soft Hand-drawn Crayon", label: "🖍️ 軟萌手繪 (Soft Crayon)", desc: "蠟筆質感、粉嫩配色、溫暖氛圍" },
   { value: "Retro 8-bit Pixel Art", label: "👾 復古像素 (Pixel Art)", desc: "方塊感、懷舊遊戲風格" },
   { value: "American Cartoon", label: "📺 美式卡通 (Cartoon)", desc: "線條大膽、表情誇張、動感十足" },
@@ -21,6 +24,8 @@ const STYLE_PRESETS = [
 
 const TEXT_PRESETS = [
   { value: "Colorful Pop Rounded", label: "🌈 繽紛可愛 (Colorful Pop)", desc: "圓體、跳躍感、多彩配色" },
+  { value: "Chunky Meme Bubble", label: "💬 迷因氣泡體 (Meme Bubble)", desc: "粗曠大字、搶眼粗白邊、網路迷因對話感" },
+  { value: "Cute Scribble Handwriting", label: "✏️ 潦草手寫體 (Scribble Script)", desc: "隨意自然、貼近日常脆式貼文的手寫字" },
   { value: "Manga Impact High Contrast", label: "💥 漫畫衝擊 (Manga Impact)", desc: "尖銳、鋸齒狀、紅黃高對比" },
   { value: "Soft Organic Handwriting", label: "✍️ 溫柔手寫 (Handwriting)", desc: "邊緣柔和、治癒系色彩、手寫感" },
   { value: "Digital Pixel Font", label: "💾 像素數位 (Digital)", desc: "配合像素風格的方塊字體" },
@@ -28,6 +33,10 @@ const TEXT_PRESETS = [
 ];
 
 const VIBE_PRESETS = [
+  { value: "Threads Trending Memes", label: "🔥 脆式時事熱梗 (Threads Memes)", desc: "觸爛、留友看、接住你、建議手臂加強、真冰涼" },
+  { value: "Office Mentally Checked Out", label: "🫠 精神登出社畜 (Mentally Checked Out)", desc: "表面禮貌內心發瘋、精神登出、暈碳、我想下班" },
+  { value: "Needy & Clingy", label: "🥺 委屈討拍牽牽 (Needy & Clingy)", desc: "牽牽、求關注、討拍拍、抱緊處理、皺眉撒嬌" },
+  { value: "Absurd & Sarcastic Humor", label: "🤪 荒謬反差幽默 (Absurd Humor)", desc: "前一秒可愛下一秒崩潰、確？、供三小、美麗精神狀態" },
   { value: "High Energy & Cheerful", label: "⚡ 元氣滿滿 (High Energy)", desc: "閃亮、跳躍、極度快樂" },
   { value: "Lazy & Chill", label: "💤 懶散休閒 (Lazy/Chill)", desc: "垂眼、融化、動作緩慢" },
   { value: "Over-the-top Dramatic", label: "🎭 誇張顏藝 (Dramatic)", desc: "瀑布淚、掉下巴、凸眼" },

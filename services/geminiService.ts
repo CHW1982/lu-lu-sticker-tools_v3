@@ -10,6 +10,10 @@ const VIBE_KEYS = {
     SARCASTIC: "Sarcastic & Funny",
     COUPLE: "Couple Sweet",
     OFFICE: "Office Survivor",
+    THREADS_MEMES: "Threads Trending Memes",
+    OFFICE_MELTDOWN: "Office Mentally Checked Out",
+    NEEDY_CLINGY: "Needy & Clingy",
+    ABSURD_HUMOR: "Absurd & Sarcastic Humor",
 };
 
 // 1. High Energy (24 Intents)
@@ -208,6 +212,118 @@ const INTENTS_OFFICE: StickerIntent[] = [
     { text: "平安退勤", description: "每日目標", visual: "Walking out into a sunset, exhausted but safe" },
 ];
 
+// 8. Threads Trending Memes (24 Intents)
+const INTENTS_THREADS_MEMES: StickerIntent[] = [
+    { text: "觸爛", description: "極度認同, True", visual: "Nodding vigorously with glowing laser eyes and Thumbs up" },
+    { text: "留友看", description: "留給朋友看, 分享", visual: "Holding up a magnifying glass pointing at screen, winking" },
+    { text: "接住你", description: "溫暖支持, 共感", visual: "Catching a falling heart with a giant baseball glove or soft pillow" },
+    { text: "後面有車", description: "緊張提示, 烏龍迷因", visual: "Looking back shocked with comical speed lines and sweat drops" },
+    { text: "建議手臂加強", description: "反諷幽默, 歪樓", visual: "Flexing tiny comic bicep with a serious deadpan face" },
+    { text: "真冰涼", description: "極度爽快, 冰飲", visual: "Holding an icy soda drink with sparkly frost surrounding" },
+    { text: "暈碳", description: "吃太飽想睡, 血糖上升", visual: "Dizzy eyes spiraling, food coma slumping on desk with rice bowl" },
+    { text: "要確欸", description: "懷疑人生, 確認", visual: "Squinting hard, tilting head with big question mark overhead" },
+    { text: "破防了", description: "內心受傷, 防線崩潰", visual: "Shield shattering into pieces, dramatic crying face" },
+    { text: "大破防", description: "嚴重打擊", visual: "Kneeling on ground with comic lightning striking background" },
+    { text: "隨便你", description: "佛系, 不想管了", visual: "Meditating on a floating lotus flower, eyes closed peacefully" },
+    { text: "有料", description: "稱讚有實力", visual: "Giving two thumbs up with sparkling gold stars around" },
+    { text: "笑死", description: "迷因狂笑", visual: "Hitting ground laughing with tears flying" },
+    { text: "已確診", description: "確診發瘋/快樂", visual: "Wearing doctor stethoscope holding a medical chart nodding" },
+    { text: "什麼操作", description: "看不懂, 困惑", visual: "Scratching head with floating math equations around" },
+    { text: "我真的會謝", description: "無奈道謝", visual: "Forced polite smile while holding a wilting flower" },
+    { text: "尊嘟假嘟", description: "真的假的, 可愛疑問", visual: "Wide innocent puppy eyes blinking curiously" },
+    { text: "狠人", description: "佩服極致", visual: "Bowing down with respect, flame aura" },
+    { text: "誰懂", description: "尋求共鳴", visual: "Reaching both hands toward screen crying tears of joy" },
+    { text: "沒事了", description: "安靜登出", visual: "Fading away transparently like a ghost waving goodbye" },
+    { text: "太無情了", description: "無情控訴", visual: "Pointing finger with dramatically tearful eyes" },
+    { text: "這很重要", description: "劃重點", visual: "Holding a giant yellow highlighter drawing a circle" },
+    { text: "我看你是", description: "調侃看穿", visual: "Pushing up glasses with glowing white lenses anime style" },
+    { text: "收", description: "話題終結", visual: "Clapping hands together decisively to end conversation" },
+];
+
+// 9. Office Mentally Checked Out (24 Intents)
+const INTENTS_OFFICE_MELTDOWN: StickerIntent[] = [
+    { text: "好的收到", description: "表面禮貌內心登出", visual: "Smiling polite face but soul is floating out of mouth" },
+    { text: "精神登出", description: "放空斷線", visual: "Character eyes become TV static noise, completely frozen" },
+    { text: "發瘋", description: "壓力過大失控", visual: "Running around shaking hands wildly with rainbow aura" },
+    { text: "我想下班", description: "強烈願望", visual: "Pressing face against wall clock staring at 5 PM" },
+    { text: "已閱讀", description: "冷漠看過", visual: "Sipping coffee staring blankly at glowing monitor" },
+    { text: "又來", description: "無奈嘆氣", visual: "Facepalming heavily with dark shadow over eyes" },
+    { text: "改好了", description: "修改第N版", visual: "Exhausted face covered in band-aids holding document v99" },
+    { text: "急嗎", description: "詢問死線", visual: "Holding a fire extinguisher looking at burning inbox" },
+    { text: "這我不會", description: "裝傻推脫", visual: "Looking away whistling innocent tune with hands behind back" },
+    { text: "先不要", description: "婉拒新工作", visual: "Crossed arms X sign backing away into bushes" },
+    { text: "在努力了", description: "假裝忙碌", visual: "Sweating profusely typing on keyboard with spinning wheel icon" },
+    { text: "明天再說", description: "拖延戰術", visual: "Throwing papers behind shoulder walking away cheerfully" },
+    { text: "尊榮社畜", description: "自嘲", visual: "Wearing a fancy golden crown while chained to office desk" },
+    { text: "需要喝茶", description: "喘息充電", visual: "Slumping in chair holding massive boba bubble tea" },
+    { text: "大腦當機", description: "思考停滯", visual: "Loading spinning wheel symbol on forehead, blank stare" },
+    { text: "不想面對", description: "逃避現實", visual: "Hiding under blanket or inside cardboard box" },
+    { text: "月底了", description: "荷包空空", visual: "Opening empty wallet with dust and small fly coming out" },
+    { text: "太難了", description: "工作燒腦", visual: "Melting into a puddle on the keyboard" },
+    { text: "隨風而去", description: "放棄掙扎", visual: "Floating away like a dandelion blown by wind" },
+    { text: "收到了解", description: "機器人回覆", visual: "Robotic metallic face saluting stiffly" },
+    { text: "心如止水", description: "看透一切", visual: "Sitting dressed as monk sipping tea while office burns around" },
+    { text: "即將爆發", description: "忍耐極限", visual: "Volcano erupting on top of character's head" },
+    { text: "放過我", description: "求饒", visual: "Kneeling raising white surrender flag" },
+    { text: "準時閃人", description: "下班衝刺", visual: "leaving cartoon dust cloud running out exit door" },
+];
+
+// 10. Needy & Clingy (24 Intents)
+const INTENTS_NEEDY_CLINGY: StickerIntent[] = [
+    { text: "牽牽", description: "撒嬌牽手", visual: "Reaching out both hands cute pouting eyes asking to hold hands" },
+    { text: "求關注", description: "討拍拍", visual: "Poking screen gently with tearful watery eyes" },
+    { text: "不理我", description: "委屈蹲角落", visual: "Squatting in dark corner poking mushrooms with a stick" },
+    { text: "抱緊處理", description: "渴望熱情擁抱", visual: "Jumping forward with arms wide open and pink heart background" },
+    { text: "想你喔", description: "思念想念", visual: "Hugging a plush toy thinking of you with pink bubbles" },
+    { text: "在哪裡", description: "尋找對方", visual: "Looking through binoculars peeking left and right" },
+    { text: "快理我", description: "催促訊息", visual: "Tapping watch/phone repeatedly with puffed chubby cheeks" },
+    { text: "陪我玩", description: "邀請互動", visual: "Holding a toy/ball wagging imaginary tail excited" },
+    { text: "嗚嗚哭哭", description: "撒嬌大哭", visual: "Big round eyes welling up with giant comical teardrops" },
+    { text: "最喜歡你", description: "直球告白", visual: "Massive glowing pink heart erupting from chest" },
+    { text: "摸摸頭", description: "討安撫", visual: "Tilting head down closing eyes waiting for a head pat" },
+    { text: "要抱抱", description: "伸手要抱", visual: "Toddler-style waddling forward arms raised up" },
+    { text: "哼不理你", description: "傲嬌生氣", visual: "Turning back turning head away but peeking with one eye" },
+    { text: "想見你", description: "急切期待", visual: "Pressing face against window pane waiting eagerly" },
+    { text: "我超乖", description: "求稱讚", visual: "Sitting perfectly straight with sparkling halo over head" },
+    { text: "啾一個", description: "送上親吻", visual: "Blowing a big kiss producing a flying heart lip mark" },
+    { text: "不要走", description: "挽留拉住", visual: "Grabbing onto edge of screen or coat tail desperately" },
+    { text: "餓餓了", description: "撒嬌肚子餓", visual: "Holding empty bowl and spoon looking up cutely" },
+    { text: "呼呼", description: "幫忙吹吹痛痛", visual: "Blowing gently on a band-aid warm caring look" },
+    { text: "一起睡", description: "溫暖被窩", visual: "Peeking out from fluffy quilt invitingly" },
+    { text: "寶貝", description: "甜膩稱呼", visual: "Cheeks blushing red holding sparkles" },
+    { text: "你最好的", description: "崇拜讚美", visual: "Cheering with pom-poms starry admiration eyes" },
+    { text: "要乖喔", description: "溫柔叮嚀", visual: "Wagging finger gently with warm loving smile" },
+    { text: "愛你貼貼", description: "臉頰蹭蹭", visual: "Rubbing chubby cheek against screen/invisible glass lovingly" },
+];
+
+// 11. Absurd & Sarcastic Humor (24 Intents)
+const INTENTS_ABSURD_HUMOR: StickerIntent[] = [
+    { text: "確?", description: "懷疑人生", visual: "Extreme close-up raising one eyebrow The Rock style" },
+    { text: "供三小", description: "聽不懂搞怪", visual: "Surrounded by question marks wearing a confused meme face" },
+    { text: "美麗精神狀態", description: "瘋癲自我感覺良好", visual: "Dancing chaotically in rain with colorful sunglasses" },
+    { text: "我愛你個鬼", description: "反差吐槽", visual: "Holding a heart that suddenly turns into a boxing glove" },
+    { text: "笑到往生", description: "誇張大笑", visual: "Ghost angel soul leaving body while laughing hysterically" },
+    { text: "沒救了", description: "攤手放棄", visual: "Shrugging shoulders with comical explosion behind" },
+    { text: "你繼續吹", description: "聽人吹牛", visual: "Holding an umbrella against a massive hurricane of wind" },
+    { text: "大膽", description: "指責搞笑", visual: "Pointing gavel like a judge with dramatic spotlight" },
+    { text: "嚇到吃手手", description: "驚訝啃手指", visual: "Biting whole fist wide eyes trembling" },
+    { text: "看戲", description: "吃瓜群眾", visual: "Eating watermelon slices wearing 3D glasses excitedly" },
+    { text: "傑出的一手", description: "讚賞陰謀", visual: "Nodding slowly with villainous shadow over eyes and smirk" },
+    { text: "粗心了", description: "失誤裝傻", visual: "Cheeky wink knocking over a glass of water on purpose" },
+    { text: "我就爛", description: "理直氣壯的爛", visual: "Giving enthusiastic thumbs up inside a dumpster" },
+    { text: "這不科學", description: "難以置信", visual: "Measuring head with a ruler looking shocked" },
+    { text: "心很累", description: "心碎疲勞", visual: "Holding a deflated red balloon sighing deeply" },
+    { text: "是在哈囉", description: "無言以對", visual: "Staring blankly with crow flying across background dots" },
+    { text: "幫QQ", description: "同情掉淚", visual: "Pouring bottle of water pretending to cry huge tears" },
+    { text: "高手在民間", description: "佩服五體投地", visual: "Sliding on knees clapping enthusiastically" },
+    { text: "你贏了", description: "甘拜下風", visual: "Handing over a golden trophy bowed head" },
+    { text: "出事了", description: "完蛋驚恐", visual: "Running away with pants on fire screaming" },
+    { text: "我看倒像", description: "荒謬比擬", visual: "Holding up a magnifying glass to a banana examining seriously" },
+    { text: "下去", description: "裁判舉牌", visual: "Holding up a massive RED CARD blowing a referee whistle" },
+    { text: "太神啦", description: "誇張膜拜", visual: "Kneeling worshipping a glowing golden potato" },
+    { text: "收工", description: "瀟灑轉身", visual: "Wearing sunglasses walking away from explosion without looking back" },
+];
+
 export const getIntentsByVibe = (vibe: string): StickerIntent[] => {
     switch (vibe) {
         case VIBE_KEYS.LAZY: return INTENTS_LAZY;
@@ -216,6 +332,10 @@ export const getIntentsByVibe = (vibe: string): StickerIntent[] => {
         case VIBE_KEYS.SARCASTIC: return INTENTS_SARCASTIC;
         case VIBE_KEYS.COUPLE: return INTENTS_COUPLE;
         case VIBE_KEYS.OFFICE: return INTENTS_OFFICE;
+        case VIBE_KEYS.THREADS_MEMES: return INTENTS_THREADS_MEMES;
+        case VIBE_KEYS.OFFICE_MELTDOWN: return INTENTS_OFFICE_MELTDOWN;
+        case VIBE_KEYS.NEEDY_CLINGY: return INTENTS_NEEDY_CLINGY;
+        case VIBE_KEYS.ABSURD_HUMOR: return INTENTS_ABSURD_HUMOR;
         case VIBE_KEYS.HIGH_ENERGY:
         default: 
             return INTENTS_HIGH_ENERGY;
