@@ -142,10 +142,10 @@ export const splitImage = (
         bBg = Math.round(bBg / validBgCount);
       }
 
-      // 檢查偵測到的顏色是否偏綠 (允許各種莫蘭迪綠、淺綠、草綠、深綠)
-      const isBgGreenish = gBg > 65 && gBg - rBg > 8 && gBg - bBg > 8;
+      // 檢查偵測到的顏色是否為綠幕系 (含各種莫蘭迪綠、淺綠、草綠、灰綠)
+      const isBgGreen = gBg >= rBg - 5 && gBg >= bBg - 5 && gBg > 50;
 
-      // 判斷像素是否為背景 (透明 或 綠幕)
+      // 判斷像素是否為背景 (透明 或 綠幕/紙張底色)
       const isBg = (x: number, y: number) => {
           const idx = (y * img.width + x) * 4;
           const r = fullData[idx];
@@ -154,13 +154,13 @@ export const splitImage = (
           const a = fullData[idx+3];
           if (a < 10) return true; // 透明
           if (removeBackground) {
-              if (isBgGreenish) {
-                  // 根據與偵測背景色的色差平方判定
-                  const distSq = (r - rBg) ** 2 + (g - gBg) ** 2 + (b - bBg) ** 2;
-                  if (distSq < 3600) return true; // 容許值 60 的色彩距離
+              const distSq = (r - rBg) ** 2 + (g - gBg) ** 2 + (b - bBg) ** 2;
+              if (isBgGreen) {
+                  if (distSq < 4800) return true;
+                  if (g > 70 && g - r > 5 && g - b > 5) return true;
               } else {
-                  // 備用：寬鬆綠色過濾
-                  if (g > 75 && g - r > 10 && g - b > 10) return true;
+                  // 若模型生成非綠色的純色/紙張質地底色，計算和邊框背景色的距離判定
+                  if (distSq < 2000) return true;
               }
           }
           return false;
@@ -289,21 +289,19 @@ export const splitImage = (
               
               let isTargetBg = false;
               let isWeakTargetBg = false;
+              const distSq = (r - rBg) ** 2 + (g - gBg) ** 2 + (b - bBg) ** 2;
 
-              if (isBgGreenish) {
-                const distSq = (r - rBg) ** 2 + (g - gBg) ** 2 + (b - bBg) ** 2;
-                if (distSq < 2700) {
+              if (isBgGreen) {
+                if (distSq < 3200 || (g > 85 && g - r > 10 && g - b > 10)) {
                   isTargetBg = true;
-                } else if (distSq < 4800) {
+                } else if (distSq < 5500 || (g > 70 && g - r > 5 && g - b > 5)) {
                   isWeakTargetBg = true;
                 }
               } else {
-                // 備用：寬鬆綠色判斷
-                const isGreen = g > 75 && g - r > 10 && g - b > 10;
-                const isStrongGreen = g > 90 && g - r > 20 && g - b > 20;
-                if (isStrongGreen) {
+                // 非綠幕背景（如模型生成的塗鴉卡紙/灰白底）過濾
+                if (distSq < 1500) {
                   isTargetBg = true;
-                } else if (isGreen) {
+                } else if (distSq < 2800) {
                   isWeakTargetBg = true;
                 }
               }
@@ -549,7 +547,7 @@ export const removeSingleImageBackground = (base64Str: string): Promise<string> 
         bBg = Math.round(bBg / validBgCount);
       }
 
-      const isBgGreenish = gBg > 65 && gBg - rBg > 8 && gBg - bBg > 8;
+      const isBgGreen = gBg >= rBg - 5 && gBg >= bBg - 5 && gBg > 50;
 
       for (let i = 0; i < data.length; i += 4) {
         const r = data[i];
@@ -560,20 +558,18 @@ export const removeSingleImageBackground = (base64Str: string): Promise<string> 
 
         let isTargetBg = false;
         let isWeakTargetBg = false;
+        const distSq = (r - rBg) ** 2 + (g - gBg) ** 2 + (b - bBg) ** 2;
 
-        if (isBgGreenish) {
-          const distSq = (r - rBg) ** 2 + (g - gBg) ** 2 + (b - bBg) ** 2;
-          if (distSq < 2700) {
+        if (isBgGreen) {
+          if (distSq < 3200 || (g > 85 && g - r > 10 && g - b > 10)) {
             isTargetBg = true;
-          } else if (distSq < 4800) {
+          } else if (distSq < 5500 || (g > 70 && g - r > 5 && g - b > 5)) {
             isWeakTargetBg = true;
           }
         } else {
-          const isGreen = g > 75 && g - r > 10 && g - b > 10;
-          const isStrongGreen = g > 90 && g - r > 20 && g - b > 20;
-          if (isStrongGreen) {
+          if (distSq < 1500) {
             isTargetBg = true;
-          } else if (isGreen) {
+          } else if (distSq < 2800) {
             isWeakTargetBg = true;
           }
         }

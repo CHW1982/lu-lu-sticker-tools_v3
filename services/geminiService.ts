@@ -387,11 +387,16 @@ export const generateStickerImage = async (
   - Vibe: ${vibePreset}
   - Relationship Context: ${relationshipMode}
   
+  [MANDATORY CHROMA-KEY GREEN SCREEN REQUIREMENT]
+  CRITICAL: Regardless of the selected Art Style (${stylePreset}) or Vibe, the ENTIRE canvas background behind the stickers MUST be a solid, flat, uniform bright green (#00FF00).
+  - DO NOT generate paper textures, cardboard, notebooks, gradients, shadows, or environmental scenery behind the grid.
+  - Every sticker character and its white outline must float on a completely flat, solid green screen (#00FF00) background to allow clean background removal.
+
   [Rules]
-  1. Write the EXACT text provided for each slot. Integrated with WHITE outline.
-  2. Art Style: ${stylePreset}.
-  3. No duplicates. Pure Green (#00FF00) background.
-  4. Layout: ${gridSize} stickers in a ${rows}x${cols} grid.
+  1. Write the EXACT text provided for each slot. Integrated with clean WHITE outline.
+  2. Art Style: ${stylePreset}. Keep characters consistent across all stickers.
+  3. No duplicates across slots.
+  4. Layout: ${gridSize} stickers arranged cleanly in a ${rows}x${cols} grid with clear space between each slot.
   
   [Slots]
   ${specList}
