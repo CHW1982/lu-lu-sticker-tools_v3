@@ -1,43 +1,41 @@
-# 🛠️ Session Handoff Report: LINE Sticker 2025-2026 Trends & Dual-Mode Adaptive Slicing
+# 🛠️ Session Handoff Report: Build-time CSS Migration, Rollup Chunk Splitting, and Security Audit
 
 ## 1. Current Status & Milestone Accomplished
-* **Status**: `COMPLETED & MERGED TO MAIN`
-* **Current Branch**: `main` (feature branch `feat/trending-sticker-styles` successfully merged and cleaned up).
-* **Git Hygiene & Security Check**: Verified `.gitignore` blocks all `.env` and `.env.*` files (`!.env.example` retained). Zero API keys or secrets hardcoded in repository. Working tree clean.
+* **Status**: `COMPLETED & OPTIMIZED & PUSHED TO GITHUB`
+* **Current Branch**: `main` (fully synchronized with `origin/main`).
+* **Git Hygiene & Security Check**: Verified `.gitignore` blocks all `.env` and `.env.*` files. Removed `process.env.GEMINI_API_KEY` definition from `vite.config.ts` to prevent key exposure. Staged, committed, and pushed changes cleanly.
 
 ---
 
 ## 2. Work Summary & Root Cause Resolutions
 
-### A. 2025-2026 臺灣 LINE 貼圖熱門趨勢與畫風擴展
-* **新增四大趨勢語錄主題 (96 組高實用度詞彙)**：
-  1. **🔥 脆式時事熱梗 (Threads Memes)**：大破防、已回購孩子愛吃、急了、是個狠人...
-  2. **💼 精神登出社畜 (Office Mentally Checked Out)**：已離線、窩不知道、薪水小偷、明天請假...
-  3. **🥺 委屈討拍牽牽 (Needy & Clingy)**：抱緊處理、求關注、委屈巴巴、沒有愛了...
-  4. **🙃 荒謬反差幽默 (Absurd & Sarcastic Humor)**：是在哈囉、就這？、死亡微笑、看戲...
-* **新增 2 款 2026 爆款畫風預設**：
-  * **🥴 潦草醜萌風 (Lo-Fi Doodle)**：隨性塗鴉、歪斜比例、精神鬆弛感。
-  * **⚡ Y2K 復古電玩風 (Y2K Retro Pop)**：高飽和像素、千禧年美學。
-* **模型選項升級**：新增 `⚡ Gemini 2.5 Flash Image` 模型快速切換按鈕，支援免費額度與高速度產圖。
+### A. Tailwind CSS Build-Time Compilation Migration
+* **問題**：原先項目在 `index.html` 中直接使用 `<script src="https://cdn.tailwindcss.com"></script>` 於瀏覽器端執行期動態編譯樣式。這導致載入速度慢（需先載入整個 Tailwind 編譯引擎）、產生 Layout Shift / FOUC 閃爍，且無法進行 Tree Shaking。
+* **修復方案**：
+  1. 安裝了 `tailwindcss` 與 `@tailwindcss/vite` 作為開發依賴項目（devDependencies）。
+  2. 建立了專案樣式入口檔 `index.css`，並使用 Tailwind v4 的 `@theme` 自訂 `lulu` 色彩面板、字型與動畫（如 `animate-fade-in` 與 `animate-fade-in-down`）。
+  3. 修改了 `index.tsx` 引入 `./index.css`。
+  4. 清理了 `index.html`，移除了運行時 CDN script、自訂 config 區塊與無用的 `importmap` 宣告。
 
-### B. 去背與智能切片失效根因分析與解決 (截圖 `11.43.50.png` 診斷)
-* **根因分析**：
-  * 當使用者選擇「潦草醜萌風 (Lo-Fi Doodle)」時，AI 傾向將塗鴉繪製在「卡紙、牛皮紙或米白筆記本」質地上，無視了原本系統較弱的綠幕提示。
-  * 舊版去背判定邏輯寫死了「綠色限定 (`isBgGreenish`)」，遇到模型畫出的卡紙純色底時即直接放棄去背。導致像素密度 100% 滿載，觸發防禦機制退回 2x4 均分線切割，且切片內保留了整片卡紙底色。
-* **雙管齊下修復方案**：
-  1. **AI 提示詞工程升級 (Prompt Engineering)**：在 `services/geminiService.ts` 頂端加入最高優先級的 `[MANDATORY CHROMA-KEY GREEN SCREEN REQUIREMENT]`，嚴格禁止 AI 在任何畫風下繪製紙張質地或環境底圖，強制要求全畫布維持平整 `#00FF00` 純綠幕。
-  2. **雙模式自適應去背引擎 (Dual-Mode Adaptive Engine)**：在 `utils/imageProcessor.ts` 實作自適應角落色彩偵測：
-     * **綠幕模式**：對純綠、莫蘭迪綠、灰綠進行色差平方 (`distSq`) 與邊緣羽化消色。
-     * **卡紙純色模式**：當模型偶爾未遵守綠幕規範並繪製了均勻非綠色底色（如卡紙米白底）時，自動偵測角落 RGB 基準，利用相近色差閾值完美剝除底色，確保切片算法的「Valley（透明谷底）」能順利找到並完美切分角色。
+### B. Rollup 程式碼分割 (Code Splitting) 與 Bundle 警告修復
+* **問題**：打包時發生 `Some chunks are larger than 500 kB after minification` 警示（Entry 達 638 kB）。這主要是因為 `@google/genai` 與 `jszip` 被一同打包至主要 entry 檔案中。
+* **修復方案**：在 `vite.config.ts` 的 `rollupOptions` 中配置了 `manualChunks`：
+  * 將 `@google/genai` 獨立分包至 `genai.js`。
+  * 將 `jszip` 獨立分包至 `jszip.js`。
+  * 優化後 Entry 大小降至 **284.75 kB**，完全消除了打包警示，且利於瀏覽器進行並行快取。
+
+### C. 刪除安全隱患 define 區塊
+* **問題**：原 `vite.config.ts` 中的 `define` 區塊將 `process.env.GEMINI_API_KEY` 在編譯期注入。由於此為純客戶端金鑰自管專案，這會在未來不慎引用時導致金鑰硬編碼暴露。
+* **修復方案**：徹底刪除了 `define` 中與 `GEMINI_API_KEY` 相關的配置。
 
 ---
 
 ## 3. Verified Architecture & Key Files
-* `services/geminiService.ts`: 趨勢語錄 DNA 與強制純綠幕提示詞建構。
-* `components/SettingsPanel.tsx`: 畫風/情境選單 UI 與 Flash 模型按鈕。
-* `utils/imageProcessor.ts`: 雙模式自適應角落去背、Valley 切片安全閥值、單圖重新生成去背。
-* `.gitignore`: 嚴格排除 `.env` 敏感檔案。
-* `MANUAL.md`: 使用者操作手冊更新。
+* `vite.config.ts`: 整合 `@tailwindcss/vite`，並實施 `manualChunks` 代碼分割，移除安全隱患 define 區塊。
+* `index.css`: 新增的 Tailwind CSS v4 設計系統入口檔，定義自訂變數與 CSS 動畫。
+* `index.tsx`: 改為導入 `./index.css`。
+* `index.html`: 移除了運行時 CDN 腳本與 `importmap`，大幅優化首頁加載速度。
+* `package.json`: 新增 `tailwindcss` 與 `@tailwindcss/vite` 依賴。
 
 ---
 
