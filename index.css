@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+@theme {
+  --color-lulu-50: #fff0f5;
+  --color-lulu-100: #ffdee8;
+  --color-lulu-200: #ffc0d4;
+  --color-lulu-300: #ff94b8;
+  --color-lulu-400: #ff5c94;
+  --color-lulu-500: #ff2970;
+  --color-lulu-600: #e00d55;
+  
+  --font-sans: "Varela Round", "ui-rounded", "system-ui", "sans-serif";
+  
+  --animate-fade-in: fadeIn 0.3s ease-out;
+  --animate-fade-in-down: fadeInDown 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-lulu-50);
+}
