@@ -1,7 +1,3 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
-
 # Lu Lu Sticker Tools v3 🎨
 
 一個專業的 LINE 貼圖生成與切片工具，採用客戶端 AI 技術，完全保護您的隱私。
