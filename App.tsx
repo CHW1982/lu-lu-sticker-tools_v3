@@ -7,9 +7,19 @@ import { generateStickerImage, generateSingleSticker } from './services/geminiSe
 import { splitImage, removeSingleImageBackground, autoFixMargin } from './utils/imageProcessor';
 import { GenerationSettings } from './types';
 
+const getStoredApiKey = (): string => {
+  const storedKey = localStorage.getItem('gemini_api_key');
+  const storedExpiry = localStorage.getItem('gemini_api_key_expiry');
+
+  if (storedKey && storedExpiry && Date.now() < parseInt(storedExpiry, 10)) {
+    return storedKey;
+  }
+  return '';
+};
+
 function App() {
-  const [apiKey, setApiKey] = useState<string>('');
-  const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
+  const [apiKey, setApiKey] = useState<string>(getStoredApiKey);
+  const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(() => !getStoredApiKey());
 
   const [isLoading, setIsLoading] = useState(false);
   const [loadingIndices, setLoadingIndices] = useState<number[]>([]);
@@ -17,28 +27,14 @@ function App() {
   const [result, setResult] = useState<{ original: string; slices: string[] } | null>(null);
   const [lastSettings, setLastSettings] = useState<GenerationSettings | null>(null);
 
-  // Load API Key on Mount with Expiration Check
+  // Clear an expired key from storage on mount (state is already initialized above).
   useEffect(() => {
     const storedKey = localStorage.getItem('gemini_api_key');
     const storedExpiry = localStorage.getItem('gemini_api_key_expiry');
 
-    if (storedKey && storedExpiry) {
-      const expiryTime = parseInt(storedExpiry, 10);
-      const now = Date.now();
-
-      // Check if the key has expired
-      if (now < expiryTime) {
-        // Key is still valid
-        setApiKey(storedKey);
-      } else {
-        // Key has expired, clear it
-        localStorage.removeItem('gemini_api_key');
-        localStorage.removeItem('gemini_api_key_expiry');
-        setIsApiKeyModalOpen(true);
-      }
-    } else {
-      // No stored key or incomplete data
-      setIsApiKeyModalOpen(true);
+    if (storedKey && storedExpiry && Date.now() >= parseInt(storedExpiry, 10)) {
+      localStorage.removeItem('gemini_api_key');
+      localStorage.removeItem('gemini_api_key_expiry');
     }
   }, []);
 
@@ -90,13 +86,14 @@ function App() {
       const slices = await splitImage(originalImage, settings.gridSize, settings.removeBackground);
 
       setResult({ original: originalImage, slices });
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
-      setError(err.message || "生成貼圖時發生錯誤，請檢查 API Key 是否正確。");
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message || "生成貼圖時發生錯誤，請檢查 API Key 是否正確。");
       // If unauthorized, maybe prompt for key again?
-      if (err.message && (err.message.includes('403') || err.message.includes('key'))) {
+      if (message && (message.includes('403') || message.includes('key'))) {
         // Optional: automatically open modal if key seems invalid
-        // setIsApiKeyModalOpen(true); 
+        // setIsApiKeyModalOpen(true);
       }
     } finally {
       setIsLoading(false);

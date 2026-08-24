@@ -339,7 +339,7 @@ export const splitImage = (
       try {
          const fixedSlices = await Promise.all(slices.map(s => autoFixMargin(s, 10)));
          resolve(fixedSlices);
-      } catch (err) {
+      } catch {
          resolve(slices);
       }
     };

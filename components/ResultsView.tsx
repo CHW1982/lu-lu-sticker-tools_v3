@@ -200,10 +200,10 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                <div className="flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-100">
                   <span className="text-[10px] text-slate-400 font-black uppercase ml-1">背景</span>
                   <div className="flex gap-1.5">
-                    {['transparent', 'white', 'black', 'red'].map(mode => (
-                      <button 
+                    {(['transparent', 'white', 'black', 'red'] as const).map(mode => (
+                      <button
                         key={mode}
-                        onClick={() => setBgMode(mode as any)}
+                        onClick={() => setBgMode(mode)}
                         title={`切換為 ${mode} 背景`}
                         className={`w-6 h-6 rounded-lg border-2 transition-all ${bgMode === mode ? 'border-lulu-500 scale-110 shadow-sm' : 'border-white hover:border-slate-200'}`}
                         style={{ 

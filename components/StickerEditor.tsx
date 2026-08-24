@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 
 interface StickerEditorProps {
   image: string; // Base64
@@ -23,7 +23,7 @@ export const StickerEditor: React.FC<StickerEditorProps> = ({ image, initialText
   
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const draw = () => {
+  const draw = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -53,11 +53,11 @@ export const StickerEditor: React.FC<StickerEditorProps> = ({ image, initialText
       ctx.fillStyle = color;
       ctx.fillText(text, x, y);
     };
-  };
+  }, [image, text, fontSize, posX, posY, color, strokeColor]);
 
   useEffect(() => {
     draw();
-  }, [image, text, fontSize, posX, posY, color, strokeColor]);
+  }, [draw]);
 
   const handleSave = () => {
     const canvas = canvasRef.current;

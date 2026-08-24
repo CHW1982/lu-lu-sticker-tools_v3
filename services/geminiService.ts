@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, Part, GenerateContentConfig } from "@google/genai";
 import { ModelOption, GridOption, GenerationSettings, StickerIntent } from "../types";
 
 // Vibe Keys matching SettingsPanel
@@ -346,7 +346,7 @@ const getIntentsForSettings = (settings: GenerationSettings): StickerIntent[] =>
     const { gridSize, customIntents, vibePreset } = settings;
     if (customIntents && customIntents.length > 0) return customIntents;
     const fullList = getIntentsByVibe(vibePreset);
-    let count = gridSize as number;
+    const count = gridSize as number;
     return fullList.slice(0, count);
 };
 
@@ -360,7 +360,7 @@ export const generateStickerImage = async (
   const actualModelId = isPro ? 'gemini-3-pro-image-preview' : 'gemini-2.5-flash-image';
 
   let rows = 4, cols = 4, aspectRatio = "1:1";
-  let selectedIntents = getIntentsForSettings(settings);
+  const selectedIntents = getIntentsForSettings(settings);
 
   if (gridSize === GridOption.Grid8) { rows = 2; cols = 4; aspectRatio = "16:9"; }
   else if (gridSize === GridOption.Grid24) { rows = 6; cols = 4; aspectRatio = "3:4"; }
@@ -405,7 +405,7 @@ export const generateStickerImage = async (
   
   Generate the sheet.`;
 
-  const parts: any[] = [{ text: systemPrompt }];
+  const parts: Part[] = [{ text: systemPrompt }];
   if (referenceImage) {
     const m = referenceImage.match(/^data:(.+);base64,(.+)$/);
     if (m) parts.push({ inlineData: { mimeType: m[1], data: m[2] } });
@@ -416,7 +416,7 @@ export const generateStickerImage = async (
   }
 
   const ai = new GoogleGenAI({ apiKey });
-  const config: any = { imageConfig: { aspectRatio } };
+  const config: GenerateContentConfig = { imageConfig: { aspectRatio } };
   if (isPro) config.imageConfig.imageSize = "2K";
 
   const response = await ai.models.generateContent({ model: actualModelId, contents: { parts }, config });
@@ -446,7 +446,7 @@ export const generateSingleSticker = async (
     [Target] Text: "${targetIntent?.text}", Visual: ${targetIntent?.visual}
     [Rules] Pure Green (#00FF00) bg, Thick White outline, Style: ${stylePreset}, Font: ${textStylePreset}`;
   
-    const parts: any[] = [{ text: systemPrompt }];
+    const parts: Part[] = [{ text: systemPrompt }];
     if (referenceImage) {
       const m = referenceImage.match(/^data:(.+);base64,(.+)$/);
       if (m) parts.push({ inlineData: { mimeType: m[1], data: m[2] } });

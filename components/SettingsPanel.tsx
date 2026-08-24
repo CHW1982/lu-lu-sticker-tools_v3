@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { GridOption, ModelOption, GenerationSettings, StickerIntent } from '../types';
 import { processFileToBase64 } from '../utils/imageProcessor';
 import { getIntentsByVibe } from '../services/geminiService';
@@ -69,13 +69,17 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isLoading, onGener
   const [customVibeDesc, setCustomVibeDesc] = useState('');
 
   const [isCustomizing, setIsCustomizing] = useState(false);
-  const [editedIntents, setEditedIntents] = useState<StickerIntent[]>([]);
+  const [editedIntents, setEditedIntents] = useState<StickerIntent[]>(() => getIntentsByVibe(vibePreset).slice(0, gridSize));
 
-  useEffect(() => {
-    const baseIntents = getIntentsByVibe(vibePreset);
-    const targetLength = gridSize;
-    setEditedIntents(baseIntents.slice(0, targetLength));
-  }, [vibePreset, gridSize]);
+  // Reset the editable intent list whenever the vibe or grid size changes,
+  // without going through an Effect (see https://react.dev/learn/you-might-not-need-an-effect).
+  const [prevVibePreset, setPrevVibePreset] = useState(vibePreset);
+  const [prevGridSize, setPrevGridSize] = useState(gridSize);
+  if (vibePreset !== prevVibePreset || gridSize !== prevGridSize) {
+    setPrevVibePreset(vibePreset);
+    setPrevGridSize(gridSize);
+    setEditedIntents(getIntentsByVibe(vibePreset).slice(0, gridSize));
+  }
 
   const handleIntentChange = (index: number, field: keyof StickerIntent, value: string) => {
     const newIntents = [...editedIntents];
