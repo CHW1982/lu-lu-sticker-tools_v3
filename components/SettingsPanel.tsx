@@ -20,6 +20,10 @@ const STYLE_PRESETS = [
   { value: "Retro 8-bit Pixel Art", label: "👾 復古像素 (Pixel Art)", desc: "方塊感、懷舊遊戲風格" },
   { value: "American Cartoon", label: "📺 美式卡通 (Cartoon)", desc: "線條大膽、表情誇張、動感十足" },
   { value: "3D Clay Toy", label: "🧸 3D公仔 (3D Clay)", desc: "柔和光影、黏土/塑膠質感、圓潤" },
+  { value: "Needle Felted Wool Plush", label: "🧶 羊毛氈手作 (Needle Felted)", desc: "毛氈玩偶質感、可見絨毛纖維、手作溫度" },
+  { value: "Stop-Motion Claymation", label: "🎞️ 黏土定格動畫 (Claymation)", desc: "阿德曼式黏土質感、指捏痕跡、定格動畫感" },
+  { value: "80s Retro Shoujo Anime", label: "✨ 昭和復古少女漫 (80s Shoujo)", desc: "星芒大眼、誇張淚珠、粉紫網點、極致浪漫" },
+  { value: "Risograph Print Stamp", label: "📰 孔版版畫印刷 (Risograph)", desc: "雙色調網點、油墨錯位感、復古印章質地" },
 ];
 
 const TEXT_PRESETS = [
@@ -30,6 +34,8 @@ const TEXT_PRESETS = [
   { value: "Soft Organic Handwriting", label: "✍️ 溫柔手寫 (Handwriting)", desc: "邊緣柔和、治癒系色彩、手寫感" },
   { value: "Digital Pixel Font", label: "💾 像素數位 (Digital)", desc: "配合像素風格的方塊字體" },
   { value: "Minimalist Modern Sans", label: "✨ 極簡現代 (Minimal)", desc: "乾淨、高易讀性、單色" },
+  { value: "3D Puffy Bubble Text", label: "🍬 糖果立體泡泡字 (3D Puffy Bubble)", desc: "澎澎立體圓字、果凍高光、粉嫩漸層" },
+  { value: "Wild Calligraphy Brush", label: "🖌️ 毛筆水墨書法 (Calligraphy Brush)", desc: "飛白筆刷、水墨噴濺、氣勢十足" },
 ];
 
 const VIBE_PRESETS = [
@@ -37,6 +43,8 @@ const VIBE_PRESETS = [
   { value: "Office Mentally Checked Out", label: "🫠 精神登出社畜 (Mentally Checked Out)", desc: "表面禮貌內心發瘋、精神登出、暈碳、我想下班" },
   { value: "Needy & Clingy", label: "🥺 委屈討拍牽牽 (Needy & Clingy)", desc: "牽牽、求關注、討拍拍、抱緊處理、皺眉撒嬌" },
   { value: "Absurd & Sarcastic Humor", label: "🤪 荒謬反差幽默 (Absurd Humor)", desc: "前一秒可愛下一秒崩潰、確？、供三小、美麗精神狀態" },
+  { value: "Pet & Pawrent Life", label: "🐱 貓奴狗奴主僕日常 (Pet & Pawrent)", desc: "奉上罐罐、主子息怒、暗中觀察、吸爆充電" },
+  { value: "Passive-Aggressive Roast", label: "🍵 陰陽怪氣優雅嗆人 (Passive-Aggressive)", desc: "祝你順心、聽起來真棒、您說得都對、慢走不送" },
   { value: "High Energy & Cheerful", label: "⚡ 元氣滿滿 (High Energy)", desc: "閃亮、跳躍、極度快樂" },
   { value: "Lazy & Chill", label: "💤 懶散休閒 (Lazy/Chill)", desc: "垂眼、融化、動作緩慢" },
   { value: "Over-the-top Dramatic", label: "🎭 誇張顏藝 (Dramatic)", desc: "瀑布淚、掉下巴、凸眼" },

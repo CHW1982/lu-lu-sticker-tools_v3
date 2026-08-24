@@ -14,6 +14,8 @@ const VIBE_KEYS = {
     OFFICE_MELTDOWN: "Office Mentally Checked Out",
     NEEDY_CLINGY: "Needy & Clingy",
     ABSURD_HUMOR: "Absurd & Sarcastic Humor",
+    PET_LIFE: "Pet & Pawrent Life",
+    PASSIVE_AGGRESSIVE: "Passive-Aggressive Roast",
 };
 
 // 1. High Energy (24 Intents)
@@ -324,6 +326,62 @@ const INTENTS_ABSURD_HUMOR: StickerIntent[] = [
     { text: "收工", description: "瀟灑轉身", visual: "Wearing sunglasses walking away from explosion without looking back" },
 ];
 
+// 12. Pet & Pawrent Life (24 Intents)
+const INTENTS_PET_LIFE: StickerIntent[] = [
+    { text: "奉上罐罐", description: "恭敬諂媚, 伺候主子", visual: "Both hands holding up a glowing golden can, prostrating on the ground, starry eyes" },
+    { text: "主子息怒", description: "求饒求情, 瑟瑟發抖", visual: "Kneeling with hands clasped while a pet turns its back angrily, fur puffed up" },
+    { text: "肉球踩臉", description: "霸道主子, 宣示主權", visual: "A fluffy paw pressed flat against the screen up close" },
+    { text: "吸爆充電", description: "吸貓吸狗, 精神回血", visual: "Burying face deep into a fluffy belly, giant pink hearts bursting behind" },
+    { text: "拆家現場", description: "惹禍無辜, 犯錯賣萌", visual: "Sitting in a pile of shredded tissue paper and torn sofa, tilting head innocently" },
+    { text: "暗中觀察", description: "偷看監視, 好奇窺探", visual: "Peeking out from behind a cardboard box, only half the face and one glowing eye visible" },
+    { text: "摸摸我嘛", description: "撒嬌討拍, 渴望關注", visual: "Nuzzling head hard against a hand, big watery upward-looking eyes" },
+    { text: "拒絕洗澡", description: "誓死抵抗, 恐怖地獄", visual: "All four limbs gripping the bathroom doorframe, fur standing on end in horror" },
+    { text: "出門賺罐", description: "社畜認命, 為了主子", visual: "Wearing a tiny necktie and carrying a briefcase, wiping away one tear while waving goodbye" },
+    { text: "呼嚕呼嚕", description: "爽到升天, 極度放鬆", visual: "Lying belly-up with all four paws in the air, eyes squeezed into happy lines, music notes floating" },
+    { text: "有怪聲！", description: "警戒探測, 八卦雷達", visual: "Both ears perked up like antennas, wide eyes staring intently at one direction" },
+    { text: "誰准你停", description: "霸氣命令, 繼續撫摸", visual: "One paw pressing firmly on a hand to keep it petting, stern demanding expression" },
+    { text: "肚肚餓了", description: "敲碗催飯, 飢餓抗議", visual: "Holding an empty bowl in its mouth, banging it loudly on the floor, stomach visibly empty" },
+    { text: "本座准了", description: "高傲施恩, 點頭答應", visual: "Wearing a tiny crown, chin raised high, tapping a fingertip on a hand's head" },
+    { text: "瘋狂磨爪", description: "舒壓發洩, 專注破壞", visual: "Paws a blur of motion scratching furiously on a scratching post, wood shavings flying" },
+    { text: "屁股對你", description: "傲嬌無視, 愛理不理", visual: "Turned back to the viewer, tail raised and swaying elegantly, refusing to look back" },
+    { text: "盯——", description: "無形施壓, 鍵盤路霸", visual: "Sitting directly on top of a laptop keyboard, staring unblinking at the person in front" },
+    { text: "梳毛天堂", description: "享受按摩, 下巴融化", visual: "Chin stretched long and melting with a dazed blissful smile while being brushed" },
+    { text: "剪指甲NG", description: "護手逃跑, 絕對不行", visual: "All four paws tucked tightly under the body forming a round loaf shape, refusing to move" },
+    { text: "瘋狂兔子踢", description: "玩瘋失控, 活力爆表", visual: "Hugging a toy tightly with front paws while back legs kick wildly like a pinwheel" },
+    { text: "踩奶中", description: "踩踩按摩, 療癒時刻", visual: "Blank dreamy stare while paws rhythmically knead a soft blanket" },
+    { text: "陪我睡覺", description: "鑽被窩, 邀請同睡", visual: "Burrowed into a fluffy blanket with only the head poking out, one paw patting the pillow" },
+    { text: "嚇到起飛", description: "受到驚嚇, 垂直起跳", visual: "Jumping straight up vertically mid-air, fur completely puffed out in fright, seeing a cucumber" },
+    { text: "最愛主子", description: "幸福告白, 甜蜜依偎", visual: "Hugging a treat pouch tightly, cheek nuzzled against it, tiny flowers scattered around" },
+];
+
+// 13. Passive-Aggressive Roast (24 Intents)
+const INTENTS_PASSIVE_AGGRESSIVE: StickerIntent[] = [
+    { text: "祝你順心", description: "表面祝福, 內心火大", visual: "Hands pressed together in an elegant smile, raging fire burning in the background" },
+    { text: "聽起來真棒", description: "敷衍回應, 翻大白眼", visual: "Sipping tea with pinky raised elegantly, dead-eyed gaze rolled far off to the side" },
+    { text: "您說得都對", description: "放棄爭辯, 機械假笑", visual: "Empty hollow smile, clapping hands together in an extremely slow, lifeless applause" },
+    { text: "太有想法了", description: "質疑智商, 嘲諷腦洞", visual: "Pushing up glasses that flash white glare, a knowing mysterious smirk on the lips" },
+    { text: "辛苦您了呢", description: "假意同情, 送客掰掰", visual: "Dabbing a lace handkerchief at a nonexistent tear, waving goodbye slowly with the other hand" },
+    { text: "水準真高", description: "俯視嘲諷, 拿放大鏡", visual: "Bending down examining the floor closely with a giant magnifying glass, unimpressed frown" },
+    { text: "受教了", description: "禮貌欠身, 背後倒讚", visual: "Bowing politely forward while a hand hidden behind the back gives an upside-down thumbs up" },
+    { text: "誰問你了", description: "四處張望, 假裝尋找", visual: "Hands on hips looking exaggeratedly left and right, three big question marks over the head" },
+    { text: "好優秀喔", description: "敷衍讚美, 給枯玫瑰", visual: "Casually dropping a wilted, leafless rose on the ground with a flat expression" },
+    { text: "繼續編", description: "坐等看戲, 吃爆米花", visual: "Wearing 3D glasses, sitting on a plush velvet sofa, munching popcorn while watching" },
+    { text: "真委屈你了", description: "浮誇同情, 假裝心疼", visual: "Clutching chest in exaggerated anguish, squeezing out one giant fake teardrop" },
+    { text: "多說點", description: "裝聾作啞, 掏掏耳朵", visual: "Digging an ear intently with a long ear pick, blowing on it, clearly not listening" },
+    { text: "慢走不送", description: "優雅逐客, 揮手帕", visual: "A single elegant flick of a silk handkerchief, turned back walking away without looking" },
+    { text: "您開心就好", description: "佛系慈悲, 看透一切", visual: "Eyes closed with a serene Buddha-like smile, arms spread open gracefully to the sides" },
+    { text: "哇好驚訝", description: "毫無波瀾, 棒讀無奈", visual: "Chin resting on hands, eyes completely dead, mouth agape in a flat monotone gasp" },
+    { text: "見識到了", description: "奇葩紀錄, 抄小筆記", visual: "Wearing reading glasses, jotting notes in a small notebook with a quill pen" },
+    { text: "邏輯大師", description: "嘲諷混亂, 積木塞洞", visual: "Hammering a square block into a round hole with a mallet, giving a confident thumbs up" },
+    { text: "請問哪位", description: "查無此人, 名片比對", visual: "Flipping through a thick stack of business cards, frowning and shaking head at the screen" },
+    { text: "我都聽進去", description: "物理降噪, 微笑點頭", visual: "Wearing giant thick noise-cancelling headphones, nodding cheerfully with a beaming smile" },
+    { text: "別太勉強", description: "送黑咖啡, 勸君冷靜", visual: "Handing over a steaming cup of pitch-black unsweetened coffee with a pitying look" },
+    { text: "真是個天才", description: "頒安慰獎, 塑膠獎牌", visual: "Handing over a cheap, rusty plastic participation medal with both hands" },
+    { text: "算你厲害", description: "敷衍投降, 搖小白旗", visual: "Sitting back in a chair lazily waving a tiny wrinkled white flag" },
+    { text: "已讀懂禮貌", description: "封鎖前奏, 拉鐵捲門", visual: "Pulling down a metal shutter door with a loud clang, hanging a sign that reads Closed" },
+    { text: "安靜真好", description: "享受寧靜, 深呼吸", visual: "Wearing sunglasses soaking in an open-air hot spring, gazing up at the stars in silence" },
+];
+
 export const getIntentsByVibe = (vibe: string): StickerIntent[] => {
     switch (vibe) {
         case VIBE_KEYS.LAZY: return INTENTS_LAZY;
@@ -336,6 +394,8 @@ export const getIntentsByVibe = (vibe: string): StickerIntent[] => {
         case VIBE_KEYS.OFFICE_MELTDOWN: return INTENTS_OFFICE_MELTDOWN;
         case VIBE_KEYS.NEEDY_CLINGY: return INTENTS_NEEDY_CLINGY;
         case VIBE_KEYS.ABSURD_HUMOR: return INTENTS_ABSURD_HUMOR;
+        case VIBE_KEYS.PET_LIFE: return INTENTS_PET_LIFE;
+        case VIBE_KEYS.PASSIVE_AGGRESSIVE: return INTENTS_PASSIVE_AGGRESSIVE;
         case VIBE_KEYS.HIGH_ENERGY:
         default: 
             return INTENTS_HIGH_ENERGY;
