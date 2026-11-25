@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Character, GridOption, ModelOption, GenerationSettings, StickerIntent } from '../types';
 import { processFileToBase64 } from '../utils/imageProcessor';
 import { getIntentsByVibe } from '../services/geminiService';
+import { CharacterLibrary } from './CharacterLibrary';
 
 export type CharacterSheetDraftSettings = Pick<
   GenerationSettings,
@@ -12,9 +13,12 @@ interface SettingsPanelProps {
   isLoading: boolean;
   isGeneratingSheet?: boolean;
   statusText?: string | null;
+  characters?: Character[];
   onGenerate: (settings: GenerationSettings) => void;
   onGenerateCharacterSheet?: (settings: CharacterSheetDraftSettings) => Promise<string | null>;
   onSaveCharacter?: (character: Character) => Promise<void>;
+  onRenameCharacter?: (id: string, name: string) => Promise<void>;
+  onDeleteCharacter?: (id: string) => void;
 }
 
 // Preset Data Configuration
@@ -75,9 +79,12 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   isLoading,
   isGeneratingSheet = false,
   statusText,
+  characters = [],
   onGenerate,
   onGenerateCharacterSheet,
   onSaveCharacter,
+  onRenameCharacter,
+  onDeleteCharacter,
 }) => {
   const [prompt, setPrompt] = useState('');
   const [gridSize, setGridSize] = useState<GridOption>(GridOption.Grid8);
@@ -153,11 +160,34 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
     }
   };
 
+  const activeCharacterId =
+    characterId && characters.some((c) => c.id === characterId) ? characterId : null;
+
+  const handleSelectCharacter = (char: Character) => {
+    setPrompt(char.prompt);
+    setStylePreset(char.stylePreset);
+    setTextStylePreset(char.textStylePreset);
+    setReferenceImage(char.referenceImage);
+    setReferenceImage2(char.referenceImage2);
+    setCharacterSheet(char.characterSheet);
+    setCharacterId(char.id);
+    setCharacterName(char.name);
+  };
+
+  const handleClearCharacterSelection = () => {
+    setCharacterId(null);
+    setCharacterSheet(null);
+    setCharacterName('');
+  };
+
   const handleSaveCharacterClick = async () => {
     if (!onSaveCharacter || !characterSheet) return;
     setIsSavingCharacter(true);
     try {
-      const id = characterId ?? crypto.randomUUID();
+      const existing = activeCharacterId
+        ? characters.find((c) => c.id === activeCharacterId)
+        : undefined;
+      const id = existing?.id ?? crypto.randomUUID();
       const name = characterName.trim() || prompt.trim().slice(0, 16) || '未命名角色';
       await onSaveCharacter({
         id,
@@ -168,7 +198,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
         referenceImage,
         referenceImage2,
         characterSheet,
-        createdAt: Date.now(),
+        createdAt: existing?.createdAt ?? Date.now(),
       });
       setCharacterId(id);
       setCharacterName(name);
@@ -188,7 +218,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
       referenceImage, 
       referenceImage2,
       characterSheet,
-      characterId,
+      characterId: activeCharacterId,
       removeBackground,
       stylePreset,
       textStylePreset,
@@ -203,6 +233,17 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
       <h2 className="text-xl font-bold text-lulu-600 mb-4 flex items-center gap-2">
         <span className="text-2xl">✨</span> 開始製作您的貼圖
       </h2>
+
+      {onRenameCharacter && onDeleteCharacter && (
+        <CharacterLibrary
+          characters={characters}
+          selectedCharacterId={activeCharacterId}
+          onSelect={handleSelectCharacter}
+          onClearSelection={handleClearCharacterSelection}
+          onRename={onRenameCharacter}
+          onDelete={onDeleteCharacter}
+        />
+      )}
       
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Model Selection */}
@@ -436,7 +477,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                         disabled={isSavingCharacter || isGeneratingSheet}
                         className="px-3 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold shadow-sm disabled:opacity-50"
                       >
-                        {characterId ? '💾 更新角色' : '✅ 確認並儲存角色'}
+                        {activeCharacterId ? '💾 更新角色' : '✅ 確認並儲存角色'}
                       </button>
                     )}
                     <button

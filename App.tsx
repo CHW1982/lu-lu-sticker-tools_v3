@@ -9,7 +9,7 @@ import { useToast } from './hooks/useToast';
 import { generateCharacterSheet, generateStickerImage, generateSingleSticker } from './services/geminiService';
 import { classifyGeminiError } from './services/errors';
 import { splitImage, removeSingleImageBackground, enforceLineSpec } from './utils/imageProcessor';
-import { listProjects, saveProject, deleteProject, saveCharacter } from './services/storage';
+import { listProjects, saveProject, deleteProject, listCharacters, saveCharacter, deleteCharacter } from './services/storage';
 import { Character, GenerationSettings, Project } from './types';
 
 const getStoredApiKey = (): string => {
@@ -35,6 +35,8 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [activeProject, setActiveProject] = useState<Project | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [characters, setCharacters] = useState<Character[]>([]);
+  const [deleteCharacterTarget, setDeleteCharacterTarget] = useState<Character | null>(null);
   const [restoreCandidate, setRestoreCandidate] = useState<Project | null>(null);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [lastSettings, setLastSettings] = useState<GenerationSettings | null>(null);
@@ -83,16 +85,17 @@ function App() {
     }
 
     let cancelled = false;
-    listProjects()
-      .then((loaded) => {
+    Promise.all([listProjects(), listCharacters()])
+      .then(([loadedProjects, loadedCharacters]) => {
         if (cancelled) return;
-        setProjects(loaded);
-        if (loaded.length > 0) {
-          setRestoreCandidate(loaded[0]);
+        setProjects(loadedProjects);
+        setCharacters(loadedCharacters);
+        if (loadedProjects.length > 0) {
+          setRestoreCandidate(loadedProjects[0]);
         }
       })
       .catch((err) => {
-        console.error('Failed to load projects from IndexedDB', err);
+        console.error('Failed to load saved data from IndexedDB', err);
       });
 
     return () => {
@@ -306,7 +309,33 @@ function App() {
 
   const handleSaveCharacter = async (character: Character) => {
     await saveCharacter(character);
+    setCharacters((prev) =>
+      [character, ...prev.filter((c) => c.id !== character.id)].sort((a, b) => b.createdAt - a.createdAt)
+    );
     showToast(`已儲存角色「${character.name}」`, 'success');
+  };
+
+  const handleRenameCharacter = async (id: string, name: string) => {
+    const target = characters.find((c) => c.id === id);
+    if (!target) return;
+    const updated: Character = { ...target, name };
+    await saveCharacter(updated);
+    setCharacters((prev) => prev.map((c) => (c.id === id ? updated : c)));
+    showToast(`已將角色重新命名為「${name}」`, 'success');
+  };
+
+  const handleRequestDeleteCharacter = (id: string) => {
+    const target = characters.find((c) => c.id === id) ?? null;
+    setDeleteCharacterTarget(target);
+  };
+
+  const confirmDeleteCharacter = async () => {
+    if (!deleteCharacterTarget) return;
+    const { id, name } = deleteCharacterTarget;
+    await deleteCharacter(id);
+    setCharacters((prev) => prev.filter((c) => c.id !== id));
+    setDeleteCharacterTarget(null);
+    showToast(`已刪除角色「${name}」`, 'info');
   };
 
   return (
@@ -320,6 +349,15 @@ function App() {
         confirmLabel="確定清除"
         onConfirm={confirmResetApiKey}
         onCancel={() => setIsResetKeyConfirmOpen(false)}
+      />
+
+      <ConfirmDialog
+        isOpen={deleteCharacterTarget !== null}
+        title="刪除角色"
+        message={`確定要刪除角色「${deleteCharacterTarget?.name ?? ''}」嗎？此操作無法復原。`}
+        confirmLabel="確定刪除"
+        onConfirm={confirmDeleteCharacter}
+        onCancel={() => setDeleteCharacterTarget(null)}
       />
 
       <Header
@@ -386,9 +424,12 @@ function App() {
           isLoading={isLoading}
           isGeneratingSheet={isGeneratingSheet}
           statusText={retryStatus}
+          characters={characters}
           onGenerate={handleGenerate}
           onGenerateCharacterSheet={handleGenerateCharacterSheet}
           onSaveCharacter={handleSaveCharacter}
+          onRenameCharacter={handleRenameCharacter}
+          onDeleteCharacter={handleRequestDeleteCharacter}
         />
 
         {error && (
