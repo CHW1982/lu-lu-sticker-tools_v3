@@ -31,13 +31,18 @@ export default defineConfig(() => {
         react(),
         VitePWA({
           registerType: 'autoUpdate',
-          includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+          includeAssets: ['favicon.ico', 'apple-touch-icon-180x180.png', 'logo.svg'],
           manifest: {
             name: 'Lu Lu Sticker Tools v3',
             short_name: 'LuluSticker',
             description: 'AI-Powered LINE Sticker Generator',
             theme_color: '#ffffff',
             icons: [
+              {
+                src: 'pwa-64x64.png',
+                sizes: '64x64',
+                type: 'image/png'
+              },
               {
                 src: 'pwa-192x192.png',
                 sizes: '192x192',
@@ -47,6 +52,12 @@ export default defineConfig(() => {
                 src: 'pwa-512x512.png',
                 sizes: '512x512',
                 type: 'image/png'
+              },
+              {
+                src: 'maskable-icon-512x512.png',
+                sizes: '512x512',
+                type: 'image/png',
+                purpose: 'maskable'
               }
             ]
           }
