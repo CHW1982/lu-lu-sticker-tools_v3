@@ -345,7 +345,25 @@ LINE 審核禁止模仿既有角色，所以 UI 描述和提示詞都不要帶�
 
 **目標**：同一個角色能穩定地做出第 2、3 組，產出內容重新整理後也不會遺失。
 **分支**：`feat/phase1-character`
-**新增依賴**：`idb@^8`（IndexedDB 的輕量包裝）。除此之外不再新增依賴。
+**新增依賴**：`idb@^8`（IndexedDB 的輕量包裝），以及測試用的 devDependency `fake-indexeddb`。除此之外不再新增依賴。
+**建議順序**：T0 → T1 → T2 → T5 → T3 → T4 → T6。
+- T5（Toast 與錯誤分類）提前做，因為 T3 的角色設定圖生成會用到錯誤處理。
+- T3 和 T6 需要真實的 Gemini 呼叫，請 owner 在本機瀏覽器輸入 Key 測試。
+- T3 和 T4 的角色一致性要由 owner 目視驗收。
+
+### P1-T0｜修正 `computeSpecLayout` 的奇數縮 1px 問題（Phase 0 遺留）
+
+**檔案**：`utils/stickerMath.ts`、`utils/__tests__/stickerMath.test.ts`
+
+- **問題**：`drawW + 2*padding` 是奇數時，現在的做法是把 `drawW` 減 1，讓畫布維持偶數。這會讓長寬比差 1px，原本不必縮放（scale = 1）的圖也會被重新取樣、稍微變糊。
+- **修法**：
+  1. 先算 `canvasW = drawW + 2*padding`。
+  2. 如果是奇數，而且 `canvasW + 1 ≤ maxW`，就把畫布加 1px（多出的 1px 自然成為某一側的邊距），**不要縮內容**。
+  3. 只有在加 1px 會超過上限時，才退回「`drawW` 減 1」。`canvasH` 照同樣方式處理。
+- **測試**：
+  - 新增「101×99 的內容、scale = 1 時，`drawW` 和 `drawH` 維持 101×99」。
+  - 原有的不變量測試（偶數、≤ 上限、四邊邊距 ≥ padding、冪等）全部要繼續通過。
+- **驗收**：`npm test` 通過；修完後把 §6 裡這一條標成已解決。
 
 ### P1-T1｜建立儲存層
 
@@ -395,7 +413,11 @@ interface Project { id: string; characterId: string | null; settings: Generation
 
 ### P1-T5｜錯誤處理與 Toast
 
-- 新增 `components/Toast.tsx` 和 `useToast` hook，取代全部 5 處 `alert()`、`confirm()`。
+- 新增 `components/Toast.tsx` 和 `useToast` hook，取代全部 6 處 `alert()`、`confirm()`：
+  - `App.tsx`：清除 API Key 的 `confirm`、重新生成失敗的 `alert`
+  - `components/ResultsView.tsx`：批次文字的兩處 `alert`、上傳失敗的 `alert`
+  - `utils/imageProcessor.ts`：`downloadAllImages` 打包失敗的 `alert`。這裡是 utils，不能用 hook，要改成丟出錯誤，由呼叫端（ResultsView）顯示 Toast
+  - 完成後用 grep 搜尋 `alert(` 和 `confirm(` 都不能有結果
   - 清除 API Key 的確認改用自訂的確認對話框。
 - 新增 `services/errors.ts`，提供 `classifyGeminiError(err)`，分成以下幾類：
 
