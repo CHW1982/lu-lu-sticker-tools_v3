@@ -54,6 +54,49 @@ export function findAlphaBounds(
   return hasContent ? { minX, minY, maxX, maxY } : null;
 }
 
+/**
+ * 判斷內容是否仍是「未去背的不透明方塊」。
+ *
+ * 不能只看整張圖的四個角：enforceLineSpec 會在四周補透明邊距，
+ * 未去背的白底／綠底圖經過它之後，四個角一定是透明的。
+ * 因此改看內容外框（findAlphaBounds）的周長：去背後的角色輪廓不規則，
+ * 外框周長大多是透明的；未去背的方塊則幾乎整圈都是不透明的。
+ *
+ * @param minAlpha 視為「不透明」的 alpha 下限（容忍縮放造成的邊緣半透明）
+ * @param minRatio 外框周長中不透明像素佔比達此值即判定為未去背
+ */
+export function hasOpaqueBackground(
+  data: ArrayLike<number>,
+  width: number,
+  height: number,
+  minAlpha = 250,
+  minRatio = 0.95
+): boolean {
+  const bounds = findAlphaBounds(data, width, height);
+  if (!bounds) return false;
+
+  const { minX, minY, maxX, maxY } = bounds;
+  const alphaAt = (x: number, y: number) => data[(y * width + x) * 4 + 3];
+
+  let total = 0;
+  let opaque = 0;
+  const visit = (x: number, y: number) => {
+    total++;
+    if (alphaAt(x, y) >= minAlpha) opaque++;
+  };
+
+  for (let x = minX; x <= maxX; x++) {
+    visit(x, minY);
+    if (maxY !== minY) visit(x, maxY);
+  }
+  for (let y = minY + 1; y < maxY; y++) {
+    visit(minX, y);
+    if (maxX !== minX) visit(maxX, y);
+  }
+
+  return opaque / total >= minRatio;
+}
+
 /** 依內容尺寸計算合規版面 */
 export function computeSpecLayout(
   contentW: number,

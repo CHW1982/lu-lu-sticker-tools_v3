@@ -5,6 +5,7 @@ import {
   LINE_SAFE_PADDING,
   toEven,
   findAlphaBounds,
+  hasOpaqueBackground,
   computeSpecLayout,
   estimateDataUrlBytes,
   gridDims,
@@ -139,6 +140,60 @@ describe('findAlphaBounds', () => {
     const y = 7;
     buf[(y * 10 + x) * 4 + 3] = 255;
     expect(findAlphaBounds(buf, 10, 10)).toEqual({ minX: 4, minY: 7, maxX: 4, maxY: 7 });
+  });
+});
+
+describe('hasOpaqueBackground', () => {
+  const W = 60;
+  const H = 60;
+  const blank = () => new Uint8ClampedArray(W * H * 4);
+  const setAlpha = (buf: Uint8ClampedArray, x: number, y: number, a: number) => {
+    buf[(y * W + x) * 4 + 3] = a;
+  };
+  const fillRect = (buf: Uint8ClampedArray, x0: number, y0: number, x1: number, y1: number, a = 255) => {
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) setAlpha(buf, x, y, a);
+  };
+
+  it('flags a fully opaque image (no transparency at all)', () => {
+    const buf = blank();
+    fillRect(buf, 0, 0, W - 1, H - 1);
+    expect(hasOpaqueBackground(buf, W, H)).toBe(true);
+  });
+
+  it('still flags an opaque block after transparent padding is added (regression: enforceLineSpec padding)', () => {
+    const buf = blank();
+    fillRect(buf, 10, 10, W - 11, H - 11); // 白底方塊 + 四周 10px 透明邊距
+    // 整張圖四角是透明的，舊的四角檢查會漏掉
+    expect(buf[3]).toBe(0);
+    expect(hasOpaqueBackground(buf, W, H)).toBe(true);
+  });
+
+  it('tolerates slightly soft edges from resampling', () => {
+    const buf = blank();
+    fillRect(buf, 10, 10, W - 11, H - 11, 252);
+    expect(hasOpaqueBackground(buf, W, H)).toBe(true);
+  });
+
+  it('does not flag a properly cut-out round character', () => {
+    const buf = blank();
+    const cx = 30, cy = 30, r = 20;
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        if ((x - cx) ** 2 + (y - cy) ** 2 <= r * r) setAlpha(buf, x, y, 255);
+      }
+    }
+    expect(hasOpaqueBackground(buf, W, H)).toBe(false);
+  });
+
+  it('does not flag an irregular shape whose bounding box corners are transparent', () => {
+    const buf = blank();
+    fillRect(buf, 25, 10, 35, 50); // 直條
+    fillRect(buf, 10, 25, 50, 35); // 橫條 → 十字形
+    expect(hasOpaqueBackground(buf, W, H)).toBe(false);
+  });
+
+  it('returns false for a fully transparent image', () => {
+    expect(hasOpaqueBackground(blank(), W, H)).toBe(false);
   });
 });
 

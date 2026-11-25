@@ -5,6 +5,7 @@ import {
   LINE_STICKER_MAX_H,
   LINE_MAX_FILE_BYTES,
   findAlphaBounds,
+  hasOpaqueBackground,
   computeSpecLayout,
   estimateDataUrlBytes,
   gridDims,
@@ -419,12 +420,9 @@ export const validateSticker = async (stickerBase64: string): Promise<Validation
         issues.push({ type: 'filesize', severity: 'error', message: '檔案超過 1MB。', autoFixable: true });
       }
 
-      // 5. Opaque background check (all 4 corners alpha === 255)
-      const tlAlpha = data[3];
-      const trAlpha = data[(img.width - 1) * 4 + 3];
-      const blAlpha = data[(img.height - 1) * img.width * 4 + 3];
-      const brAlpha = data[((img.height - 1) * img.width + (img.width - 1)) * 4 + 3];
-      if (tlAlpha === 255 && trAlpha === 255 && blAlpha === 255 && brAlpha === 255) {
+      // 5. Opaque background check：看內容外框周長，而非整張圖四角
+      //    （enforceLineSpec 補的透明邊距會讓整張圖四角永遠透明）
+      if (hasOpaqueBackground(data, img.width, img.height)) {
         issues.push({ type: 'opaque_background', severity: 'error', message: '背景不是透明的，請先去背。', autoFixable: false });
       }
 

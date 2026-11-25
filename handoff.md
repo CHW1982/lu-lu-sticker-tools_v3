@@ -548,6 +548,8 @@ interface Project { id: string; characterId: string | null; settings: Generation
 
 - （已知）`getIntentsByVibe` 遇到自訂氛圍（Custom）時，會退回 HIGH_ENERGY 的台詞。使用者沒有開啟「自訂貼圖文字」時，自訂氛圍只會影響提示詞，不會影響台詞。等 Phase 2 再評估。
 - （已知）`ResultsView.applyTextToImage` 的字型寫死為 Inter 和微軟正黑體，在 macOS 會 fallback 到其他字型。P2-T3 會一起處理。
+- （已知，Phase 0 驗收時發現）`computeSpecLayout` 遇到奇數寬高時會把內容縮 1px 來維持畫布偶數，造成 1px 長寬比誤差與不必要的重新取樣。較好的做法是畫布未達上限時多補 1px 邊距。可在 Phase 1 順手修正。
+- （已知限制）`hasOpaqueBackground` 是用內容外框周長判斷的，本身就是「方形卡片」造型的貼圖（外框整圈不透明）會被誤判為未去背。目前視為可接受，若使用者回報再改為 warning。
 
 ---
 
@@ -567,3 +569,4 @@ interface Project { id: string; characterId: string | null; settings: Generation
 | 2026-11-25 | P0-T7 | `d2b3f34` | 移除重複 `ModelOption.Gemini3Pro`、新增 `MODEL_IDS` 對照表並同步 README/MANUAL 模型名稱 |
 | 2026-11-25 | P0-T8 | `c473434` | 移除 `SettingsPanel` 風格描述中的既有角色與工作室 IP 名稱，確認 `geminiService.ts` 無 IP 名稱 |
 | 2026-11-25 | Phase 0 | — | **Phase 0 全部完成（P0-T0 ~ P0-T8）**：Node 24 標準化、`enforceLineSpec` 輸出關卡、透明 PNG 上傳、`validateSticker` 補全檢查、Vitest 19 項測試、GitHub Actions CI、PWA 圖示、模型名稱統一、IP 名稱移除。待 owner 驗收。 |
+| 2026-11-25 | P0 驗收修正 | — | （Claude Code）修正「背景不透明」檢查：`enforceLineSpec` 補的透明邊距讓整張圖四角永遠透明，白底上傳會漏判。改為新增 `hasOpaqueBackground`，看內容外框周長（≥95% 不透明即判定），並加 6 項測試（共 25 項）。 |
