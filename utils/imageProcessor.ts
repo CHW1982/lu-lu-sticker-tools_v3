@@ -7,6 +7,9 @@ import {
   findAlphaBounds,
   computeSpecLayout,
   estimateDataUrlBytes,
+  gridDims,
+  smoothDensity,
+  findCuts,
 } from "./stickerMath";
 
 // 僅供 Gemini 參考圖使用，不得用於貼圖輸出
@@ -144,14 +147,7 @@ export const splitImage = (
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.onload = async () => {
-      let rows = 4;
-      let cols = 4;
-
-      if (gridSize === GridOption.Grid8) {
-        rows = 2; cols = 4;
-      } else if (gridSize === GridOption.Grid24) {
-        rows = 6; cols = 4;
-      }
+      const { rows, cols } = gridDims(gridSize);
 
       // 1. 取得完整圖片資料以供掃描
       const fullCanvas = document.createElement("canvas");
@@ -222,81 +218,12 @@ export const splitImage = (
           }
       }
 
-      // --- 優化：對密度進行平滑處理 (Moving Average) 以過濾雜訊像素 ---
-      const smoothDensity = (arr: Int32Array, windowSize: number) => {
-        const result = new Float32Array(arr.length);
-        const half = Math.floor(windowSize / 2);
-        for (let i = 0; i < arr.length; i++) {
-          let sum = 0;
-          let count = 0;
-          for (let j = i - half; j <= i + half; j++) {
-            if (j >= 0 && j < arr.length) {
-              sum += arr[j];
-              count++;
-            }
-          }
-          result[i] = sum / count;
-        }
-        return result;
-      };
-
       const smoothedCols = smoothDensity(colDensity, 5); // 5px 窗口平滑
       const smoothedRows = smoothDensity(rowDensity, 5);
 
       // 2. Valley Finding: 尋找最佳切割線 (避免切到突出的圖案或文字)
-      const cutX = [0];
-      for (let c = 1; c < cols; c++) {
-          const expected = Math.floor(c * (img.width / cols));
-          const searchRange = Math.floor((img.width / cols) * 0.15); // 使用較為保守的 15% 搜尋範圍
-          
-          let bestX = expected;
-          let minD = Infinity;
-          
-          // 尋找範圍內「平滑密度最低」且「最靠近預期中心」的點
-          for (let x = Math.max(0, expected - searchRange); x <= Math.min(img.width - 1, expected + searchRange); x++) {
-              // 權重計算：密度優先，距離次之
-              const score = smoothedCols[x] * 100 + Math.abs(x - expected);
-              if (score < minD) {
-                  minD = score;
-                  bestX = x;
-              }
-          }
-          
-          // 【安全閥值】：如果選出來的切割線依然包含過多前景像素 (大於高度的 5%)，代表沒有足夠乾淨的谷地，強行使用均分線
-          const maxAllowedDensityX = img.height * 0.05;
-          if (colDensity[bestX] > maxAllowedDensityX) {
-              bestX = expected;
-          }
-          
-          cutX.push(bestX);
-      }
-      cutX.push(img.width);
-
-      const cutY = [0];
-      for (let r = 1; r < rows; r++) {
-          const expected = Math.floor(r * (img.height / rows));
-          const searchRange = Math.floor((img.height / rows) * 0.15); // 使用較為保守的 15% 搜尋範圍
-          
-          let bestY = expected;
-          let minD = Infinity;
-          
-          for (let y = Math.max(0, expected - searchRange); y <= Math.min(img.height - 1, expected + searchRange); y++) {
-              const score = smoothedRows[y] * 100 + Math.abs(y - expected);
-              if (score < minD) {
-                  minD = score;
-                  bestY = y;
-              }
-          }
-          
-          // 【安全閥值】：如果選出來的切割線依然包含過多前景像素 (大於寬度的 5%)，代表沒有足夠乾淨的谷地，強行使用均分線
-          const maxAllowedDensityY = img.width * 0.05;
-          if (rowDensity[bestY] > maxAllowedDensityY) {
-              bestY = expected;
-          }
-          
-          cutY.push(bestY);
-      }
-      cutY.push(img.height);
+      const cutX = findCuts(colDensity, smoothedCols, img.width, cols, img.height);
+      const cutY = findCuts(rowDensity, smoothedRows, img.height, rows, img.width);
 
       const LINE_MAX_W = 370;
       const LINE_MAX_H = 320;

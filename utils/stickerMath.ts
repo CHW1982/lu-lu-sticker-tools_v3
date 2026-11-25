@@ -126,3 +126,65 @@ export function estimateDataUrlBytes(dataUrl: string): number {
 
   return Math.max(0, Math.floor((len * 3) / 4) - padding);
 }
+
+/** 依格數回傳列數與欄數（8→2x4, 16→4x4, 24→6x4） */
+export function gridDims(grid: number): { rows: number; cols: number } {
+  if (grid === 8) return { rows: 2, cols: 4 };
+  if (grid === 24) return { rows: 6, cols: 4 };
+  return { rows: 4, cols: 4 };
+}
+
+/** 移動平均平滑密度陣列以過濾雜訊像素 */
+export function smoothDensity(arr: ArrayLike<number>, windowSize: number): Float32Array {
+  const result = new Float32Array(arr.length);
+  const half = Math.floor(windowSize / 2);
+  for (let i = 0; i < arr.length; i++) {
+    let sum = 0;
+    let count = 0;
+    for (let j = i - half; j <= i + half; j++) {
+      if (j >= 0 && j < arr.length) {
+        sum += arr[j];
+        count++;
+      }
+    }
+    result[i] = sum / count;
+  }
+  return result;
+}
+
+/** Valley Finding：在預期均分線 ±15% 範圍內尋找最佳切割點，超過 5% 閥值則退回均分線 */
+export function findCuts(
+  raw: ArrayLike<number>,
+  smoothed: ArrayLike<number>,
+  length: number,
+  parts: number,
+  crossLength: number
+): number[] {
+  const cuts = [0];
+  const maxAllowedDensity = crossLength * 0.05;
+
+  for (let p = 1; p < parts; p++) {
+    const expected = Math.floor(p * (length / parts));
+    const searchRange = Math.floor((length / parts) * 0.15);
+
+    let best = expected;
+    let minD = Infinity;
+
+    for (let x = Math.max(0, expected - searchRange); x <= Math.min(length - 1, expected + searchRange); x++) {
+      const score = smoothed[x] * 100 + Math.abs(x - expected);
+      if (score < minD) {
+        minD = score;
+        best = x;
+      }
+    }
+
+    if (raw[best] > maxAllowedDensity) {
+      best = expected;
+    }
+
+    cuts.push(best);
+  }
+
+  cuts.push(length);
+  return cuts;
+}

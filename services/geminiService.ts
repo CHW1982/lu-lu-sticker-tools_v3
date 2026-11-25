@@ -1,5 +1,6 @@
 import { GoogleGenAI, Part, GenerateContentConfig } from "@google/genai";
 import { ModelOption, GridOption, GenerationSettings, StickerIntent } from "../types";
+import { gridDims } from "../utils/stickerMath";
 
 // Vibe Keys matching SettingsPanel
 const VIBE_KEYS = {
@@ -419,11 +420,12 @@ export const generateStickerImage = async (
   const isPro = model === ModelOption.NanoBananaPro || model === ModelOption.Gemini3Pro;
   const actualModelId = isPro ? 'gemini-3-pro-image-preview' : 'gemini-2.5-flash-image';
 
-  let rows = 4, cols = 4, aspectRatio = "1:1";
+  const { rows, cols } = gridDims(gridSize);
+  let aspectRatio = "1:1";
   const selectedIntents = getIntentsForSettings(settings);
 
-  if (gridSize === GridOption.Grid8) { rows = 2; cols = 4; aspectRatio = "16:9"; }
-  else if (gridSize === GridOption.Grid24) { rows = 6; cols = 4; aspectRatio = "3:4"; }
+  if (gridSize === GridOption.Grid8) { aspectRatio = "16:9"; }
+  else if (gridSize === GridOption.Grid24) { aspectRatio = "3:4"; }
 
   const specList = selectedIntents.map((s, i) => 
     `Slot ${i+1}: [Text: "${s.text}"] [Context: ${s.description}] [Visual: ${s.visual}]`
