@@ -6,7 +6,6 @@ export enum GridOption {
 
 export enum ModelOption {
   NanoBananaPro = 'gemini-3-pro-image-preview',
-  Gemini3Pro = 'gemini-3-pro-image-preview-alt', // Maps to same underlying model but keeps UI distinct as requested
   FlashImage = 'gemini-2.5-flash-image',
 }
 

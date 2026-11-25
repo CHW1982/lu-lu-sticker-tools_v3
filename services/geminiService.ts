@@ -2,6 +2,11 @@ import { GoogleGenAI, Part, GenerateContentConfig } from "@google/genai";
 import { ModelOption, GridOption, GenerationSettings, StickerIntent } from "../types";
 import { gridDims } from "../utils/stickerMath";
 
+const MODEL_IDS: Record<ModelOption, string> = {
+  [ModelOption.NanoBananaPro]: 'gemini-3-pro-image-preview',
+  [ModelOption.FlashImage]: 'gemini-2.5-flash-image',
+};
+
 // Vibe Keys matching SettingsPanel
 const VIBE_KEYS = {
     HIGH_ENERGY: "High Energy & Cheerful",
@@ -417,8 +422,7 @@ export const generateStickerImage = async (
 ): Promise<string> => {
   const { prompt, referenceImage, referenceImage2, gridSize, model, stylePreset, textStylePreset, vibePreset, relationshipMode } = settings;
 
-  const isPro = model === ModelOption.NanoBananaPro || model === ModelOption.Gemini3Pro;
-  const actualModelId = isPro ? 'gemini-3-pro-image-preview' : 'gemini-2.5-flash-image';
+  const actualModelId = MODEL_IDS[model] ?? MODEL_IDS[ModelOption.NanoBananaPro];
 
   const { rows, cols } = gridDims(gridSize);
   let aspectRatio = "1:1";
@@ -479,7 +483,7 @@ export const generateStickerImage = async (
 
   const ai = new GoogleGenAI({ apiKey });
   const config: GenerateContentConfig = { imageConfig: { aspectRatio } };
-  if (isPro) config.imageConfig.imageSize = "2K";
+  if (model === ModelOption.NanoBananaPro) config.imageConfig.imageSize = "2K";
 
   const response = await ai.models.generateContent({ model: actualModelId, contents: { parts }, config });
 
@@ -500,8 +504,7 @@ export const generateSingleSticker = async (
     const allIntents = getIntentsForSettings(settings);
     const targetIntent = allIntents[targetIndex];
     
-    const isPro = model === ModelOption.NanoBananaPro || model === ModelOption.Gemini3Pro;
-    const actualModelId = isPro ? 'gemini-3-pro-image-preview' : 'gemini-2.5-flash-image';
+    const actualModelId = MODEL_IDS[model] ?? MODEL_IDS[ModelOption.NanoBananaPro];
   
     const systemPrompt = `Create a SINGLE sticker.
     [Character DNA] Subject: ${prompt}, Style: ${stylePreset}, Vibe: ${vibePreset}, Context: ${relationshipMode}
