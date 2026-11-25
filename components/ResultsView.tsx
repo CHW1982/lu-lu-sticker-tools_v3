@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { downloadImage, downloadAllImages, processFileToBase64, validateSticker, enforceLineSpec } from '../utils/imageProcessor';
+import { downloadImage, downloadAllImages, loadStickerFile, validateSticker, enforceLineSpec } from '../utils/imageProcessor';
 import { ValidationResult } from '../types';
 import { StickerEditor } from './StickerEditor';
 import { ChatPreview } from './ChatPreview';
@@ -116,10 +116,13 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
       const file = e.target.files?.[0];
       if (file) {
           try {
-              const base64 = await processFileToBase64(file);
+              const base64 = await loadStickerFile(file);
               onReplaceSlice(index, base64);
+              const result = await validateSticker(base64);
+              setValidationResults(prev => ({ ...prev, [index]: result }));
           } catch (err) {
               console.error("Failed to upload replacement", err);
+              alert(err instanceof Error ? err.message : '不支援此圖片格式，請上傳 PNG');
           }
       }
   };

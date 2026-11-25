@@ -9,6 +9,7 @@ import {
   estimateDataUrlBytes,
 } from "./stickerMath";
 
+// 僅供 Gemini 參考圖使用，不得用於貼圖輸出
 export const processFileToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -57,6 +58,41 @@ export const processFileToBase64 = (file: File): Promise<string> => {
       img.src = result;
     };
     reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};
+
+export const loadStickerFile = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      const img = new Image();
+      img.onload = async () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          reject(new Error('無法建立畫布'));
+          return;
+        }
+        ctx.clearRect(0, 0, img.width, img.height);
+        ctx.drawImage(img, 0, 0);
+        const png = canvas.toDataURL('image/png');
+        try {
+          const enforced = await enforceLineSpec(png);
+          resolve(enforced);
+        } catch (err) {
+          reject(err);
+        }
+      };
+      img.onerror = () => {
+        reject(new Error('不支援此圖片格式，請上傳 PNG'));
+      };
+      img.src = result;
+    };
+    reader.onerror = () => reject(new Error('讀取檔案失敗'));
     reader.readAsDataURL(file);
   });
 };
