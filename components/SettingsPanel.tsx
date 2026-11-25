@@ -5,6 +5,7 @@ import { getIntentsByVibe } from '../services/geminiService';
 
 interface SettingsPanelProps {
   isLoading: boolean;
+  statusText?: string | null;
   onGenerate: (settings: GenerationSettings) => void;
 }
 
@@ -62,7 +63,7 @@ const RELATIONSHIP_MODES = [
   { value: 'friends', label: '🍻 好友 (Friends)', icon: '🤝' },
 ] as const;
 
-export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isLoading, onGenerate }) => {
+export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isLoading, statusText, onGenerate }) => {
   const [prompt, setPrompt] = useState('');
   const [gridSize, setGridSize] = useState<GridOption>(GridOption.Grid8);
   const [model, setModel] = useState<ModelOption>(ModelOption.NanoBananaPro);
@@ -401,7 +402,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isLoading, onGener
               : 'bg-lulu-500 hover:bg-lulu-600 hover:shadow-xl hover:-translate-y-0.5'
           }`}
         >
-          {isLoading ? <span className="flex items-center justify-center gap-2"><span className="animate-spin">🌀</span> 生成中...</span> : '立即生成貼圖！'}
+          {isLoading ? <span className="flex items-center justify-center gap-2"><span className="animate-spin">🌀</span> {statusText || '生成中...'}</span> : '立即生成貼圖！'}
         </button>
       </form>
     </div>

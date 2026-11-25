@@ -4,7 +4,10 @@ import { SettingsPanel } from './components/SettingsPanel';
 import { ResultsView } from './components/ResultsView';
 import { ApiKeyModal } from './components/ApiKeyModal';
 import { HistoryDrawer } from './components/HistoryDrawer';
+import { ConfirmDialog } from './components/Toast';
+import { useToast } from './hooks/useToast';
 import { generateStickerImage, generateSingleSticker } from './services/geminiService';
+import { classifyGeminiError } from './services/errors';
 import { splitImage, removeSingleImageBackground, enforceLineSpec } from './utils/imageProcessor';
 import { listProjects, saveProject, deleteProject } from './services/storage';
 import { GenerationSettings, Project } from './types';
@@ -20,10 +23,13 @@ const getStoredApiKey = (): string => {
 };
 
 function App() {
+  const { showToast } = useToast();
   const [apiKey, setApiKey] = useState<string>(getStoredApiKey);
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(() => !getStoredApiKey());
+  const [isResetKeyConfirmOpen, setIsResetKeyConfirmOpen] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
+  const [retryStatus, setRetryStatus] = useState<string | null>(null);
   const [loadingIndices, setLoadingIndices] = useState<number[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [activeProject, setActiveProject] = useState<Project | null>(null);
@@ -117,12 +123,16 @@ function App() {
   };
 
   const handleResetApiKey = () => {
-    if (window.confirm("確定要清除 API Key 嗎？下次使用時需要重新輸入。")) {
-      localStorage.removeItem('gemini_api_key');
-      localStorage.removeItem('gemini_api_key_expiry');
-      setApiKey('');
-      setIsApiKeyModalOpen(true);
-    }
+    setIsResetKeyConfirmOpen(true);
+  };
+
+  const confirmResetApiKey = () => {
+    localStorage.removeItem('gemini_api_key');
+    localStorage.removeItem('gemini_api_key_expiry');
+    setApiKey('');
+    setIsResetKeyConfirmOpen(false);
+    setIsApiKeyModalOpen(true);
+    showToast('已清除 API Key', 'info');
   };
 
   const handleGenerate = async (settings: GenerationSettings) => {
@@ -132,6 +142,7 @@ function App() {
     }
 
     setIsLoading(true);
+    setRetryStatus(null);
     setError(null);
     if (debounceTimerRef.current !== null) {
       window.clearTimeout(debounceTimerRef.current);
@@ -143,7 +154,9 @@ function App() {
 
     try {
       // 1. Generate the full sheet - passing the API Key
-      const originalImage = await generateStickerImage(settings, apiKey);
+      const originalImage = await generateStickerImage(settings, apiKey, (attempt, maxRetries) => {
+        setRetryStatus(`重試中（${attempt}/${maxRetries}）`);
+      });
 
       // 2. Cut the image client-side (optionally removing background)
       const slices = await splitImage(originalImage, settings.gridSize, settings.removeBackground);
@@ -165,15 +178,15 @@ function App() {
       setProjects((prev) => [newProject, ...prev.filter((p) => p.id !== newProject.id)]);
     } catch (err) {
       console.error(err);
-      const message = err instanceof Error ? err.message : String(err);
-      setError(message || "生成貼圖時發生錯誤，請檢查 API Key 是否正確。");
-      // If unauthorized, maybe prompt for key again?
-      if (message && (message.includes('403') || message.includes('key'))) {
-        // Optional: automatically open modal if key seems invalid
-        // setIsApiKeyModalOpen(true);
+      const classified = classifyGeminiError(err);
+      setError(classified.message);
+      showToast(classified.message, 'error');
+      if (classified.openApiKeyModal) {
+        setIsApiKeyModalOpen(true);
       }
     } finally {
       setIsLoading(false);
+      setRetryStatus(null);
     }
   };
 
@@ -183,8 +196,15 @@ function App() {
     setLoadingIndices(prev => [...prev, index]);
 
     try {
-      // Generate single square image for this slot - passing the API Key
-      const newImageBase64 = await generateSingleSticker(lastSettings, index, apiKey);
+      // Generate single image for this slot - passing the API Key
+      const newImageBase64 = await generateSingleSticker(
+        lastSettings,
+        index,
+        apiKey,
+        (attempt, maxRetries) => {
+          showToast(`單張重繪重試中（${attempt}/${maxRetries}）`, 'info');
+        }
+      );
 
       let processedImage = newImageBase64;
       if (lastSettings.removeBackground) {
@@ -200,7 +220,11 @@ function App() {
 
     } catch (err) {
       console.error("Failed to regenerate single sticker", err);
-      alert("重新生成失敗，請檢查 API Key 或再試一次。");
+      const classified = classifyGeminiError(err);
+      showToast(classified.message, 'error');
+      if (classified.openApiKeyModal) {
+        setIsApiKeyModalOpen(true);
+      }
     } finally {
       setLoadingIndices(prev => prev.filter(i => i !== index));
     }
@@ -251,6 +275,15 @@ function App() {
   return (
     <div className="min-h-screen flex flex-col pb-6 bg-lulu-50 relative">
       <ApiKeyModal isOpen={isApiKeyModalOpen} onSave={handleSaveApiKey} />
+
+      <ConfirmDialog
+        isOpen={isResetKeyConfirmOpen}
+        title="清除 API Key"
+        message="確定要清除 API Key 嗎？下次使用時需要重新輸入。"
+        confirmLabel="確定清除"
+        onConfirm={confirmResetApiKey}
+        onCancel={() => setIsResetKeyConfirmOpen(false)}
+      />
 
       <Header
         projectCount={projects.length}
@@ -312,7 +345,7 @@ function App() {
           </div>
         )}
 
-        <SettingsPanel isLoading={isLoading} onGenerate={handleGenerate} />
+        <SettingsPanel isLoading={isLoading} statusText={retryStatus} onGenerate={handleGenerate} />
 
         {error && (
           <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-8 rounded-r-xl">

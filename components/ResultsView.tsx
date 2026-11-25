@@ -3,6 +3,7 @@ import { downloadImage, downloadAllImages, loadStickerFile, validateSticker, enf
 import { ValidationResult } from '../types';
 import { StickerEditor } from './StickerEditor';
 import { ChatPreview } from './ChatPreview';
+import { useToast } from '../hooks/useToast';
 
 interface ResultsViewProps {
   originalImage: string;
@@ -27,6 +28,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
   onReplaceSlice,
   loadingIndices 
 }) => {
+  const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState<'sheet' | 'cuts' | 'review' | 'chat'>('cuts');
   const [validationResults, setValidationResults] = useState<Record<number, ValidationResult>>({});
   const [isValidating, setIsValidating] = useState(false);
@@ -38,7 +40,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
   const handleBatchApply = async () => {
     const lines = batchTexts.split('\n').filter(l => l.trim() !== '');
     if (lines.length === 0) {
-      alert("請輸入至少一行文字。");
+      showToast("請輸入至少一行文字。", "warning");
       return;
     }
 
@@ -58,7 +60,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
     
     setIsBatchMode(false);
     setIsValidating(false);
-    alert("批次文字合成完成！");
+    showToast("批次文字合成完成！", "success");
   };
 
   const applyTextToImage = (base64: string, text: string): Promise<string> => {
@@ -128,9 +130,17 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
               setValidationResults(prev => ({ ...prev, [index]: result }));
           } catch (err) {
               console.error("Failed to upload replacement", err);
-              alert(err instanceof Error ? err.message : '不支援此圖片格式，請上傳 PNG');
+              showToast(err instanceof Error ? err.message : '不支援此圖片格式，請上傳 PNG', 'error');
           }
       }
+  };
+
+  const handleDownloadZip = async () => {
+    try {
+      await downloadAllImages(slices, 'lulu_sticker', mainIndex, tabIndex);
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : '打包 ZIP 失敗，請再試一次。', 'error');
+    }
   };
 
   const handleSaveEdit = async (newImage: string) => {
@@ -284,7 +294,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
             </div>
             
             <button
-            onClick={() => downloadAllImages(slices, 'lulu_sticker', mainIndex, tabIndex)}
+            onClick={handleDownloadZip}
             className="w-full py-3 rounded-xl bg-lulu-500 text-white font-bold hover:bg-lulu-600 transition-colors shadow-lg shadow-lulu-200 flex items-center justify-center gap-2"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

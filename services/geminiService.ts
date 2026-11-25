@@ -1,6 +1,7 @@
 import { GoogleGenAI, Part, GenerateContentConfig } from "@google/genai";
 import { ModelOption, GridOption, GenerationSettings, StickerIntent } from "../types";
 import { gridDims } from "../utils/stickerMath";
+import { withGeminiRetry } from "./errors";
 
 const MODEL_IDS: Record<ModelOption, string> = {
   [ModelOption.NanoBananaPro]: 'gemini-3-pro-image-preview',
@@ -416,9 +417,35 @@ const getIntentsForSettings = (settings: GenerationSettings): StickerIntent[] =>
     return fullList.slice(0, count);
 };
 
+export type RetryCallback = (attempt: number, maxRetries: number) => void;
+
+function extractInlineImage(response: {
+  candidates?: Array<{
+    finishReason?: string;
+    content?: { parts?: Array<{ inlineData?: { mimeType?: string; data?: string } }> };
+  }>;
+}): string {
+  const candidate = response.candidates?.[0];
+  if (candidate?.finishReason === 'SAFETY') {
+    throw new Error('SAFETY: 內容被安全過濾');
+  }
+
+  const parts = candidate?.content?.parts;
+  if (parts) {
+    for (const part of parts) {
+      if (part.inlineData?.data && part.inlineData?.mimeType) {
+        return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+      }
+    }
+  }
+
+  throw new Error('SAFETY: no inlineData returned');
+}
+
 export const generateStickerImage = async (
   settings: GenerationSettings,
-  apiKey: string
+  apiKey: string,
+  onRetry?: RetryCallback
 ): Promise<string> => {
   const { prompt, referenceImage, referenceImage2, gridSize, model, stylePreset, textStylePreset, vibePreset, relationshipMode } = settings;
 
@@ -485,20 +512,19 @@ export const generateStickerImage = async (
   const config: GenerateContentConfig = { imageConfig: { aspectRatio } };
   if (model === ModelOption.NanoBananaPro) config.imageConfig.imageSize = "2K";
 
-  const response = await ai.models.generateContent({ model: actualModelId, contents: { parts }, config });
+  const response = await withGeminiRetry(
+    () => ai.models.generateContent({ model: actualModelId, contents: { parts }, config }),
+    { onRetry: onRetry ? (attempt, maxRetries) => onRetry(attempt, maxRetries) : undefined }
+  );
 
-  if (response.candidates && response.candidates[0].content.parts) {
-    for (const part of response.candidates[0].content.parts) {
-      if (part.inlineData) return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
-    }
-  }
-  throw new Error("Generation failed.");
+  return extractInlineImage(response);
 };
 
 export const generateSingleSticker = async (
     settings: GenerationSettings,
     targetIndex: number,
-    apiKey: string
+    apiKey: string,
+    onRetry?: RetryCallback
   ): Promise<string> => {
     const { prompt, referenceImage, referenceImage2, model, stylePreset, textStylePreset, vibePreset, relationshipMode } = settings;
     const allIntents = getIntentsForSettings(settings);
@@ -522,12 +548,10 @@ export const generateSingleSticker = async (
     }
   
     const ai = new GoogleGenAI({ apiKey });
-    const response = await ai.models.generateContent({ model: actualModelId, contents: { parts }, config: { imageConfig: { aspectRatio: "1:1" } } });
-  
-    if (response.candidates && response.candidates[0].content.parts) {
-      for (const part of response.candidates[0].content.parts) {
-        if (part.inlineData) return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
-      }
-    }
-    throw new Error("Generation failed.");
+    const response = await withGeminiRetry(
+      () => ai.models.generateContent({ model: actualModelId, contents: { parts }, config: { imageConfig: { aspectRatio: "1:1" } } }),
+      { onRetry: onRetry ? (attempt, maxRetries) => onRetry(attempt, maxRetries) : undefined }
+    );
+
+    return extractInlineImage(response);
   };

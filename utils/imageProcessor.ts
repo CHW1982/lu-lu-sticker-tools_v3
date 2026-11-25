@@ -657,6 +657,6 @@ export const downloadAllImages = async (
         setTimeout(() => URL.revokeObjectURL(url), 100);
     } catch (err) {
         console.error("Failed to zip images:", err);
-        alert("Failed to generate zip file.");
+        throw new Error("打包 ZIP 失敗，請再試一次。", { cause: err });
     }
 };
