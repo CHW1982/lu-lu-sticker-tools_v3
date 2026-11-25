@@ -1,12 +1,20 @@
 import React, { useState } from 'react';
-import { GridOption, ModelOption, GenerationSettings, StickerIntent } from '../types';
+import { Character, GridOption, ModelOption, GenerationSettings, StickerIntent } from '../types';
 import { processFileToBase64 } from '../utils/imageProcessor';
 import { getIntentsByVibe } from '../services/geminiService';
 
+export type CharacterSheetDraftSettings = Pick<
+  GenerationSettings,
+  'prompt' | 'stylePreset' | 'model' | 'referenceImage' | 'referenceImage2'
+>;
+
 interface SettingsPanelProps {
   isLoading: boolean;
+  isGeneratingSheet?: boolean;
   statusText?: string | null;
   onGenerate: (settings: GenerationSettings) => void;
+  onGenerateCharacterSheet?: (settings: CharacterSheetDraftSettings) => Promise<string | null>;
+  onSaveCharacter?: (character: Character) => Promise<void>;
 }
 
 // Preset Data Configuration
@@ -63,12 +71,23 @@ const RELATIONSHIP_MODES = [
   { value: 'friends', label: '🍻 好友 (Friends)', icon: '🤝' },
 ] as const;
 
-export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isLoading, statusText, onGenerate }) => {
+export const SettingsPanel: React.FC<SettingsPanelProps> = ({
+  isLoading,
+  isGeneratingSheet = false,
+  statusText,
+  onGenerate,
+  onGenerateCharacterSheet,
+  onSaveCharacter,
+}) => {
   const [prompt, setPrompt] = useState('');
   const [gridSize, setGridSize] = useState<GridOption>(GridOption.Grid8);
   const [model, setModel] = useState<ModelOption>(ModelOption.NanoBananaPro);
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [referenceImage2, setReferenceImage2] = useState<string | null>(null);
+  const [characterSheet, setCharacterSheet] = useState<string | null>(null);
+  const [characterId, setCharacterId] = useState<string | null>(null);
+  const [characterName, setCharacterName] = useState('');
+  const [isSavingCharacter, setIsSavingCharacter] = useState(false);
   const [removeBackground, setRemoveBackground] = useState(true);
 
   const [stylePreset, setStylePreset] = useState(STYLE_PRESETS[0].value);
@@ -117,6 +136,47 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isLoading, statusT
     }
   };
 
+  const handleGenerateSheetClick = async () => {
+    if (!onGenerateCharacterSheet || !prompt.trim()) return;
+    const sheet = await onGenerateCharacterSheet({
+      prompt,
+      stylePreset,
+      model,
+      referenceImage,
+      referenceImage2,
+    });
+    if (sheet) {
+      setCharacterSheet(sheet);
+      if (!characterName.trim()) {
+        setCharacterName(prompt.trim().slice(0, 16));
+      }
+    }
+  };
+
+  const handleSaveCharacterClick = async () => {
+    if (!onSaveCharacter || !characterSheet) return;
+    setIsSavingCharacter(true);
+    try {
+      const id = characterId ?? crypto.randomUUID();
+      const name = characterName.trim() || prompt.trim().slice(0, 16) || '未命名角色';
+      await onSaveCharacter({
+        id,
+        name,
+        prompt,
+        stylePreset,
+        textStylePreset,
+        referenceImage,
+        referenceImage2,
+        characterSheet,
+        createdAt: Date.now(),
+      });
+      setCharacterId(id);
+      setCharacterName(name);
+    } finally {
+      setIsSavingCharacter(false);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const finalVibe = vibePreset === 'Custom' ? customVibeDesc : vibePreset;
@@ -127,6 +187,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isLoading, statusT
       model, 
       referenceImage, 
       referenceImage2,
+      characterSheet,
+      characterId,
       removeBackground,
       stylePreset,
       textStylePreset,
@@ -315,6 +377,85 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isLoading, statusT
               </div>
           </div>
         </div>
+
+        {/* Step 1: Character Sheet (Optional) */}
+        {onGenerateCharacterSheet && (
+          <div className="bg-lulu-50/70 p-4 rounded-2xl border-2 border-lulu-100 space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <h3 className="text-sm font-black text-lulu-600 flex items-center gap-1.5">
+                  <span>①</span> 建立角色設定圖（可跳過）
+                </h3>
+                <p className="text-[11px] text-slate-500 font-medium">
+                  先產出正／側／背面與三表情的 16:9 設定圖，後續生成第 2、3 組貼圖時造型更一致。
+                </p>
+              </div>
+              {!characterSheet && (
+                <button
+                  type="button"
+                  onClick={handleGenerateSheetClick}
+                  disabled={isGeneratingSheet || isLoading || !prompt.trim()}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
+                    isGeneratingSheet || isLoading || !prompt.trim()
+                      ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                      : 'bg-lulu-500 hover:bg-lulu-600 text-white shadow-sm'
+                  }`}
+                >
+                  {isGeneratingSheet ? (statusText || '生成設定圖中...') : '🎨 產生角色設定圖'}
+                </button>
+              )}
+            </div>
+
+            {characterSheet && (
+              <div className="space-y-3 bg-white p-3 rounded-xl border border-lulu-200">
+                <div className="aspect-video w-full rounded-xl overflow-hidden bg-slate-100 border border-slate-200 flex items-center justify-center">
+                  <img src={characterSheet} alt="角色設定圖" className="w-full h-full object-contain" />
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
+                  <input
+                    type="text"
+                    value={characterName}
+                    onChange={(e) => setCharacterName(e.target.value)}
+                    placeholder="為這個角色命名（例如：麻糬貓）"
+                    className="flex-1 px-3 py-2 text-xs font-bold text-slate-700 bg-slate-50 border border-slate-200 rounded-xl focus:border-lulu-400 outline-none"
+                  />
+                  <div className="flex gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={handleGenerateSheetClick}
+                      disabled={isGeneratingSheet || isLoading}
+                      className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold disabled:opacity-50"
+                    >
+                      {isGeneratingSheet ? (statusText || '重繪中...') : '🔄 重新產生'}
+                    </button>
+                    {onSaveCharacter && (
+                      <button
+                        type="button"
+                        onClick={handleSaveCharacterClick}
+                        disabled={isSavingCharacter || isGeneratingSheet}
+                        className="px-3 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold shadow-sm disabled:opacity-50"
+                      >
+                        {characterId ? '💾 更新角色' : '✅ 確認並儲存角色'}
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCharacterSheet(null);
+                        setCharacterId(null);
+                      }}
+                      className="px-2.5 py-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-500 text-xs font-bold"
+                      title="移除角色設定圖"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Grid Size */}
         <div>

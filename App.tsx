@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Header } from './components/Header';
-import { SettingsPanel } from './components/SettingsPanel';
+import { SettingsPanel, CharacterSheetDraftSettings } from './components/SettingsPanel';
 import { ResultsView } from './components/ResultsView';
 import { ApiKeyModal } from './components/ApiKeyModal';
 import { HistoryDrawer } from './components/HistoryDrawer';
 import { ConfirmDialog } from './components/Toast';
 import { useToast } from './hooks/useToast';
-import { generateStickerImage, generateSingleSticker } from './services/geminiService';
+import { generateCharacterSheet, generateStickerImage, generateSingleSticker } from './services/geminiService';
 import { classifyGeminiError } from './services/errors';
 import { splitImage, removeSingleImageBackground, enforceLineSpec } from './utils/imageProcessor';
-import { listProjects, saveProject, deleteProject } from './services/storage';
-import { GenerationSettings, Project } from './types';
+import { listProjects, saveProject, deleteProject, saveCharacter } from './services/storage';
+import { Character, GenerationSettings, Project } from './types';
 
 const getStoredApiKey = (): string => {
   const storedKey = localStorage.getItem('gemini_api_key');
@@ -29,6 +29,7 @@ function App() {
   const [isResetKeyConfirmOpen, setIsResetKeyConfirmOpen] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isGeneratingSheet, setIsGeneratingSheet] = useState(false);
   const [retryStatus, setRetryStatus] = useState<string | null>(null);
   const [loadingIndices, setLoadingIndices] = useState<number[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -272,6 +273,42 @@ function App() {
     }
   };
 
+  const handleGenerateCharacterSheet = async (
+    sheetSettings: CharacterSheetDraftSettings
+  ): Promise<string | null> => {
+    if (!apiKey) {
+      setIsApiKeyModalOpen(true);
+      return null;
+    }
+
+    setIsGeneratingSheet(true);
+    setRetryStatus(null);
+    setError(null);
+    try {
+      const sheet = await generateCharacterSheet(sheetSettings, apiKey, (attempt, maxRetries) => {
+        setRetryStatus(`重試中（${attempt}/${maxRetries}）`);
+      });
+      showToast('角色設定圖已生成，確認後可儲存至角色庫！', 'success');
+      return sheet;
+    } catch (err) {
+      console.error('Failed to generate character sheet', err);
+      const classified = classifyGeminiError(err);
+      showToast(classified.message, 'error');
+      if (classified.openApiKeyModal) {
+        setIsApiKeyModalOpen(true);
+      }
+      return null;
+    } finally {
+      setIsGeneratingSheet(false);
+      setRetryStatus(null);
+    }
+  };
+
+  const handleSaveCharacter = async (character: Character) => {
+    await saveCharacter(character);
+    showToast(`已儲存角色「${character.name}」`, 'success');
+  };
+
   return (
     <div className="min-h-screen flex flex-col pb-6 bg-lulu-50 relative">
       <ApiKeyModal isOpen={isApiKeyModalOpen} onSave={handleSaveApiKey} />
@@ -345,7 +382,14 @@ function App() {
           </div>
         )}
 
-        <SettingsPanel isLoading={isLoading} statusText={retryStatus} onGenerate={handleGenerate} />
+        <SettingsPanel
+          isLoading={isLoading}
+          isGeneratingSheet={isGeneratingSheet}
+          statusText={retryStatus}
+          onGenerate={handleGenerate}
+          onGenerateCharacterSheet={handleGenerateCharacterSheet}
+          onSaveCharacter={handleSaveCharacter}
+        />
 
         {error && (
           <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-8 rounded-r-xl">
