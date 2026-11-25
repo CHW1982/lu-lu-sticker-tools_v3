@@ -592,3 +592,11 @@ interface Project { id: string; characterId: string | null; settings: Generation
 | 2026-11-25 | P0-T8 | `c473434` | 移除 `SettingsPanel` 風格描述中的既有角色與工作室 IP 名稱，確認 `geminiService.ts` 無 IP 名稱 |
 | 2026-11-25 | Phase 0 | — | **Phase 0 全部完成（P0-T0 ~ P0-T8）**：Node 24 標準化、`enforceLineSpec` 輸出關卡、透明 PNG 上傳、`validateSticker` 補全檢查、Vitest 19 項測試、GitHub Actions CI、PWA 圖示、模型名稱統一、IP 名稱移除。待 owner 驗收。 |
 | 2026-11-25 | P0 驗收修正 | — | （Claude Code）修正「背景不透明」檢查：`enforceLineSpec` 補的透明邊距讓整張圖四角永遠透明，白底上傳會漏判。改為新增 `hasOpaqueBackground`，看內容外框周長（≥95% 不透明即判定），並加 6 項測試（共 25 項）。 |
+| 2026-11-25 | P1-T0 | `cc7e4d5` | 修正 `computeSpecLayout` 奇數寬高優先多補 1px 畫布邊距、僅超限時縮 1px，更新 §6 狀態並補齊 3 項測試（共 28 項） |
+| 2026-11-25 | P1-T1 | `9b27774` | 新增 `idb@^8` 與 `fake-indexeddb`，建立 `services/storage.ts`（`characters`/`projects`/`settings` stores，阻擋 API Key 寫入）與單元測試 |
+| 2026-11-25 | P1-T2 | `fa97461` | 實作作品自動保存（500ms debounce）、提升 `mainIndex`/`tabIndex`、新增啟動還原橫幅與 `HistoryDrawer` 歷史作品抽屜 |
+| 2026-11-25 | P1-T5 | `abeb967` | 新增 `services/errors.ts`（含 402 `billing`/`quota`/`auth`/`safety`/`network` 分類與 2s/4s/8s 重試）、`Toast` 與 `ConfirmDialog` 取代全部 6 處 `alert`/`confirm` |
+| 2026-11-25 | P1-T3 | `324dd71` | 新增 `generateCharacterSheet`（16:9 正側背＋三表情、綠幕無字），於 `SettingsPanel` 加入「① 建立角色設定圖」步驟並優先以 Image 1 注入生成流程 |
+| 2026-11-25 | P1-T4 | `d323f2f` | 新增 `CharacterLibrary` 橫向角色庫 UI，支援一鍵帶入設定、重新命名與確認刪除 |
+| 2026-11-25 | P1-T6 | `3407d2c` | `generateSingleSticker` 改用 `4:3` 長寬比並附帶同組其他格 `visual` 避免重複姿勢 |
+| 2026-11-25 | Phase 1 | — | **Phase 1 全部完成（P1-T0 ~ P1-T6）**：奇數畫布修補、IndexedDB 儲存與作品自動保存、錯誤分類重試與 Toast、角色設定圖與角色庫、單張重繪防重複；46 項單元測試與 lint/typecheck/build 全過，待 owner 實機驗收。 |
