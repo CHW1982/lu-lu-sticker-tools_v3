@@ -7,6 +7,10 @@ import { ChatPreview } from './ChatPreview';
 interface ResultsViewProps {
   originalImage: string;
   slices: string[];
+  mainIndex: number;
+  tabIndex: number;
+  onSelectMainIndex: (index: number) => void;
+  onSelectTabIndex: (index: number) => void;
   onRegenerateSlice: (index: number) => void;
   onReplaceSlice: (index: number, newBase64: string) => void;
   loadingIndices: number[]; // Which stickers are currently regenerating
@@ -15,13 +19,15 @@ interface ResultsViewProps {
 export const ResultsView: React.FC<ResultsViewProps> = ({ 
   originalImage, 
   slices, 
+  mainIndex,
+  tabIndex,
+  onSelectMainIndex,
+  onSelectTabIndex,
   onRegenerateSlice, 
   onReplaceSlice,
   loadingIndices 
 }) => {
   const [activeTab, setActiveTab] = useState<'sheet' | 'cuts' | 'review' | 'chat'>('cuts');
-  const [mainIndex, setMainIndex] = useState<number>(0);
-  const [tabIndex, setTabIndex] = useState<number>(0);
   const [validationResults, setValidationResults] = useState<Record<number, ValidationResult>>({});
   const [isValidating, setIsValidating] = useState(false);
   const [bgMode, setBgMode] = useState<'transparent' | 'red' | 'black' | 'white'>('transparent');
@@ -268,8 +274,8 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                         </label>
                     </div>
                     <div className="flex gap-1 mt-1">
-                        <button onClick={() => setMainIndex(idx)} className={`text-[10px] font-bold px-2 py-1 rounded bg-slate-800 text-white hover:bg-lulu-500 ${isMain ? 'opacity-50 cursor-default' : ''}`}>設為主圖</button>
-                        <button onClick={() => setTabIndex(idx)} className={`text-[10px] font-bold px-2 py-1 rounded bg-slate-800 text-white hover:bg-blue-500 ${isTab ? 'opacity-50 cursor-default' : ''}`}>設為標籤</button>
+                        <button onClick={() => onSelectMainIndex(idx)} className={`text-[10px] font-bold px-2 py-1 rounded bg-slate-800 text-white hover:bg-lulu-500 ${isMain ? 'opacity-50 cursor-default' : ''}`}>設為主圖</button>
+                        <button onClick={() => onSelectTabIndex(idx)} className={`text-[10px] font-bold px-2 py-1 rounded bg-slate-800 text-white hover:bg-blue-500 ${isTab ? 'opacity-50 cursor-default' : ''}`}>設為標籤</button>
                     </div>
                  </div>
                  <span className="absolute bottom-1 right-2 text-[10px] text-slate-300 font-mono pointer-events-none">{(idx+1).toString().padStart(2, '0')}</span>

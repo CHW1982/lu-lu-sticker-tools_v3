@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Header } from './components/Header';
 import { SettingsPanel } from './components/SettingsPanel';
 import { ResultsView } from './components/ResultsView';
 import { ApiKeyModal } from './components/ApiKeyModal';
+import { HistoryDrawer } from './components/HistoryDrawer';
 import { generateStickerImage, generateSingleSticker } from './services/geminiService';
 import { splitImage, removeSingleImageBackground, enforceLineSpec } from './utils/imageProcessor';
-import { GenerationSettings } from './types';
+import { listProjects, saveProject, deleteProject } from './services/storage';
+import { GenerationSettings, Project } from './types';
 
 const getStoredApiKey = (): string => {
   const storedKey = localStorage.getItem('gemini_api_key');
@@ -24,10 +26,46 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingIndices, setLoadingIndices] = useState<number[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<{ original: string; slices: string[] } | null>(null);
+  const [activeProject, setActiveProject] = useState<Project | null>(null);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [restoreCandidate, setRestoreCandidate] = useState<Project | null>(null);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [lastSettings, setLastSettings] = useState<GenerationSettings | null>(null);
 
-  // Clear an expired key from storage on mount (state is already initialized above).
+  const activeProjectRef = useRef<Project | null>(null);
+  const debounceTimerRef = useRef<number | null>(null);
+
+  const commitActiveProject = (project: Project | null) => {
+    activeProjectRef.current = project;
+    setActiveProject(project);
+  };
+
+  const scheduleProjectSave = (updated: Project) => {
+    setProjects((prev) => {
+      const others = prev.filter((p) => p.id !== updated.id);
+      return [updated, ...others];
+    });
+    if (debounceTimerRef.current !== null) {
+      window.clearTimeout(debounceTimerRef.current);
+    }
+    debounceTimerRef.current = window.setTimeout(() => {
+      debounceTimerRef.current = null;
+      saveProject(updated).catch((err) => {
+        console.error('Failed to auto-save project', err);
+      });
+    }, 500);
+  };
+
+  const updateActiveProject = (updater: (current: Project) => Project) => {
+    const current = activeProjectRef.current;
+    if (!current) return;
+    const next: Project = { ...updater(current), updatedAt: Date.now() };
+    activeProjectRef.current = next;
+    setActiveProject(next);
+    scheduleProjectSave(next);
+  };
+
+  // Clear an expired key from storage on mount and load saved projects.
   useEffect(() => {
     const storedKey = localStorage.getItem('gemini_api_key');
     const storedExpiry = localStorage.getItem('gemini_api_key_expiry');
@@ -36,6 +74,26 @@ function App() {
       localStorage.removeItem('gemini_api_key');
       localStorage.removeItem('gemini_api_key_expiry');
     }
+
+    let cancelled = false;
+    listProjects()
+      .then((loaded) => {
+        if (cancelled) return;
+        setProjects(loaded);
+        if (loaded.length > 0) {
+          setRestoreCandidate(loaded[0]);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load projects from IndexedDB', err);
+      });
+
+    return () => {
+      cancelled = true;
+      if (debounceTimerRef.current !== null) {
+        window.clearTimeout(debounceTimerRef.current);
+      }
+    };
   }, []);
 
   const handleSaveApiKey = (key: string, rememberForDays: number) => {
@@ -75,7 +133,12 @@ function App() {
 
     setIsLoading(true);
     setError(null);
-    setResult(null);
+    if (debounceTimerRef.current !== null) {
+      window.clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = null;
+    }
+    commitActiveProject(null);
+    setRestoreCandidate(null);
     setLastSettings(settings);
 
     try {
@@ -85,7 +148,21 @@ function App() {
       // 2. Cut the image client-side (optionally removing background)
       const slices = await splitImage(originalImage, settings.gridSize, settings.removeBackground);
 
-      setResult({ original: originalImage, slices });
+      const now = Date.now();
+      const newProject: Project = {
+        id: crypto.randomUUID(),
+        characterId: settings.characterId ?? null,
+        settings,
+        original: originalImage,
+        slices,
+        mainIndex: 0,
+        tabIndex: 0,
+        createdAt: now,
+        updatedAt: now,
+      };
+      commitActiveProject(newProject);
+      await saveProject(newProject);
+      setProjects((prev) => [newProject, ...prev.filter((p) => p.id !== newProject.id)]);
     } catch (err) {
       console.error(err);
       const message = err instanceof Error ? err.message : String(err);
@@ -101,7 +178,7 @@ function App() {
   };
 
   const handleRegenerateSlice = async (index: number) => {
-    if (!lastSettings || !result || !apiKey) return;
+    if (!lastSettings || !activeProjectRef.current || !apiKey) return;
 
     setLoadingIndices(prev => [...prev, index]);
 
@@ -115,8 +192,7 @@ function App() {
       }
       processedImage = await enforceLineSpec(processedImage);
 
-      setResult(prev => {
-        if (!prev) return null;
+      updateActiveProject((prev) => {
         const newSlices = [...prev.slices];
         newSlices[index] = processedImage;
         return { ...prev, slices: newSlices };
@@ -131,25 +207,110 @@ function App() {
   };
 
   const handleReplaceSlice = (index: number, newBase64: string) => {
-    setResult(prev => {
-      if (!prev) return null;
+    updateActiveProject((prev) => {
       const newSlices = [...prev.slices];
       newSlices[index] = newBase64;
       return { ...prev, slices: newSlices };
     });
   };
 
+  const handleSelectMainIndex = (index: number) => {
+    updateActiveProject((prev) => ({ ...prev, mainIndex: index }));
+  };
+
+  const handleSelectTabIndex = (index: number) => {
+    updateActiveProject((prev) => ({ ...prev, tabIndex: index }));
+  };
+
+  const handleSelectProject = (project: Project) => {
+    if (debounceTimerRef.current !== null) {
+      window.clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = null;
+    }
+    commitActiveProject(project);
+    setLastSettings(project.settings);
+    setRestoreCandidate(null);
+    setIsHistoryOpen(false);
+  };
+
+  const handleDeleteProject = async (id: string) => {
+    await deleteProject(id);
+    setProjects((prev) => prev.filter((p) => p.id !== id));
+    if (activeProjectRef.current?.id === id) {
+      if (debounceTimerRef.current !== null) {
+        window.clearTimeout(debounceTimerRef.current);
+        debounceTimerRef.current = null;
+      }
+      commitActiveProject(null);
+    }
+    if (restoreCandidate?.id === id) {
+      setRestoreCandidate(null);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col pb-6 bg-lulu-50 relative">
       <ApiKeyModal isOpen={isApiKeyModalOpen} onSave={handleSaveApiKey} />
 
-      <Header />
+      <Header
+        projectCount={projects.length}
+        onOpenHistory={() => setIsHistoryOpen(true)}
+      />
+
+      <HistoryDrawer
+        isOpen={isHistoryOpen}
+        projects={projects}
+        activeProjectId={activeProject?.id ?? null}
+        onClose={() => setIsHistoryOpen(false)}
+        onSelect={handleSelectProject}
+        onDelete={handleDeleteProject}
+      />
 
       <main className="max-w-3xl mx-auto px-4 py-8 flex-grow w-full">
         <div className="text-center mb-8">
           <h2 className="text-3xl font-black text-lulu-500 mb-2 tracking-tight">幾秒鐘內製作 LINE 貼圖！</h2>
           <p className="text-slate-500 font-medium">選擇版型、設定風格，讓 AI 為您施展魔法。</p>
         </div>
+
+        {!activeProject && restoreCandidate && (
+          <div className="mb-6 bg-white rounded-2xl p-4 border-2 border-lulu-200 shadow-md flex flex-col sm:flex-row items-center justify-between gap-4 animate-fade-in">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-12 h-12 rounded-xl bg-lulu-50 border border-lulu-100 p-1 shrink-0 flex items-center justify-center overflow-hidden">
+                {restoreCandidate.slices[restoreCandidate.mainIndex] ?? restoreCandidate.slices[0] ? (
+                  <img
+                    src={restoreCandidate.slices[restoreCandidate.mainIndex] ?? restoreCandidate.slices[0]}
+                    alt="上次作品縮圖"
+                    className="max-w-full max-h-full object-contain"
+                  />
+                ) : (
+                  <span className="text-xl">🎨</span>
+                )}
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-black text-lulu-600">繼續上次的作品？</p>
+                <p className="text-xs text-slate-500 truncate">
+                  {restoreCandidate.settings.prompt || '未命名作品'} · {restoreCandidate.slices.length} 張貼圖
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => handleSelectProject(restoreCandidate)}
+                className="px-4 py-2 rounded-xl bg-lulu-500 hover:bg-lulu-600 text-white text-xs font-bold shadow-sm transition-colors"
+              >
+                繼續編輯
+              </button>
+              <button
+                type="button"
+                onClick={() => setRestoreCandidate(null)}
+                className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold transition-colors"
+              >
+                關閉
+              </button>
+            </div>
+          </div>
+        )}
 
         <SettingsPanel isLoading={isLoading} onGenerate={handleGenerate} />
 
@@ -170,10 +331,15 @@ function App() {
           </div>
         )}
 
-        {result && (
+        {activeProject && (
           <ResultsView
-            originalImage={result.original}
-            slices={result.slices}
+            key={activeProject.id}
+            originalImage={activeProject.original}
+            slices={activeProject.slices}
+            mainIndex={activeProject.mainIndex}
+            tabIndex={activeProject.tabIndex}
+            onSelectMainIndex={handleSelectMainIndex}
+            onSelectTabIndex={handleSelectTabIndex}
             onRegenerateSlice={handleRegenerateSlice}
             onReplaceSlice={handleReplaceSlice}
             loadingIndices={loadingIndices}
