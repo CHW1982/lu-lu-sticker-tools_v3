@@ -98,12 +98,37 @@ describe('geminiService character sheet & reference injection', () => {
 
     await generateSingleSticker(settings, 0, 'test-key-unused');
 
-    const parts = mockGenerateContent.mock.calls[0][0].contents.parts;
+    const callArg = mockGenerateContent.mock.calls[0][0];
+    const parts = callArg.contents.parts;
     expect(parts).toHaveLength(3);
     expect(parts[0].text).toContain(
       '[CHARACTER SHEET] Image 1 is the locked character design. Match proportions, colors, outfit exactly.'
     );
     expect(parts[1]).toEqual({ inlineData: { mimeType: 'image/png', data: 'U0hFRVQ=' } });
     expect(parts[2]).toEqual({ inlineData: { mimeType: 'image/jpeg', data: 'UkVG1Q==' } });
+  });
+
+  it('uses 4:3 aspect ratio and avoids sibling poses on single sticker regeneration', async () => {
+    const settings = baseSettings({
+      characterSheet: 'data:image/png;base64,U0hFRVQ=',
+      customIntents: [
+        { text: '早安', description: 'greeting', visual: 'waving hand happily' },
+        { text: '哭哭', description: 'sad', visual: 'crying waterfall tears' },
+        { text: '收到', description: 'ok', visual: 'saluting firmly' },
+      ],
+    });
+
+    await generateSingleSticker(settings, 1, 'test-key-unused');
+
+    const callArg = mockGenerateContent.mock.calls[0][0];
+    expect(callArg.config.imageConfig.aspectRatio).toBe('4:3');
+
+    const promptText: string = callArg.contents.parts[0].text;
+    expect(promptText).toContain('[Target] Text: "哭哭", Visual: crying waterfall tears');
+    expect(promptText).toContain('Do NOT reuse these poses:');
+    expect(promptText).toContain('waving hand happily');
+    expect(promptText).toContain('saluting firmly');
+    const doNotReuseLine = promptText.split('\n').find((line) => line.includes('Do NOT reuse these poses:')) ?? '';
+    expect(doNotReuseLine).not.toContain('crying waterfall tears');
   });
 });

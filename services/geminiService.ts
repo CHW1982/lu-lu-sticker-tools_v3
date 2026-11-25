@@ -603,6 +603,12 @@ export const generateSingleSticker = async (
     const { prompt, model, stylePreset, textStylePreset, vibePreset, relationshipMode } = settings;
     const allIntents = getIntentsForSettings(settings);
     const targetIntent = allIntents[targetIndex];
+    const otherVisuals = allIntents
+      .filter((_, i) => i !== targetIndex)
+      .map((i) => i.visual)
+      .filter(Boolean);
+    const avoidPosesLine =
+      otherVisuals.length > 0 ? `\n    Do NOT reuse these poses: ${otherVisuals.join('; ')}` : '';
     
     const actualModelId = MODEL_IDS[model] ?? MODEL_IDS[ModelOption.NanoBananaPro];
     const { imageParts, referenceInstruction } = buildReferencePartsAndInstruction(settings);
@@ -610,14 +616,14 @@ export const generateSingleSticker = async (
     const systemPrompt = `Create a SINGLE sticker.
     ${referenceInstruction}
     [Character DNA] Subject: ${prompt}, Style: ${stylePreset}, Vibe: ${vibePreset}, Context: ${relationshipMode}
-    [Target] Text: "${targetIntent?.text}", Visual: ${targetIntent?.visual}
+    [Target] Text: "${targetIntent?.text}", Visual: ${targetIntent?.visual}${avoidPosesLine}
     [Rules] Pure Green (#00FF00) bg, Thick White outline, Style: ${stylePreset}, Font: ${textStylePreset}`;
   
     const parts: Part[] = [{ text: systemPrompt }, ...imageParts];
   
     const ai = new GoogleGenAI({ apiKey });
     const response = await withGeminiRetry(
-      () => ai.models.generateContent({ model: actualModelId, contents: { parts }, config: { imageConfig: { aspectRatio: "1:1" } } }),
+      () => ai.models.generateContent({ model: actualModelId, contents: { parts }, config: { imageConfig: { aspectRatio: "4:3" } } }),
       { onRetry: onRetry ? (attempt, maxRetries) => onRetry(attempt, maxRetries) : undefined }
     );
 
