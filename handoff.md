@@ -557,3 +557,13 @@ interface Project { id: string; characterId: string | null; settings: Generation
 |---|---|---|---|
 | 2026-11-25 | — | `da4fcc6` | 建立本 handoff 與 docs/ROADMAP.md（Claude Code） |
 | 2026-11-25 | 環境 | — | 本機用 nvm 安裝 Node v24.22.3 並設為預設；已驗證 npm ci、lint、tsc、build 通過。repo 內的版本設定由 P0-T0 處理 |
+| 2026-11-25 | P0-T0 | `e82f0e3` | 新增 `.nvmrc` (`24`)、`package.json` `engines.node: "24.x"`、更新 `deploy.yml` 與 `README.md`，驗證 `npm ci && lint && tsc && build` 通過 |
+| 2026-11-25 | P0-T1 | `8946cab` | 新增 `utils/stickerMath.ts` 與 `enforceLineSpec` 並串接所有輸出路徑，保留 `@deprecated autoFixMargin` |
+| 2026-11-25 | P0-T2 | `eba9f2a` | 新增 `loadStickerFile` 保留透明 PNG 並於上傳替換後自動檢查 |
+| 2026-11-25 | P0-T3 | `bb9117c` | `validateSticker` 新增 370×320、1MB 與不透明背景檢查；改為僅 `error` 判定不通過 |
+| 2026-11-25 | P0-T4 | `9eb6bf1` | 導入 Vitest 5，抽出 `gridDims`、`smoothDensity`、`findCuts` 至 `stickerMath.ts` 並完成 19 項單元與回歸測試 |
+| 2026-11-25 | P0-T5 | `5c28b7f` | 新增 `.github/workflows/ci.yml`（lint、typecheck、test、build）並本機驗證通過 |
+| 2026-11-25 | P0-T6 | `b5340d5` | 產生 PWA 圖示與 favicon，更新 `vite.config.ts` manifest icons 與 `index.html` links |
+| 2026-11-25 | P0-T7 | `d2b3f34` | 移除重複 `ModelOption.Gemini3Pro`、新增 `MODEL_IDS` 對照表並同步 README/MANUAL 模型名稱 |
+| 2026-11-25 | P0-T8 | `c473434` | 移除 `SettingsPanel` 風格描述中的既有角色與工作室 IP 名稱，確認 `geminiService.ts` 無 IP 名稱 |
+| 2026-11-25 | Phase 0 | — | **Phase 0 全部完成（P0-T0 ~ P0-T8）**：Node 24 標準化、`enforceLineSpec` 輸出關卡、透明 PNG 上傳、`validateSticker` 補全檢查、Vitest 19 項測試、GitHub Actions CI、PWA 圖示、模型名稱統一、IP 名稱移除。待 owner 驗收。 |
