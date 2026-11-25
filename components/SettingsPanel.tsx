@@ -11,17 +11,17 @@ interface SettingsPanelProps {
 // Preset Data Configuration
 const STYLE_PRESETS = [
   { value: "Classic Chibi Vector", label: "🎨 經典Q版 (Classic Chibi)", desc: "2D平面、粗線條、可愛比例" },
-  { value: "Minimalist Line Art", label: "✏️ 極簡線條 (Line Art)", desc: "線條小狗風：粗線條、極簡色塊、強調表情" },
+  { value: "Minimalist Line Art", label: "✏️ 極簡線條 (Line Art)", desc: "粗線條、極簡色塊、強調表情" },
   { value: "Ugly-Cute Meme Style", label: "🤪 醜萌迷擬 (Ugly-Cute)", desc: "誇張比例、歪斜線條、高度迷因感" },
   { value: "Scribble Lo-Fi Doodle", label: "🥴 潦草醜萌風 (Lo-Fi Doodle)", desc: "隨性塗鴉、歪斜比例、2026最夯精神鬆弛感" },
-  { value: "Fluffy Pastel Healing", label: "🥺 軟萌療癒風 (Fluffy Pastel)", desc: "吉伊卡哇式溫柔、水汪汪委屈大眼、療癒粉嫩" },
+  { value: "Fluffy Pastel Healing", label: "🥺 軟萌療癒風 (Fluffy Pastel)", desc: "水汪汪委屈大眼、圓潤小短手、療癒粉嫩" },
   { value: "Y2K Retro Pop", label: "💿 Y2K千禧潮流 (Y2K Pop)", desc: "高對比酸性色、復古Y2K美學、潮流貼紙質感" },
   { value: "Soft Hand-drawn Crayon", label: "🖍️ 軟萌手繪 (Soft Crayon)", desc: "蠟筆質感、粉嫩配色、溫暖氛圍" },
   { value: "Retro 8-bit Pixel Art", label: "👾 復古像素 (Pixel Art)", desc: "方塊感、懷舊遊戲風格" },
   { value: "American Cartoon", label: "📺 美式卡通 (Cartoon)", desc: "線條大膽、表情誇張、動感十足" },
   { value: "3D Clay Toy", label: "🧸 3D公仔 (3D Clay)", desc: "柔和光影、黏土/塑膠質感、圓潤" },
   { value: "Needle Felted Wool Plush", label: "🧶 羊毛氈手作 (Needle Felted)", desc: "毛氈玩偶質感、可見絨毛纖維、手作溫度" },
-  { value: "Stop-Motion Claymation", label: "🎞️ 黏土定格動畫 (Claymation)", desc: "阿德曼式黏土質感、指捏痕跡、定格動畫感" },
+  { value: "Stop-Motion Claymation", label: "🎞️ 黏土定格動畫 (Claymation)", desc: "黏土質感、指捏痕跡、定格動畫感" },
   { value: "80s Retro Shoujo Anime", label: "✨ 昭和復古少女漫 (80s Shoujo)", desc: "星芒大眼、誇張淚珠、粉紫網點、極致浪漫" },
   { value: "Risograph Print Stamp", label: "📰 孔版版畫印刷 (Risograph)", desc: "雙色調網點、油墨錯位感、復古印章質地" },
 ];
