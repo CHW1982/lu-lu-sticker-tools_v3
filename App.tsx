@@ -4,7 +4,7 @@ import { SettingsPanel } from './components/SettingsPanel';
 import { ResultsView } from './components/ResultsView';
 import { ApiKeyModal } from './components/ApiKeyModal';
 import { generateStickerImage, generateSingleSticker } from './services/geminiService';
-import { splitImage, removeSingleImageBackground, autoFixMargin } from './utils/imageProcessor';
+import { splitImage, removeSingleImageBackground, enforceLineSpec } from './utils/imageProcessor';
 import { GenerationSettings } from './types';
 
 const getStoredApiKey = (): string => {
@@ -113,7 +113,7 @@ function App() {
       if (lastSettings.removeBackground) {
         processedImage = await removeSingleImageBackground(processedImage);
       }
-      processedImage = await autoFixMargin(processedImage, 10);
+      processedImage = await enforceLineSpec(processedImage);
 
       setResult(prev => {
         if (!prev) return null;

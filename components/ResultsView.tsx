@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { downloadImage, downloadAllImages, processFileToBase64, validateSticker, autoFixMargin } from '../utils/imageProcessor';
+import { downloadImage, downloadAllImages, processFileToBase64, validateSticker, enforceLineSpec } from '../utils/imageProcessor';
 import { ValidationResult } from '../types';
 import { StickerEditor } from './StickerEditor';
 import { ChatPreview } from './ChatPreview';
@@ -43,7 +43,8 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
       const text = lines[i % lines.length];
       try {
         const processed = await applyTextToImage(slices[i], text);
-        onReplaceSlice(i, processed);
+        const fixed = await enforceLineSpec(processed);
+        onReplaceSlice(i, fixed);
       } catch (err) {
         console.error(`Failed to apply text to slice ${i}`, err);
       }
@@ -104,7 +105,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
   };
 
   const handleAutoFix = async (index: number) => {
-    const fixed = await autoFixMargin(slices[index]);
+    const fixed = await enforceLineSpec(slices[index]);
     onReplaceSlice(index, fixed);
     // Re-validate after fix
     const result = await validateSticker(fixed);
@@ -123,9 +124,10 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
       }
   };
 
-  const handleSaveEdit = (newImage: string) => {
+  const handleSaveEdit = async (newImage: string) => {
     if (editingIndex !== null) {
-      onReplaceSlice(editingIndex, newImage);
+      const fixed = await enforceLineSpec(newImage);
+      onReplaceSlice(editingIndex, fixed);
       setEditingIndex(null);
     }
   };

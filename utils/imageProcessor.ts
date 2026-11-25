@@ -1,5 +1,13 @@
 import { GridOption, ValidationResult, ValidationIssue } from "../types";
 import JSZip from "jszip";
+import {
+  LINE_STICKER_MAX_W,
+  LINE_STICKER_MAX_H,
+  LINE_MAX_FILE_BYTES,
+  findAlphaBounds,
+  computeSpecLayout,
+  estimateDataUrlBytes,
+} from "./stickerMath";
 
 export const processFileToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -335,9 +343,9 @@ export const splitImage = (
         }
       }
 
-      // 4. 強制執行 autoFixMargin 保證偶數尺寸與 10px 絕對安全邊距
+      // 4. 強制執行 enforceLineSpec 保證偶數尺寸、≤370x320 與 10px 絕對安全邊距
       try {
-         const fixedSlices = await Promise.all(slices.map(s => autoFixMargin(s, 10)));
+         const fixedSlices = await Promise.all(slices.map(s => enforceLineSpec(s)));
          resolve(fixedSlices);
       } catch {
          resolve(slices);
@@ -442,70 +450,83 @@ export const validateSticker = async (stickerBase64: string): Promise<Validation
   });
 };
 
-export const autoFixMargin = async (stickerBase64: string, padding: number = 10): Promise<string> => {
+export const enforceLineSpec = async (
+  dataUrl: string,
+  opts?: { padding?: number; allowUpscale?: boolean }
+): Promise<string> => {
   return new Promise((resolve) => {
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.onload = () => {
-      const canvas = document.createElement('canvas');
-      // Use existing image dimensions as target, typically already LINE-optimized (e.g. 370x320 max)
-      // Force even numbers for LINE compliance
-      const targetW = img.width % 2 === 0 ? img.width : img.width - 1;
-      const targetH = img.height % 2 === 0 ? img.height : img.height - 1;
-      
-      canvas.width = targetW;
-      canvas.height = targetH;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) { resolve(stickerBase64); return; }
-
-      // Find actual content boundaries
       const tempCanvas = document.createElement('canvas');
       tempCanvas.width = img.width;
       tempCanvas.height = img.height;
       const tempCtx = tempCanvas.getContext('2d', { willReadFrequently: true });
-      if (!tempCtx) { resolve(stickerBase64); return; }
+      if (!tempCtx) { resolve(dataUrl); return; }
+
       tempCtx.drawImage(img, 0, 0);
       const imageData = tempCtx.getImageData(0, 0, img.width, img.height);
-      const data = imageData.data;
+      const bounds = findAlphaBounds(imageData.data, img.width, img.height);
+      if (!bounds) { resolve(dataUrl); return; }
 
-      let minX = img.width, minY = img.height, maxX = 0, maxY = 0;
-      let hasContent = false;
-      for (let y = 0; y < img.height; y++) {
-        for (let x = 0; x < img.width; x++) {
-          if (data[(y * img.width + x) * 4 + 3] > 0) {
-            if (x < minX) minX = x;
-            if (y < minY) minY = y;
-            if (x > maxX) maxX = x;
-            if (y > maxY) maxY = y;
-            hasContent = true;
-          }
+      const contentW = bounds.maxX - bounds.minX + 1;
+      const contentH = bounds.maxY - bounds.minY + 1;
+
+      let maxW = LINE_STICKER_MAX_W;
+      let maxH = LINE_STICKER_MAX_H;
+      let result = dataUrl;
+
+      for (let attempt = 0; attempt < 4; attempt++) {
+        const layout = computeSpecLayout(contentW, contentH, {
+          maxW,
+          maxH,
+          padding: opts?.padding,
+          allowUpscale: opts?.allowUpscale,
+        });
+
+        const canvas = document.createElement('canvas');
+        canvas.width = layout.canvasW;
+        canvas.height = layout.canvasH;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) { resolve(dataUrl); return; }
+
+        ctx.clearRect(0, 0, layout.canvasW, layout.canvasH);
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        if (layout.drawW > 0 && layout.drawH > 0) {
+          ctx.drawImage(
+            img,
+            bounds.minX,
+            bounds.minY,
+            contentW,
+            contentH,
+            layout.offsetX,
+            layout.offsetY,
+            layout.drawW,
+            layout.drawH
+          );
         }
+
+        result = canvas.toDataURL('image/png');
+        if (estimateDataUrlBytes(result) <= LINE_MAX_FILE_BYTES) {
+          resolve(result);
+          return;
+        }
+
+        maxW = Math.floor(maxW * 0.9);
+        maxH = Math.floor(maxH * 0.9);
       }
 
-      if (!hasContent) { resolve(stickerBase64); return; }
-
-      const contentW = maxX - minX + 1;
-      const contentH = maxY - minY + 1;
-
-      // Calculate scale to fit content with padding
-      const availW = targetW - padding * 2;
-      const availH = targetH - padding * 2;
-      const scale = Math.min(availW / contentW, availH / contentH, 1); // Don't scale up
-
-      const finalW = contentW * scale;
-      const finalH = contentH * scale;
-      
-      // Center the scaled content
-      const x = (targetW - finalW) / 2;
-      const y = (targetH - finalH) / 2;
-
-      ctx.clearRect(0, 0, targetW, targetH);
-      ctx.drawImage(img, minX, minY, contentW, contentH, x, y, finalW, finalH);
-      
-      resolve(canvas.toDataURL('image/png'));
+      resolve(result);
     };
-    img.src = stickerBase64;
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
   });
+};
+
+/** @deprecated use enforceLineSpec */
+export const autoFixMargin = async (stickerBase64: string, padding: number = 10): Promise<string> => {
+  return enforceLineSpec(stickerBase64, { padding });
 };
 
 export const removeSingleImageBackground = (base64Str: string): Promise<string> => {
@@ -606,9 +627,10 @@ export const downloadAllImages = async (
     tabIndex: number = 0
 ) => {
     const zip = new JSZip();
+    const enforcedSlices = await Promise.all(slices.map(s => enforceLineSpec(s)));
 
     // 1. Add numbered stickers with STRICT LINE FILENAMES (01.png, 02.png...)
-    slices.forEach((slice, index) => {
+    enforcedSlices.forEach((slice, index) => {
         // LINE requires strict "01.png", "02.png" format for batch upload
         const num = (index + 1).toString().padStart(2, '0');
         const base64Data = slice.split(',')[1];
@@ -618,17 +640,17 @@ export const downloadAllImages = async (
     });
 
     // 2. Add Main Image (240x240)
-    if (slices[mainIndex]) {
+    if (enforcedSlices[mainIndex]) {
         // Resize with Aspect Ratio Contain logic (handled in updated resizeImage)
-        const mainResized = await resizeImage(slices[mainIndex], 240, 240);
+        const mainResized = await resizeImage(enforcedSlices[mainIndex], 240, 240);
         const mainData = mainResized.split(',')[1];
         if (mainData) zip.file('main.png', mainData, { base64: true });
     }
 
     // 3. Add Tab Image (96x74)
-    if (slices[tabIndex]) {
+    if (enforcedSlices[tabIndex]) {
         // Resize with Aspect Ratio Contain logic
-        const tabResized = await resizeImage(slices[tabIndex], 96, 74);
+        const tabResized = await resizeImage(enforcedSlices[tabIndex], 96, 74);
         const tabData = tabResized.split(',')[1];
         if (tabData) zip.file('tab.png', tabData, { base64: true });
     }
