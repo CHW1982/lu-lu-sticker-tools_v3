@@ -474,12 +474,34 @@ export const validateSticker = async (stickerBase64: string): Promise<Validation
         issues.push({ type: 'chroma_residue', severity: 'warning', message: '偵測到去背殘留，邊緣可能含有綠色像素。', autoFixable: false });
       }
 
-      // 3. Dimension check (Even numbers)
+      // 3. Dimension check (Even numbers & LINE max size 370x320)
       if (img.width % 2 !== 0 || img.height % 2 !== 0) {
         issues.push({ type: 'dimension', severity: 'error', message: '尺寸必須為偶數。', autoFixable: true });
       }
+      if (img.width > LINE_STICKER_MAX_W || img.height > LINE_STICKER_MAX_H) {
+        issues.push({
+          type: 'dimension',
+          severity: 'error',
+          message: `尺寸超過 LINE 上限 370×320（目前 ${img.width}×${img.height}）。`,
+          autoFixable: true,
+        });
+      }
 
-      resolve({ passed: issues.length === 0, issues });
+      // 4. File size check (<= 1MB)
+      if (estimateDataUrlBytes(stickerBase64) > LINE_MAX_FILE_BYTES) {
+        issues.push({ type: 'filesize', severity: 'error', message: '檔案超過 1MB。', autoFixable: true });
+      }
+
+      // 5. Opaque background check (all 4 corners alpha === 255)
+      const tlAlpha = data[3];
+      const trAlpha = data[(img.width - 1) * 4 + 3];
+      const blAlpha = data[(img.height - 1) * img.width * 4 + 3];
+      const brAlpha = data[((img.height - 1) * img.width + (img.width - 1)) * 4 + 3];
+      if (tlAlpha === 255 && trAlpha === 255 && blAlpha === 255 && brAlpha === 255) {
+        issues.push({ type: 'opaque_background', severity: 'error', message: '背景不是透明的，請先去背。', autoFixable: false });
+      }
+
+      resolve({ passed: issues.every(i => i.severity !== 'error'), issues });
     };
     img.onerror = () => resolve({ passed: false, issues: [{ type: 'dimension', severity: 'error', message: '圖片載入失敗', autoFixable: false }] });
     img.src = stickerBase64;

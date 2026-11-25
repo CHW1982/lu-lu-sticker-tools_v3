@@ -40,7 +40,7 @@ export interface GenerationSettings {
 }
 
 export interface ValidationIssue {
-  type: 'margin' | 'chroma_residue' | 'dimension' | 'filesize';
+  type: 'margin' | 'chroma_residue' | 'dimension' | 'filesize' | 'opaque_background';
   severity: 'error' | 'warning';
   message: string;
   autoFixable: boolean;
