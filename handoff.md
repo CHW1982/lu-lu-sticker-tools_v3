@@ -111,7 +111,7 @@ npm run build               # 成功
 2. `package.json` 加上 `"engines": { "node": "24.x" }`。**必須用 `24.x`，不可用 `>=24`**：Vercel 會以 `engines.node` 為準並蓋過後台設定，寫 `>=24` 可能被自動升到 Node 26。
 3. `.github/workflows/deploy.yml`：把 `node-version: '20'` 改成 `node-version-file: '.nvmrc'`。**只改這一行**，其他部署設定不動。
 4. README 和 DEPLOYMENT.md 裡的「Node.js 18+」改成「Node.js 24+」。
-5. **Vercel 專案設定（Settings → General → Node.js Version）要由 owner 在後台改成 24.x**。agy 無法操作，完成程式部分後在 §7 提醒 owner。
+5. ~~Vercel 專案設定的 Node.js Version 改成 24.x~~ ✅ owner 已於 2026-11-25 在後台完成，agy 不需處理。
 
 **驗收**：`node -v` 是 v24；`npm ci && npm run build` 成功；用 grep 搜尋 `node-version: '20'` 和 `Node.js 18` 都沒有結果。
 
