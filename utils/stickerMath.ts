@@ -137,15 +137,27 @@ export function computeSpecLayout(
   let drawW = Math.round(contentW * scale);
   let drawH = Math.round(contentH * scale);
 
-  const canvasW = toEven(Math.min(maxW, drawW + 2 * padding));
-  if (canvasW - drawW < 2 * padding) {
-    drawW = Math.max(0, canvasW - 2 * padding);
-  }
+  const fitAxis = (draw: number, maxDim: number): { canvas: number; draw: number } => {
+    let canvas = draw + 2 * padding;
+    if (canvas % 2 !== 0) {
+      if (canvas + 1 <= maxDim) {
+        canvas += 1;
+      } else {
+        canvas = toEven(Math.min(maxDim, canvas));
+      }
+    } else if (canvas > maxDim) {
+      canvas = toEven(maxDim);
+    }
+    const adjustedDraw = canvas - draw < 2 * padding ? Math.max(0, canvas - 2 * padding) : draw;
+    return { canvas, draw: adjustedDraw };
+  };
 
-  const canvasH = toEven(Math.min(maxH, drawH + 2 * padding));
-  if (canvasH - drawH < 2 * padding) {
-    drawH = Math.max(0, canvasH - 2 * padding);
-  }
+  const xFit = fitAxis(drawW, maxW);
+  const yFit = fitAxis(drawH, maxH);
+  const canvasW = xFit.canvas;
+  const canvasH = yFit.canvas;
+  drawW = xFit.draw;
+  drawH = yFit.draw;
 
   const offsetX = Math.floor((canvasW - drawW) / 2);
   const offsetY = Math.floor((canvasH - drawH) / 2);

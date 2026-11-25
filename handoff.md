@@ -570,7 +570,7 @@ interface Project { id: string; characterId: string | null; settings: Generation
 
 - （已知）`getIntentsByVibe` 遇到自訂氛圍（Custom）時，會退回 HIGH_ENERGY 的台詞。使用者沒有開啟「自訂貼圖文字」時，自訂氛圍只會影響提示詞，不會影響台詞。等 Phase 2 再評估。
 - （已知）`ResultsView.applyTextToImage` 的字型寫死為 Inter 和微軟正黑體，在 macOS 會 fallback 到其他字型。P2-T3 會一起處理。
-- （已知，Phase 0 驗收時發現）`computeSpecLayout` 遇到奇數寬高時會把內容縮 1px 來維持畫布偶數，造成 1px 長寬比誤差與不必要的重新取樣。較好的做法是畫布未達上限時多補 1px 邊距。可在 Phase 1 順手修正。
+- （已解決，P1-T0）`computeSpecLayout` 遇到奇數寬高時曾把內容縮 1px 來維持畫布偶數，已改為畫布未達上限時多補 1px 邊距，只有在加 1px 會超限時才縮 1px。
 - （已知限制）`hasOpaqueBackground` 是用內容外框周長判斷的，本身就是「方形卡片」造型的貼圖（外框整圈不透明）會被誤判為未去背。目前視為可接受，若使用者回報再改為 warning。
 
 ---
