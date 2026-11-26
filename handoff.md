@@ -440,6 +440,79 @@ interface Project { id: string; characterId: string | null; settings: Generation
 
 **Phase 1 結束**：停下來等 owner 驗收。
 
+### Phase 1 驗收修正（2026-11-26，Claude Code 審查後新增）
+
+**背景**：Phase 1 的 46 項測試、lint、typecheck、build 都通過，但審查程式碼時發現以下問題。F1–F3 會造成作品內容錯誤或遺失，**必須修完才能合併**；F4、F5 建議一起修。
+
+**分支**：繼續使用 `feat/phase1-character`。開始前先執行 `git merge origin/main`，帶入 main 上的部署流程修正 `b80527c`。這次合併不會有衝突。
+
+**建議順序**：F1 → F2 → F3 → F5 → F4。
+
+#### P1-F1｜單張重新生成會把結果寫進錯的作品（必修）
+
+- **問題**：
+  - `App.handleRegenerateSlice` 等 Gemini 回傳後，才用 `updateActiveProject` 寫入，寫入的是「當下」的 `activeProjectRef.current`。
+  - 重新生成要 10–60 秒。這段期間如果使用者從歷史作品切到別的作品，或開始生成新的一組，新圖就會蓋掉**另一個作品**同一格，並被自動保存。
+  - `loadingIndices` 也沒有區分作品，切換作品後，另一個作品的同一格會一直顯示轉圈。
+- **修法**：
+  1. 重新生成開始時，記下 `projectId = activeProjectRef.current.id`。
+  2. 完成時依 `projectId` 寫入：
+     - 如果還是目前作品，用 `updateActiveProject`。
+     - 如果不是，從 `projects` state 找到該作品，更新 `slices` 和 `updatedAt` 後直接 `saveProject`，並同步更新 `projects` state。
+     - 如果作品已經被刪除，就丟棄結果，不要報錯。
+  3. `loadingIndices` 改成以作品區分，例如 `Record<string, number[]>`，或用 `${projectId}:${index}` 當 key。ResultsView 只顯示目前作品的轉圈狀態。
+  4. 把「依 id 更新某作品的某一格」抽成純函式，例如 `services/projectState.ts` 的 `applySliceUpdate(projects, projectId, index, image)`，並寫單元測試：目前作品、非目前作品、已刪除作品三種情況。
+- **驗收**：在作品 A 按某一格重新生成 → 立刻從歷史作品切到作品 B → 等重新生成完成：作品 B 不變，切回作品 A 時那一格已經更新。
+
+#### P1-F2｜切換作品或關閉頁面時，最後 0.5 秒內的修改會遺失（必修）
+
+- **問題**：
+  - `handleGenerate`、`handleSelectProject`、`handleDeleteProject` 和元件卸載時，都直接 `clearTimeout` 掉還沒執行的自動保存。
+  - 使用者編輯某一格後馬上切換作品、生成新的一組，或重新整理、關閉分頁，這次修改就不會寫進 IndexedDB。
+- **修法**：
+  1. 把 debounce 邏輯抽成 `utils/debouncedSaver.ts`：`createDebouncedSaver<T>(save: (v: T) => Promise<void>, delayMs)`，回傳 `{ schedule(v), flush(): Promise<void>, cancel() }`。
+  2. 切換作品、生成新的一組、元件卸載時，改呼叫 `flush()`，**不要**用 `cancel()`。只有「刪除的正是還沒保存的那個作品」時才用 `cancel()`。
+  3. 監聽 `pagehide` 和 `visibilitychange`（變成 `hidden` 時），呼叫 `flush()`。
+  4. 用 Vitest 的 fake timers 測試 `createDebouncedSaver`：
+     - 連續 `schedule` 只會保存最後一次。
+     - `flush` 會立刻保存。
+     - `cancel` 後不會保存。
+     - `flush` 時沒有待保存的資料，不會呼叫 save。
+- **驗收**：在審核頁編輯某一格的文字後，0.5 秒內按重新整理，還原後修改還在。
+
+#### P1-F3｜瀏覽器儲存空間不足時，顯示成「Gemini 額度用完」（必修）
+
+- **問題**：
+  - `handleGenerate` 的 `try` 同時包住 Gemini 呼叫和 `await saveProject(...)`。
+  - IndexedDB 空間不足時會丟出 `QuotaExceededError`，訊息裡有「quota」，被 `classifyGeminiError` 歸類成 `quota`，使用者看到的是「已達使用額度，請稍後再試或更換模型」。這是錯的。
+  - 自動保存失敗只寫進 `console.error`，使用者完全不知道作品沒存到。
+- **修法**：
+  1. 新增 `services/storage.ts` 的 `isStorageQuotaError(err)`，判斷 `DOMException` 的 `name === 'QuotaExceededError'`。
+  2. `handleGenerate` 把保存移出 Gemini 的 `try/catch`。生成成功但保存失敗時，結果照常顯示，Toast 顯示「瀏覽器儲存空間不足，這組作品沒有保存，請到歷史作品刪除舊作品」。
+  3. 自動保存（F2 的 saver）失敗時也要顯示同樣的 Toast。同一個作品連續失敗時只提示一次，不要每次 debounce 都跳出來。
+  4. `classifyGeminiError` 加一條防呆：`QuotaExceededError` 一律不歸類成 `quota`。並補一項測試。
+- **驗收**：單元測試涵蓋 `isStorageQuotaError`，以及 `classifyGeminiError` 不把 `QuotaExceededError` 當成 Gemini 額度問題。
+
+#### P1-F5｜歷史作品一按就刪除，沒有確認（建議修）
+
+- **問題**：`HistoryDrawer` 的刪除按鈕直接呼叫 `onDelete`，而且刪除無法復原。角色刪除有確認對話框，作品刪除卻沒有。
+- **修法**：比照角色刪除，用 `ConfirmDialog` 確認：「確定要刪除這組作品嗎？此操作無法復原。」
+- **驗收**：在歷史作品按刪除會先跳出確認，按取消不會刪除。
+
+#### P1-F4｜作品佔用的儲存空間（建議修）
+
+- **問題**：
+  - 每個作品都存了完整的 2K 原圖（PNG base64），`settings` 裡又複製了一份角色設定圖和參考圖。一個作品可能接近 10MB，而且沒有上限。
+  - 角色設定圖以 2K PNG 存在角色庫，每次生成都整張送給 Gemini，請求很大、速度較慢。
+- **修法**：
+  1. 角色設定圖在產生後就壓縮：長邊最大 1536px，轉成 JPEG（品質 0.9），之後才存進角色庫和送給 Gemini。它只當參考圖用，不需要透明背景。
+  2. 保存作品時，把 `original` 壓成 JPEG（品質 0.9）。它只用在「原圖」分頁顯示，不會再拿去切片。**`slices` 必須維持 PNG**，因為要保留透明背景。
+  3. 歷史作品抽屜顯示已用空間（`navigator.storage.estimate()`）。超過 80% 時顯示提示，建議刪除舊作品。**不要自動刪除使用者的作品**。
+  4. 第一次保存作品成功後，呼叫一次 `navigator.storage.persist()`，降低瀏覽器自動清除資料的機率。失敗或不支援就略過。
+- **驗收**：產生一組 16 格貼圖後，DevTools → Application → IndexedDB 裡這筆作品比修正前明顯變小，而且貼圖切片仍是透明 PNG。
+
+**修正完成**：在 §7 為每個修正加一行紀錄，然後停下來等 owner 驗收。**不要合併到 main**。
+
 ---
 
 ## 4. Phase 2：趨勢內容引擎與更多張數
