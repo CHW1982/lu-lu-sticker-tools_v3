@@ -43,7 +43,17 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: './dist'
-      
+
+  # 部署拆成獨立 job（GitHub 官方範本做法）：
+  # 與上傳放在同一個 job 時，deploy-pages 會在上傳後不到 1 秒查詢 artifact，
+  # GitHub 端偶爾還查不到，導致 "No artifacts named github-pages" 失敗。
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
