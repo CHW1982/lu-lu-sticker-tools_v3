@@ -10,7 +10,10 @@ import { generateCharacterSheet, generateStickerImage, generateSingleSticker } f
 import { classifyGeminiError } from './services/errors';
 import { splitImage, removeSingleImageBackground, enforceLineSpec } from './utils/imageProcessor';
 import { listProjects, saveProject, deleteProject, listCharacters, saveCharacter, deleteCharacter } from './services/storage';
+import { applySliceUpdate } from './services/projectState';
 import { Character, GenerationSettings, Project } from './types';
+
+const EMPTY_LOADING_INDICES: number[] = [];
 
 const getStoredApiKey = (): string => {
   const storedKey = localStorage.getItem('gemini_api_key');
@@ -31,7 +34,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [isGeneratingSheet, setIsGeneratingSheet] = useState(false);
   const [retryStatus, setRetryStatus] = useState<string | null>(null);
-  const [loadingIndices, setLoadingIndices] = useState<number[]>([]);
+  const [loadingByProject, setLoadingByProject] = useState<Record<string, number[]>>({});
   const [error, setError] = useState<string | null>(null);
   const [activeProject, setActiveProject] = useState<Project | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -39,10 +42,16 @@ function App() {
   const [deleteCharacterTarget, setDeleteCharacterTarget] = useState<Character | null>(null);
   const [restoreCandidate, setRestoreCandidate] = useState<Project | null>(null);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-  const [lastSettings, setLastSettings] = useState<GenerationSettings | null>(null);
 
   const activeProjectRef = useRef<Project | null>(null);
+  const projectsRef = useRef<Project[]>([]);
   const debounceTimerRef = useRef<number | null>(null);
+
+  const updateProjects = (updater: (prev: Project[]) => Project[]) => {
+    const next = updater(projectsRef.current);
+    projectsRef.current = next;
+    setProjects(next);
+  };
 
   const commitActiveProject = (project: Project | null) => {
     activeProjectRef.current = project;
@@ -50,7 +59,7 @@ function App() {
   };
 
   const scheduleProjectSave = (updated: Project) => {
-    setProjects((prev) => {
+    updateProjects((prev) => {
       const others = prev.filter((p) => p.id !== updated.id);
       return [updated, ...others];
     });
@@ -88,6 +97,7 @@ function App() {
     Promise.all([listProjects(), listCharacters()])
       .then(([loadedProjects, loadedCharacters]) => {
         if (cancelled) return;
+        projectsRef.current = loadedProjects;
         setProjects(loadedProjects);
         setCharacters(loadedCharacters);
         if (loadedProjects.length > 0) {
@@ -154,7 +164,6 @@ function App() {
     }
     commitActiveProject(null);
     setRestoreCandidate(null);
-    setLastSettings(settings);
 
     try {
       // 1. Generate the full sheet - passing the API Key
@@ -179,7 +188,7 @@ function App() {
       };
       commitActiveProject(newProject);
       await saveProject(newProject);
-      setProjects((prev) => [newProject, ...prev.filter((p) => p.id !== newProject.id)]);
+      updateProjects((prev) => [newProject, ...prev.filter((p) => p.id !== newProject.id)]);
     } catch (err) {
       console.error(err);
       const classified = classifyGeminiError(err);
@@ -195,14 +204,22 @@ function App() {
   };
 
   const handleRegenerateSlice = async (index: number) => {
-    if (!lastSettings || !activeProjectRef.current || !apiKey) return;
+    const targetProject = activeProjectRef.current;
+    if (!targetProject || !apiKey) return;
 
-    setLoadingIndices(prev => [...prev, index]);
+    const projectId = targetProject.id;
+    const targetSettings = targetProject.settings;
+
+    setLoadingByProject((prev) => {
+      const current = prev[projectId] ?? [];
+      if (current.includes(index)) return prev;
+      return { ...prev, [projectId]: [...current, index] };
+    });
 
     try {
       // Generate single image for this slot - passing the API Key
       const newImageBase64 = await generateSingleSticker(
-        lastSettings,
+        targetSettings,
         index,
         apiKey,
         (attempt, maxRetries) => {
@@ -211,17 +228,34 @@ function App() {
       );
 
       let processedImage = newImageBase64;
-      if (lastSettings.removeBackground) {
+      if (targetSettings.removeBackground) {
         processedImage = await removeSingleImageBackground(processedImage);
       }
       processedImage = await enforceLineSpec(processedImage);
 
-      updateActiveProject((prev) => {
-        const newSlices = [...prev.slices];
-        newSlices[index] = processedImage;
-        return { ...prev, slices: newSlices };
-      });
-
+      if (activeProjectRef.current?.id === projectId) {
+        updateActiveProject((prev) => {
+          const newSlices = [...prev.slices];
+          newSlices[index] = processedImage;
+          return { ...prev, slices: newSlices };
+        });
+      } else {
+        const { projects: nextProjects, updatedProject } = applySliceUpdate(
+          projectsRef.current,
+          projectId,
+          index,
+          processedImage
+        );
+        if (updatedProject) {
+          projectsRef.current = nextProjects;
+          setProjects(nextProjects);
+          try {
+            await saveProject(updatedProject);
+          } catch (saveErr) {
+            console.error('Failed to save regenerated slice for background project', saveErr);
+          }
+        }
+      }
     } catch (err) {
       console.error("Failed to regenerate single sticker", err);
       const classified = classifyGeminiError(err);
@@ -230,7 +264,14 @@ function App() {
         setIsApiKeyModalOpen(true);
       }
     } finally {
-      setLoadingIndices(prev => prev.filter(i => i !== index));
+      setLoadingByProject((prev) => {
+        const remaining = (prev[projectId] ?? []).filter((i) => i !== index);
+        if (remaining.length === 0) {
+          const { [projectId]: _removed, ...rest } = prev;
+          return rest;
+        }
+        return { ...prev, [projectId]: remaining };
+      });
     }
   };
 
@@ -256,14 +297,13 @@ function App() {
       debounceTimerRef.current = null;
     }
     commitActiveProject(project);
-    setLastSettings(project.settings);
     setRestoreCandidate(null);
     setIsHistoryOpen(false);
   };
 
   const handleDeleteProject = async (id: string) => {
     await deleteProject(id);
-    setProjects((prev) => prev.filter((p) => p.id !== id));
+    updateProjects((prev) => prev.filter((p) => p.id !== id));
     if (activeProjectRef.current?.id === id) {
       if (debounceTimerRef.current !== null) {
         window.clearTimeout(debounceTimerRef.current);
@@ -460,7 +500,7 @@ function App() {
             onSelectTabIndex={handleSelectTabIndex}
             onRegenerateSlice={handleRegenerateSlice}
             onReplaceSlice={handleReplaceSlice}
-            loadingIndices={loadingIndices}
+            loadingIndices={loadingByProject[activeProject.id] ?? EMPTY_LOADING_INDICES}
           />
         )}
       </main>
