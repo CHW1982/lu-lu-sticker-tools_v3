@@ -673,3 +673,8 @@ interface Project { id: string; characterId: string | null; settings: Generation
 | 2026-11-25 | P1-T4 | `d323f2f` | 新增 `CharacterLibrary` 橫向角色庫 UI，支援一鍵帶入設定、重新命名與確認刪除 |
 | 2026-11-25 | P1-T6 | `3407d2c` | `generateSingleSticker` 改用 `4:3` 長寬比並附帶同組其他格 `visual` 避免重複姿勢 |
 | 2026-11-25 | Phase 1 | — | **Phase 1 全部完成（P1-T0 ~ P1-T6）**：奇數畫布修補、IndexedDB 儲存與作品自動保存、錯誤分類重試與 Toast、角色設定圖與角色庫、單張重繪防重複；46 項單元測試與 lint/typecheck/build 全過，待 owner 實機驗收。 |
+| 2026-11-26 | P1-F1 | `71f508e` | 抽出 `services/projectState.ts`（`applySliceUpdate`）與單元測試；`handleRegenerateSlice` 依 `projectId` 寫入並將 `loadingByProject` 依作品區分 |
+| 2026-11-26 | P1-F2 | `08dd158` | 抽出 `utils/debouncedSaver.ts`（`createDebouncedSaver`）與單元測試；切換作品、生成新組、卸載與 `pagehide`/`visibilitychange` 改為 `flush()`，僅刪除待保存作品時 `cancel()` |
+| 2026-11-26 | P1-F3 | `950ec50` | `services/storage.ts` 新增 `isStorageQuotaError`；`classifyGeminiError` 排除 `QuotaExceededError`；`handleGenerate` 保存移出 Gemini `try/catch` 並於自動保存失敗時以作品去重顯示 Toast |
+| 2026-11-26 | P1-F5 | `39431c7` | `HistoryDrawer` 刪除作品改為透過 `ConfirmDialog` 二次確認後才刪除 |
+| 2026-11-26 | P1-F4 | `7633e0c` | 新增 `compressDataUrlToJpeg` 僅壓縮角色設定圖（≤1536px, JPEG 0.9）與作品原圖（JPEG 0.9），維持 `slices` 為透明 PNG；`HistoryDrawer` 顯示已用空間與 >80% 提醒（不自動刪作品），首次保存後單次請求 `navigator.storage.persist()` |
