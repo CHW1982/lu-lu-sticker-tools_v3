@@ -42,6 +42,7 @@ function App() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [characters, setCharacters] = useState<Character[]>([]);
   const [deleteCharacterTarget, setDeleteCharacterTarget] = useState<Character | null>(null);
+  const [deleteProjectTarget, setDeleteProjectTarget] = useState<Project | null>(null);
   const [restoreCandidate, setRestoreCandidate] = useState<Project | null>(null);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
@@ -358,6 +359,19 @@ function App() {
     }
   };
 
+  const handleRequestDeleteProject = (id: string) => {
+    const target = projectsRef.current.find((p) => p.id === id) ?? null;
+    setDeleteProjectTarget(target);
+  };
+
+  const confirmDeleteProject = async () => {
+    if (!deleteProjectTarget) return;
+    const id = deleteProjectTarget.id;
+    setDeleteProjectTarget(null);
+    await handleDeleteProject(id);
+    showToast('已刪除作品', 'info');
+  };
+
   const handleGenerateCharacterSheet = async (
     sheetSettings: CharacterSheetDraftSettings
   ): Promise<string | null> => {
@@ -442,6 +456,15 @@ function App() {
         onCancel={() => setDeleteCharacterTarget(null)}
       />
 
+      <ConfirmDialog
+        isOpen={deleteProjectTarget !== null}
+        title="刪除作品"
+        message="確定要刪除這組作品嗎？此操作無法復原。"
+        confirmLabel="確定刪除"
+        onConfirm={confirmDeleteProject}
+        onCancel={() => setDeleteProjectTarget(null)}
+      />
+
       <Header
         projectCount={projects.length}
         onOpenHistory={() => setIsHistoryOpen(true)}
@@ -453,7 +476,7 @@ function App() {
         activeProjectId={activeProject?.id ?? null}
         onClose={() => setIsHistoryOpen(false)}
         onSelect={handleSelectProject}
-        onDelete={handleDeleteProject}
+        onDelete={handleRequestDeleteProject}
       />
 
       <main className="max-w-3xl mx-auto px-4 py-8 flex-grow w-full">
