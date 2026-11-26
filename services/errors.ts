@@ -1,3 +1,5 @@
+import { isStorageQuotaError } from './storage';
+
 export type GeminiErrorKind = 'billing' | 'quota' | 'auth' | 'safety' | 'network' | 'unknown';
 
 export interface ClassifiedGeminiError {
@@ -65,6 +67,17 @@ function extractErrorInfo(err: unknown): ExtractedErrorInfo {
 export function classifyGeminiError(err: unknown): ClassifiedGeminiError {
   const { code, status, message } = extractErrorInfo(err);
   const combined = `${status ?? ''} ${message}`;
+
+  // 0. Never classify browser storage quota errors (IndexedDB QuotaExceededError) as Gemini API quota
+  if (isStorageQuotaError(err) || /QuotaExceededError/i.test(combined)) {
+    return {
+      kind: 'unknown',
+      message: message || '瀏覽器儲存空間不足',
+      retryable: false,
+      openApiKeyModal: false,
+      originalMessage: message,
+    };
+  }
 
   // 1. Billing / prepayment credits depleted (must precede quota because payload may say RESOURCE_EXHAUSTED)
   if (

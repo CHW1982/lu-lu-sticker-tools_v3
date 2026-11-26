@@ -9,12 +9,13 @@ import { useToast } from './hooks/useToast';
 import { generateCharacterSheet, generateStickerImage, generateSingleSticker } from './services/geminiService';
 import { classifyGeminiError } from './services/errors';
 import { splitImage, removeSingleImageBackground, enforceLineSpec } from './utils/imageProcessor';
-import { listProjects, saveProject, deleteProject, listCharacters, saveCharacter, deleteCharacter } from './services/storage';
+import { listProjects, saveProject, deleteProject, listCharacters, saveCharacter, deleteCharacter, isStorageQuotaError } from './services/storage';
 import { applySliceUpdate } from './services/projectState';
 import { createDebouncedSaver, DebouncedSaver } from './utils/debouncedSaver';
 import { Character, GenerationSettings, Project } from './types';
 
 const EMPTY_LOADING_INDICES: number[] = [];
+const STORAGE_QUOTA_TOAST_MESSAGE = '瀏覽器儲存空間不足，這組作品沒有保存，請到歷史作品刪除舊作品';
 
 const getStoredApiKey = (): string => {
   const storedKey = localStorage.getItem('gemini_api_key');
@@ -47,14 +48,31 @@ function App() {
   const activeProjectRef = useRef<Project | null>(null);
   const projectsRef = useRef<Project[]>([]);
   const projectSaverRef = useRef<DebouncedSaver<Project> | null>(null);
+  const failedSaveProjectIdsRef = useRef<Set<string>>(new Set());
+  const showToastRef = useRef(showToast);
+
+  useEffect(() => {
+    showToastRef.current = showToast;
+  }, [showToast]);
+
+  const notifyProjectSaveError = (projectId: string, err: unknown) => {
+    if (failedSaveProjectIdsRef.current.has(projectId)) return;
+    failedSaveProjectIdsRef.current.add(projectId);
+    showToastRef.current(
+      isStorageQuotaError(err) ? STORAGE_QUOTA_TOAST_MESSAGE : '作品自動儲存失敗，請稍後再試',
+      'error'
+    );
+  };
 
   const getProjectSaver = (): DebouncedSaver<Project> => {
     if (!projectSaverRef.current) {
       projectSaverRef.current = createDebouncedSaver<Project>(async (updated) => {
         try {
           await saveProject(updated);
+          failedSaveProjectIdsRef.current.delete(updated.id);
         } catch (err) {
           console.error('Failed to auto-save project', err);
+          notifyProjectSaveError(updated.id, err);
         }
       }, 500);
     }
@@ -180,6 +198,7 @@ function App() {
     commitActiveProject(null);
     setRestoreCandidate(null);
 
+    let createdProject: Project | null = null;
     try {
       // 1. Generate the full sheet - passing the API Key
       const originalImage = await generateStickerImage(settings, apiKey, (attempt, maxRetries) => {
@@ -190,7 +209,7 @@ function App() {
       const slices = await splitImage(originalImage, settings.gridSize, settings.removeBackground);
 
       const now = Date.now();
-      const newProject: Project = {
+      createdProject = {
         id: crypto.randomUUID(),
         characterId: settings.characterId ?? null,
         settings,
@@ -201,9 +220,7 @@ function App() {
         createdAt: now,
         updatedAt: now,
       };
-      commitActiveProject(newProject);
-      await saveProject(newProject);
-      updateProjects((prev) => [newProject, ...prev.filter((p) => p.id !== newProject.id)]);
+      commitActiveProject(createdProject);
     } catch (err) {
       console.error(err);
       const classified = classifyGeminiError(err);
@@ -215,6 +232,18 @@ function App() {
     } finally {
       setIsLoading(false);
       setRetryStatus(null);
+    }
+
+    if (createdProject) {
+      const projectToSave = createdProject;
+      try {
+        await saveProject(projectToSave);
+        failedSaveProjectIdsRef.current.delete(projectToSave.id);
+        updateProjects((prev) => [projectToSave, ...prev.filter((p) => p.id !== projectToSave.id)]);
+      } catch (saveErr) {
+        console.error('Failed to save generated project', saveErr);
+        notifyProjectSaveError(projectToSave.id, saveErr);
+      }
     }
   };
 
@@ -266,8 +295,10 @@ function App() {
           setProjects(nextProjects);
           try {
             await saveProject(updatedProject);
+            failedSaveProjectIdsRef.current.delete(updatedProject.id);
           } catch (saveErr) {
             console.error('Failed to save regenerated slice for background project', saveErr);
+            notifyProjectSaveError(updatedProject.id, saveErr);
           }
         }
       }

@@ -99,6 +99,15 @@ describe('classifyGeminiError', () => {
     });
   });
 
+  it('never classifies browser QuotaExceededError as Gemini API quota error', () => {
+    const domErr = new DOMException('The quota has been exceeded.', 'QuotaExceededError');
+    const result = classifyGeminiError(domErr);
+    expect(result.kind).not.toBe('quota');
+    expect(result.kind).toBe('unknown');
+    expect(result.retryable).toBe(false);
+    expect(result.openApiKeyModal).toBe(false);
+  });
+
   it('falls back to unknown for unrecognized errors', () => {
     expect(classifyGeminiError(new Error('Something unexpected'))).toMatchObject({
       kind: 'unknown',

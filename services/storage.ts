@@ -116,3 +116,10 @@ export async function deleteSetting(key: string): Promise<void> {
   const db = await getDB();
   await db.delete('settings', key);
 }
+
+/** Detect browser storage quota exceeded errors (e.g. IndexedDB QuotaExceededError). */
+export function isStorageQuotaError(err: unknown): boolean {
+  if (!err || typeof err !== 'object') return false;
+  const name = (err as { name?: unknown }).name;
+  return name === 'QuotaExceededError' || name === 'NS_ERROR_DOM_QUOTA_REACHED';
+}

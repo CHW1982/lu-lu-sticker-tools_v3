@@ -14,6 +14,7 @@ import {
   setSetting,
   getSetting,
   deleteSetting,
+  isStorageQuotaError,
 } from '../storage';
 import { Character, GridOption, ModelOption, Project } from '../../types';
 
@@ -123,5 +124,20 @@ describe('storage service (IndexedDB)', () => {
     await expect(setSetting('apiKey', 'secret')).rejects.toThrow();
     await expect(setSetting('gemini_api_key', 'secret')).rejects.toThrow();
     await expect(setSetting('user-api-key', 'secret')).rejects.toThrow();
+  });
+
+  it('detects browser storage quota exceeded errors accurately', () => {
+    expect(isStorageQuotaError(new DOMException('The quota has been exceeded.', 'QuotaExceededError'))).toBe(true);
+    expect(isStorageQuotaError(new DOMException('Quota reached', 'NS_ERROR_DOM_QUOTA_REACHED'))).toBe(true);
+
+    const namedErr = new Error('Storage quota exceeded');
+    namedErr.name = 'QuotaExceededError';
+    expect(isStorageQuotaError(namedErr)).toBe(true);
+
+    expect(isStorageQuotaError(new Error('429 RESOURCE_EXHAUSTED quota'))).toBe(false);
+    expect(isStorageQuotaError(new DOMException('Not found', 'NotFoundError'))).toBe(false);
+    expect(isStorageQuotaError(null)).toBe(false);
+    expect(isStorageQuotaError(undefined)).toBe(false);
+    expect(isStorageQuotaError('QuotaExceededError')).toBe(false);
   });
 });
