@@ -123,3 +123,80 @@ export function isStorageQuotaError(err: unknown): boolean {
   const name = (err as { name?: unknown }).name;
   return name === 'QuotaExceededError' || name === 'NS_ERROR_DOM_QUOTA_REACHED';
 }
+
+export const STORAGE_WARNING_THRESHOLD = 0.8;
+
+export interface StorageUsageInfo {
+  usage: number;
+  quota: number;
+  ratio: number;
+  isNearLimit: boolean;
+}
+
+/** Compute normalized storage usage info from raw byte counts. */
+export function computeStorageUsage(usage?: number, quota?: number): StorageUsageInfo | null {
+  if (
+    usage === undefined ||
+    quota === undefined ||
+    !Number.isFinite(usage) ||
+    !Number.isFinite(quota) ||
+    usage < 0 ||
+    quota <= 0
+  ) {
+    return null;
+  }
+  const ratio = Math.min(1, Math.max(0, usage / quota));
+  return {
+    usage,
+    quota,
+    ratio,
+    isNearLimit: ratio > STORAGE_WARNING_THRESHOLD,
+  };
+}
+
+/** Format byte counts into human-readable units. */
+export function formatBytes(bytes: number): string {
+  if (!Number.isFinite(bytes) || bytes <= 0) return '0 B';
+  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+  let idx = 0;
+  let value = bytes;
+  while (value >= 1024 && idx < units.length - 1) {
+    value /= 1024;
+    idx++;
+  }
+  return idx === 0 ? `${Math.round(value)} ${units[idx]}` : `${value.toFixed(1)} ${units[idx]}`;
+}
+
+/** Estimate current origin storage usage using navigator.storage.estimate(). */
+export async function getStorageUsage(): Promise<StorageUsageInfo | null> {
+  if (typeof navigator === 'undefined' || !navigator.storage?.estimate) {
+    return null;
+  }
+  try {
+    const estimate = await navigator.storage.estimate();
+    return computeStorageUsage(estimate.usage, estimate.quota);
+  } catch {
+    return null;
+  }
+}
+
+let persistRequested = false;
+
+/** Reset the one-shot persistence guard (for unit tests). */
+export function resetPersistRequestState(): void {
+  persistRequested = false;
+}
+
+/** Request persistent storage at most once per session; silently ignores unsupported environments. */
+export async function requestPersistentStorageOnce(): Promise<boolean> {
+  if (persistRequested) return false;
+  persistRequested = true;
+  if (typeof navigator === 'undefined' || !navigator.storage?.persist) {
+    return false;
+  }
+  try {
+    return await navigator.storage.persist();
+  } catch {
+    return false;
+  }
+}

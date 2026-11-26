@@ -195,20 +195,23 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
         </div>
       </div>
 
-      {activeTab === 'sheet' && (
-        <div className="space-y-4">
-          <div className="rounded-2xl overflow-hidden border-2 border-slate-100 shadow-inner bg-slate-50 p-2">
-            <img src={originalImage} alt="Full Sticker Sheet" className="w-full h-auto rounded-xl" />
+      {activeTab === 'sheet' && (() => {
+        const isOriginalJpeg = originalImage.startsWith('data:image/jpeg');
+        return (
+          <div className="space-y-4">
+            <div className="rounded-2xl overflow-hidden border-2 border-slate-100 shadow-inner bg-slate-50 p-2">
+              <img src={originalImage} alt="Full Sticker Sheet" className="w-full h-auto rounded-xl" />
+            </div>
+            <p className="text-xs text-slate-400 text-center">注意：在「切片」分頁中對個別貼圖的重繪，不會更新此張原始大圖。</p>
+            <button
+              onClick={() => downloadImage(originalImage, isOriginalJpeg ? 'lulu-sticker-sheet.jpg' : 'lulu-sticker-sheet.png')}
+              className="w-full py-3 rounded-xl bg-slate-800 text-white font-bold hover:bg-slate-900 transition-colors"
+            >
+              {isOriginalJpeg ? '下載完整大圖 (JPG)' : '下載完整大圖 (PNG)'}
+            </button>
           </div>
-          <p className="text-xs text-slate-400 text-center">注意：在「切片」分頁中對個別貼圖的重繪，不會更新此張原始大圖。</p>
-          <button
-            onClick={() => downloadImage(originalImage, 'lulu-sticker-sheet.png')}
-            className="w-full py-3 rounded-xl bg-slate-800 text-white font-bold hover:bg-slate-900 transition-colors"
-          >
-            下載完整大圖 (PNG)
-          </button>
-        </div>
-      )}
+        );
+      })()}
 
       {activeTab === 'cuts' && !isBatchMode && (
         <div className="space-y-6">

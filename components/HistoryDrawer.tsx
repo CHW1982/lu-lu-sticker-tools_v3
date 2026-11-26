@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Project } from '../types';
+import { formatBytes, getStorageUsage, StorageUsageInfo } from '../services/storage';
 
 interface HistoryDrawerProps {
   isOpen: boolean;
@@ -18,6 +19,21 @@ export const HistoryDrawer: React.FC<HistoryDrawerProps> = ({
   onSelect,
   onDelete,
 }) => {
+  const [storageUsage, setStorageUsage] = useState<StorageUsageInfo | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    let cancelled = false;
+    getStorageUsage().then((info) => {
+      if (!cancelled) {
+        setStorageUsage(info);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, projects.length]);
+
   if (!isOpen) return null;
 
   return (
@@ -46,6 +62,30 @@ export const HistoryDrawer: React.FC<HistoryDrawerProps> = ({
             ✕
           </button>
         </div>
+
+        {storageUsage && (
+          <div className="px-5 py-3 border-b border-slate-100 bg-slate-50/80 space-y-2">
+            <div className="flex items-center justify-between text-[11px] font-bold text-slate-600">
+              <span>瀏覽器已用空間</span>
+              <span>
+                {formatBytes(storageUsage.usage)} / {formatBytes(storageUsage.quota)}（{Math.round(storageUsage.ratio * 100)}%）
+              </span>
+            </div>
+            <div className="w-full h-1.5 rounded-full bg-slate-200 overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all ${
+                  storageUsage.isNearLimit ? 'bg-amber-500' : 'bg-lulu-500'
+                }`}
+                style={{ width: `${Math.min(100, Math.round(storageUsage.ratio * 100))}%` }}
+              />
+            </div>
+            {storageUsage.isNearLimit && (
+              <p className="text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-2.5 py-1.5">
+                ⚠️ 儲存空間已超過 80%，建議刪除較舊或不使用的作品以釋放空間。
+              </p>
+            )}
+          </div>
+        )}
 
         <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
           {projects.length === 0 ? (

@@ -8,8 +8,8 @@ import { ConfirmDialog } from './components/Toast';
 import { useToast } from './hooks/useToast';
 import { generateCharacterSheet, generateStickerImage, generateSingleSticker } from './services/geminiService';
 import { classifyGeminiError } from './services/errors';
-import { splitImage, removeSingleImageBackground, enforceLineSpec } from './utils/imageProcessor';
-import { listProjects, saveProject, deleteProject, listCharacters, saveCharacter, deleteCharacter, isStorageQuotaError } from './services/storage';
+import { splitImage, removeSingleImageBackground, enforceLineSpec, compressDataUrlToJpeg } from './utils/imageProcessor';
+import { listProjects, saveProject, deleteProject, listCharacters, saveCharacter, deleteCharacter, isStorageQuotaError, requestPersistentStorageOnce } from './services/storage';
 import { applySliceUpdate } from './services/projectState';
 import { createDebouncedSaver, DebouncedSaver } from './utils/debouncedSaver';
 import { Character, GenerationSettings, Project } from './types';
@@ -71,6 +71,7 @@ function App() {
         try {
           await saveProject(updated);
           failedSaveProjectIdsRef.current.delete(updated.id);
+          void requestPersistentStorageOnce();
         } catch (err) {
           console.error('Failed to auto-save project', err);
           notifyProjectSaveError(updated.id, err);
@@ -209,12 +210,15 @@ function App() {
       // 2. Cut the image client-side (optionally removing background)
       const slices = await splitImage(originalImage, settings.gridSize, settings.removeBackground);
 
+      // 3. Compress only the stored original preview to JPEG (slices remain transparent PNGs)
+      const storedOriginal = await compressDataUrlToJpeg(originalImage, { quality: 0.9 });
+
       const now = Date.now();
       createdProject = {
         id: crypto.randomUUID(),
         characterId: settings.characterId ?? null,
         settings,
-        original: originalImage,
+        original: storedOriginal,
         slices,
         mainIndex: 0,
         tabIndex: 0,
@@ -241,6 +245,7 @@ function App() {
         await saveProject(projectToSave);
         failedSaveProjectIdsRef.current.delete(projectToSave.id);
         updateProjects((prev) => [projectToSave, ...prev.filter((p) => p.id !== projectToSave.id)]);
+        void requestPersistentStorageOnce();
       } catch (saveErr) {
         console.error('Failed to save generated project', saveErr);
         notifyProjectSaveError(projectToSave.id, saveErr);
@@ -297,6 +302,7 @@ function App() {
           try {
             await saveProject(updatedProject);
             failedSaveProjectIdsRef.current.delete(updatedProject.id);
+            void requestPersistentStorageOnce();
           } catch (saveErr) {
             console.error('Failed to save regenerated slice for background project', saveErr);
             notifyProjectSaveError(updatedProject.id, saveErr);
@@ -384,9 +390,10 @@ function App() {
     setRetryStatus(null);
     setError(null);
     try {
-      const sheet = await generateCharacterSheet(sheetSettings, apiKey, (attempt, maxRetries) => {
+      const rawSheet = await generateCharacterSheet(sheetSettings, apiKey, (attempt, maxRetries) => {
         setRetryStatus(`重試中（${attempt}/${maxRetries}）`);
       });
+      const sheet = await compressDataUrlToJpeg(rawSheet, { maxDim: 1536, quality: 0.9 });
       showToast('角色設定圖已生成，確認後可儲存至角色庫！', 'success');
       return sheet;
     } catch (err) {

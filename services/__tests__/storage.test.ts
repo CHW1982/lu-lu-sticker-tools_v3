@@ -1,5 +1,5 @@
 import 'fake-indexeddb/auto';
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
   resetDBConnection,
   saveCharacter,
@@ -15,6 +15,10 @@ import {
   getSetting,
   deleteSetting,
   isStorageQuotaError,
+  computeStorageUsage,
+  formatBytes,
+  requestPersistentStorageOnce,
+  resetPersistRequestState,
 } from '../storage';
 import { Character, GridOption, ModelOption, Project } from '../../types';
 
@@ -139,5 +143,56 @@ describe('storage service (IndexedDB)', () => {
     expect(isStorageQuotaError(null)).toBe(false);
     expect(isStorageQuotaError(undefined)).toBe(false);
     expect(isStorageQuotaError('QuotaExceededError')).toBe(false);
+  });
+});
+
+describe('storage usage & persistence helpers', () => {
+  beforeEach(() => {
+    resetPersistRequestState();
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('computes storage usage and detects > 80% near-limit threshold', () => {
+    expect(computeStorageUsage(undefined, 1000)).toBeNull();
+    expect(computeStorageUsage(100, 0)).toBeNull();
+    expect(computeStorageUsage(-1, 1000)).toBeNull();
+
+    expect(computeStorageUsage(800, 1000)).toEqual({
+      usage: 800,
+      quota: 1000,
+      ratio: 0.8,
+      isNearLimit: false,
+    });
+    expect(computeStorageUsage(801, 1000)).toEqual({
+      usage: 801,
+      quota: 1000,
+      ratio: 0.801,
+      isNearLimit: true,
+    });
+  });
+
+  it('formats byte values into readable strings', () => {
+    expect(formatBytes(0)).toBe('0 B');
+    expect(formatBytes(512)).toBe('512 B');
+    expect(formatBytes(1536)).toBe('1.5 KB');
+    expect(formatBytes(5 * 1024 * 1024)).toBe('5.0 MB');
+  });
+
+  it('requests persistent storage at most once and handles errors safely', async () => {
+    const persist = vi.fn().mockResolvedValue(true);
+    vi.stubGlobal('navigator', { storage: { persist } });
+
+    expect(await requestPersistentStorageOnce()).toBe(true);
+    expect(await requestPersistentStorageOnce()).toBe(false);
+    expect(persist).toHaveBeenCalledTimes(1);
+
+    resetPersistRequestState();
+    vi.stubGlobal('navigator', {
+      storage: { persist: vi.fn().mockRejectedValue(new Error('denied')) },
+    });
+    expect(await requestPersistentStorageOnce()).toBe(false);
   });
 });
