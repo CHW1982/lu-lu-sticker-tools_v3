@@ -11,6 +11,7 @@ import { classifyGeminiError } from './services/errors';
 import { splitImage, removeSingleImageBackground, enforceLineSpec } from './utils/imageProcessor';
 import { listProjects, saveProject, deleteProject, listCharacters, saveCharacter, deleteCharacter } from './services/storage';
 import { applySliceUpdate } from './services/projectState';
+import { createDebouncedSaver, DebouncedSaver } from './utils/debouncedSaver';
 import { Character, GenerationSettings, Project } from './types';
 
 const EMPTY_LOADING_INDICES: number[] = [];
@@ -45,7 +46,20 @@ function App() {
 
   const activeProjectRef = useRef<Project | null>(null);
   const projectsRef = useRef<Project[]>([]);
-  const debounceTimerRef = useRef<number | null>(null);
+  const projectSaverRef = useRef<DebouncedSaver<Project> | null>(null);
+
+  const getProjectSaver = (): DebouncedSaver<Project> => {
+    if (!projectSaverRef.current) {
+      projectSaverRef.current = createDebouncedSaver<Project>(async (updated) => {
+        try {
+          await saveProject(updated);
+        } catch (err) {
+          console.error('Failed to auto-save project', err);
+        }
+      }, 500);
+    }
+    return projectSaverRef.current;
+  };
 
   const updateProjects = (updater: (prev: Project[]) => Project[]) => {
     const next = updater(projectsRef.current);
@@ -63,15 +77,7 @@ function App() {
       const others = prev.filter((p) => p.id !== updated.id);
       return [updated, ...others];
     });
-    if (debounceTimerRef.current !== null) {
-      window.clearTimeout(debounceTimerRef.current);
-    }
-    debounceTimerRef.current = window.setTimeout(() => {
-      debounceTimerRef.current = null;
-      saveProject(updated).catch((err) => {
-        console.error('Failed to auto-save project', err);
-      });
-    }, 500);
+    getProjectSaver().schedule(updated);
   };
 
   const updateActiveProject = (updater: (current: Project) => Project) => {
@@ -108,11 +114,23 @@ function App() {
         console.error('Failed to load saved data from IndexedDB', err);
       });
 
+    const handlePageHide = () => {
+      void projectSaverRef.current?.flush();
+    };
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        void projectSaverRef.current?.flush();
+      }
+    };
+
+    window.addEventListener('pagehide', handlePageHide);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
     return () => {
       cancelled = true;
-      if (debounceTimerRef.current !== null) {
-        window.clearTimeout(debounceTimerRef.current);
-      }
+      window.removeEventListener('pagehide', handlePageHide);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      void projectSaverRef.current?.flush();
     };
   }, []);
 
@@ -158,10 +176,7 @@ function App() {
     setIsLoading(true);
     setRetryStatus(null);
     setError(null);
-    if (debounceTimerRef.current !== null) {
-      window.clearTimeout(debounceTimerRef.current);
-      debounceTimerRef.current = null;
-    }
+    await getProjectSaver().flush();
     commitActiveProject(null);
     setRestoreCandidate(null);
 
@@ -292,23 +307,19 @@ function App() {
   };
 
   const handleSelectProject = (project: Project) => {
-    if (debounceTimerRef.current !== null) {
-      window.clearTimeout(debounceTimerRef.current);
-      debounceTimerRef.current = null;
-    }
+    void getProjectSaver().flush();
     commitActiveProject(project);
     setRestoreCandidate(null);
     setIsHistoryOpen(false);
   };
 
   const handleDeleteProject = async (id: string) => {
+    if (getProjectSaver().getPending()?.id === id) {
+      getProjectSaver().cancel();
+    }
     await deleteProject(id);
     updateProjects((prev) => prev.filter((p) => p.id !== id));
     if (activeProjectRef.current?.id === id) {
-      if (debounceTimerRef.current !== null) {
-        window.clearTimeout(debounceTimerRef.current);
-        debounceTimerRef.current = null;
-      }
       commitActiveProject(null);
     }
     if (restoreCandidate?.id === id) {
