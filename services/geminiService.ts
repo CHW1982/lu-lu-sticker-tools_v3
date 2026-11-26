@@ -450,9 +450,23 @@ function appendDataUrlPart(parts: Part[], dataUrl?: string | null): boolean {
   return true;
 }
 
+/**
+ * Build a strict character-locking instruction block referencing Image 1 (Character Sheet).
+ * Used only when `settings.characterSheet` is present.
+ */
+export function buildCharacterLockBlock(gridSize?: number): string {
+  const scope =
+    gridSize && gridSize > 1
+      ? `Every single sticker in all ${gridSize} slots`
+      : 'This sticker';
+  return `[STRICT CHARACTER LOCK - IMAGE 1]
+${scope} MUST depict the exact same character shown in Image 1: identical face shape, hairstyle, colors, outfit, accessories, and body proportions. Do NOT redesign the character or change clothes.
+Image 1 is a character turnaround and expression model sheet—ONLY reference the character's appearance, and do NOT copy its turnaround layout, poses, or background.`;
+}
+
 function buildReferencePartsAndInstruction(
   settings: Pick<GenerationSettings, 'prompt' | 'characterSheet' | 'referenceImage' | 'referenceImage2'>
-): { imageParts: Part[]; referenceInstruction: string } {
+): { imageParts: Part[]; referenceInstruction: string; hasCharacterSheet: boolean } {
   const { prompt, characterSheet, referenceImage, referenceImage2 } = settings;
   const imageParts: Part[] = [];
 
@@ -466,7 +480,7 @@ function buildReferencePartsAndInstruction(
     if (referenceImage2 && appendDataUrlPart(imageParts, referenceImage2)) {
       notes.push(`Image ${nextIdx} is the sidekick reference.`);
     }
-    return { imageParts, referenceInstruction: notes.join(' ') };
+    return { imageParts, referenceInstruction: notes.join(' '), hasCharacterSheet: true };
   }
 
   let referenceInstruction = `[Character Description] Create characters based on: ${prompt}`;
@@ -478,7 +492,7 @@ function buildReferencePartsAndInstruction(
   appendDataUrlPart(imageParts, referenceImage);
   appendDataUrlPart(imageParts, referenceImage2);
 
-  return { imageParts, referenceInstruction };
+  return { imageParts, referenceInstruction, hasCharacterSheet: false };
 }
 
 export const generateCharacterSheet = async (
@@ -549,9 +563,44 @@ export const generateStickerImage = async (
     `Slot ${i+1}: [Text: "${s.text}"] [Context: ${s.description}] [Visual: ${s.visual}]`
   ).join("\n  ");
 
-  const { imageParts, referenceInstruction } = buildReferencePartsAndInstruction(settings);
+  const { imageParts, referenceInstruction, hasCharacterSheet } = buildReferencePartsAndInstruction(settings);
 
-  const systemPrompt = `You are a LINE sticker artist.
+  const lockBlock = hasCharacterSheet ? buildCharacterLockBlock(gridSize) : '';
+
+  const systemPrompt = hasCharacterSheet
+    ? `${lockBlock}
+
+You are a LINE sticker artist.
+  
+  [Task] Create a sticker sheet.
+  ${referenceInstruction}
+  
+  [Character DNA & Context]
+  - Subject (secondary reference; if anything conflicts with Image 1, Image 1 takes precedence): ${prompt}
+  - Style: Match Image 1's art style strictly.
+  - Vibe: ${vibePreset}
+  - Relationship Context: ${relationshipMode}
+  
+  [MANDATORY CHROMA-KEY GREEN SCREEN REQUIREMENT]
+  CRITICAL: Regardless of the art style or Vibe, the ENTIRE canvas background behind the stickers MUST be a solid, flat, uniform bright green (#00FF00).
+  - DO NOT generate paper textures, cardboard, notebooks, gradients, shadows, or environmental scenery behind the grid.
+  - Every sticker character and its white outline must float on a completely flat, solid green screen (#00FF00) background to allow clean background removal.
+
+  [Rules]
+  1. Write the EXACT text provided for each slot. Integrated with clean WHITE outline.
+  2. Art Style: Match Image 1's art style strictly. Keep characters consistent across all stickers.
+  3. No duplicates across slots.
+  4. Layout: ${gridSize} stickers arranged cleanly in a ${rows}x${cols} grid with clear space between each slot.
+  
+  [Slots]
+  ${specList}
+  
+  [Text Style] Font: ${textStylePreset}
+  
+  Generate the sheet.
+
+${lockBlock}`
+    : `You are a LINE sticker artist.
   
   [Task] Create a sticker sheet.
   ${referenceInstruction}
@@ -611,9 +660,16 @@ export const generateSingleSticker = async (
       otherVisuals.length > 0 ? `\n    Do NOT reuse these poses: ${otherVisuals.join('; ')}` : '';
     
     const actualModelId = MODEL_IDS[model] ?? MODEL_IDS[ModelOption.NanoBananaPro];
-    const { imageParts, referenceInstruction } = buildReferencePartsAndInstruction(settings);
-  
-    const systemPrompt = `Create a SINGLE sticker.
+    const { imageParts, referenceInstruction, hasCharacterSheet } = buildReferencePartsAndInstruction(settings);
+
+    const systemPrompt = hasCharacterSheet
+      ? `${buildCharacterLockBlock()}
+    ${referenceInstruction}
+    Create a SINGLE sticker.
+    [Character DNA] Subject (secondary reference; if anything conflicts with Image 1, Image 1 takes precedence): ${prompt}, Style: Match Image 1's art style strictly, Vibe: ${vibePreset}, Context: ${relationshipMode}
+    [Target] Text: "${targetIntent?.text}", Visual: ${targetIntent?.visual}${avoidPosesLine}
+    [Rules] Pure Green (#00FF00) bg, Thick White outline, Style: Match Image 1's art style strictly, Font: ${textStylePreset}`
+      : `Create a SINGLE sticker.
     ${referenceInstruction}
     [Character DNA] Subject: ${prompt}, Style: ${stylePreset}, Vibe: ${vibePreset}, Context: ${relationshipMode}
     [Target] Text: "${targetIntent?.text}", Visual: ${targetIntent?.visual}${avoidPosesLine}

@@ -16,6 +16,7 @@ vi.mock('@google/genai', () => {
 });
 
 import {
+  buildCharacterLockBlock,
   generateCharacterSheet,
   generateStickerImage,
   generateSingleSticker,
@@ -130,5 +131,60 @@ describe('geminiService character sheet & reference injection', () => {
     expect(promptText).toContain('saluting firmly');
     const doNotReuseLine = promptText.split('\n').find((line) => line.includes('Do NOT reuse these poses:')) ?? '';
     expect(doNotReuseLine).not.toContain('crying waterfall tears');
+  });
+
+  it('places character lock block at both start and end of generateStickerImage prompt when characterSheet exists', async () => {
+    const settings = baseSettings({
+      characterSheet: 'data:image/jpeg;base64,U0hFRVQ=',
+      gridSize: GridOption.Grid8,
+    });
+
+    await generateStickerImage(settings, 'test-key-unused');
+
+    const promptText: string = mockGenerateContent.mock.calls[0][0].contents.parts[0].text;
+    const lockBlock = buildCharacterLockBlock(GridOption.Grid8);
+    const occurrences = promptText.split(lockBlock).length - 1;
+
+    expect(occurrences).toBe(2);
+    expect(promptText.startsWith(lockBlock)).toBe(true);
+    expect(promptText.endsWith(lockBlock)).toBe(true);
+    expect(promptText).toContain('if anything conflicts with Image 1, Image 1 takes precedence');
+    expect(promptText).toContain("Match Image 1's art style strictly");
+    expect(promptText).not.toContain('Classic Chibi Vector');
+  });
+
+  it('includes character lock block in generateSingleSticker prompt when characterSheet exists', async () => {
+    const settings = baseSettings({
+      characterSheet: 'data:image/jpeg;base64,U0hFRVQ=',
+    });
+
+    await generateSingleSticker(settings, 0, 'test-key-unused');
+
+    const promptText: string = mockGenerateContent.mock.calls[0][0].contents.parts[0].text;
+    expect(promptText).toContain(buildCharacterLockBlock());
+    expect(promptText).toContain('if anything conflicts with Image 1, Image 1 takes precedence');
+    expect(promptText).toContain("Match Image 1's art style strictly");
+    expect(promptText).not.toContain('Classic Chibi Vector');
+  });
+
+  it('keeps generateStickerImage and generateSingleSticker prompts unchanged when characterSheet is absent', async () => {
+    const settings = baseSettings({ characterSheet: null });
+
+    await generateStickerImage(settings, 'test-key-unused');
+    const sheetPrompt: string = mockGenerateContent.mock.calls[0][0].contents.parts[0].text;
+
+    expect(sheetPrompt.startsWith('You are a LINE sticker artist.')).toBe(true);
+    expect(sheetPrompt.endsWith('Generate the sheet.')).toBe(true);
+    expect(sheetPrompt).not.toContain('[STRICT CHARACTER LOCK - IMAGE 1]');
+    expect(sheetPrompt).toContain('- Subject: A chubby tabby cat with a red scarf');
+    expect(sheetPrompt).toContain('- Style: Classic Chibi Vector');
+    expect(sheetPrompt).toContain('Art Style: Classic Chibi Vector');
+
+    await generateSingleSticker(settings, 0, 'test-key-unused');
+    const singlePrompt: string = mockGenerateContent.mock.calls[1][0].contents.parts[0].text;
+
+    expect(singlePrompt.startsWith('Create a SINGLE sticker.')).toBe(true);
+    expect(singlePrompt).not.toContain('[STRICT CHARACTER LOCK - IMAGE 1]');
+    expect(singlePrompt).toContain('Subject: A chubby tabby cat with a red scarf, Style: Classic Chibi Vector');
   });
 });
