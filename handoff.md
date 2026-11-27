@@ -846,3 +846,4 @@ export function suggestForText(index: SuggestionIndex, input: string, opts?: { l
 | 2026-11-26 | P1-F5 | `39431c7` | `HistoryDrawer` 刪除作品改為透過 `ConfirmDialog` 二次確認後才刪除 |
 | 2026-11-26 | P1-F4 | `7633e0c` | 新增 `compressDataUrlToJpeg` 僅壓縮角色設定圖（≤1536px, JPEG 0.9）與作品原圖（JPEG 0.9），維持 `slices` 為透明 PNG；`HistoryDrawer` 顯示已用空間與 >80% 提醒（不自動刪作品），首次保存後單次請求 `navigator.storage.persist()` |
 | 2026-11-26 | P1-F6 | `3333bf9` | 新增 `buildCharacterLockBlock`，僅於 `characterSheet` 存在時於整張生成開頭與結尾鎖定 Image 1 外觀與畫風、將 `Subject` 降為輔助說明，並套用至單張重繪；無設定圖時提示詞維持完全相同，補齊 3 項提示詞測試（共 62 項） |
+| 2026-11-27 | P1-F7 | `f9b8a88` | 新增 `utils/concurrency.ts`（`runWithConcurrency`, limit=2, 5 項測試）、抽出共用單格生成後處理 `generateAndProcessSingleSticker`；有角色設定圖時預設逐格生成並支援切換整張模式與 API 次數提示；生成中切換專案仍依 `projectId` 寫回原作品並以 `failedSlots`、`ConfirmDialog`、空切片防護及 `composeStickerSheet` 處理失敗與預覽拼圖；71 項測試與 lint/typecheck/build 全過，待 owner 實測 |
