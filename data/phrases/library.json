@@ -1,0 +1,3732 @@
+{
+  "version": 1,
+  "updatedAt": "2026-11-26",
+  "note": "LINE 貼圖台詞範本庫。visuals 為畫面動作建議，使用者可選用或修改。每季檢查流行語並更新。",
+  "sources": [
+    {
+      "title": "LINE 原創貼圖誌：熱門貼圖勝利方程式一（實用表達原則）",
+      "url": "https://creator-mag-tw.weblog.to/archives/80417253.html"
+    },
+    {
+      "title": "LINE Creators：スタンプでよく使われる表現（タグ集計）",
+      "url": "https://creator.line.me/ja/stickermaker/tips/expression/"
+    },
+    {
+      "title": "小魔女商城：LINE 貼圖 40 句怎麼想？5 類聊天情境",
+      "url": "https://vocus.cc/article/6a82c4d0fd89780001ce4a1c"
+    },
+    {
+      "title": "dearbb：TOP10 超級實用貼圖用語",
+      "url": "https://dearbb.design/post/top10-sticker-phrases"
+    },
+    {
+      "title": "LINE 貼圖設計實用文字大全",
+      "url": "https://rainsru.pixnet.net/blog/posts/16179449165"
+    },
+    {
+      "title": "Look Pretty：2026 年輕人網路流行用語",
+      "url": "https://look.s3.com.tw/look/outfit/tff1g4/page/25872"
+    },
+    {
+      "title": "關鍵應用：2026 LINE 貼圖觀察報告",
+      "url": "https://chtouch.com/line-sticker-trends-2026/"
+    },
+    {
+      "title": "三立新聞網：流行語",
+      "url": "https://www.setn.com/klist/7377"
+    }
+  ],
+  "categories": [
+    {
+      "id": "greeting",
+      "label": "開場與招呼"
+    },
+    {
+      "id": "farewell",
+      "label": "告別與晚安"
+    },
+    {
+      "id": "reply",
+      "label": "答覆與確認"
+    },
+    {
+      "id": "thanks",
+      "label": "感謝與禮貌"
+    },
+    {
+      "id": "apology",
+      "label": "道歉與不客氣"
+    },
+    {
+      "id": "praise",
+      "label": "讚美與祝賀"
+    },
+    {
+      "id": "happy",
+      "label": "開心與大笑"
+    },
+    {
+      "id": "sad",
+      "label": "難過與安慰"
+    },
+    {
+      "id": "surprise",
+      "label": "驚訝與傻眼"
+    },
+    {
+      "id": "angry",
+      "label": "生氣與不爽"
+    },
+    {
+      "id": "tired",
+      "label": "疲累與厭世"
+    },
+    {
+      "id": "status",
+      "label": "行動與狀態"
+    },
+    {
+      "id": "work",
+      "label": "職場與學習"
+    },
+    {
+      "id": "love",
+      "label": "戀愛與撒嬌"
+    },
+    {
+      "id": "funny",
+      "label": "搞笑與北爛"
+    },
+    {
+      "id": "cheer",
+      "label": "正能量與打氣"
+    },
+    {
+      "id": "trend",
+      "label": "2026 流行語"
+    },
+    {
+      "id": "holiday",
+      "label": "節日祝福"
+    },
+    {
+      "id": "elder",
+      "label": "長輩問候"
+    },
+    {
+      "id": "weather",
+      "label": "天氣與叮嚀"
+    }
+  ],
+  "phrases": [
+    {
+      "text": "早安",
+      "aliases": [
+        "早",
+        "早呀",
+        "早上好",
+        "咕摸寧",
+        "Good morning"
+      ],
+      "category": "greeting",
+      "description": "早上打招呼，充滿朝氣",
+      "visuals": [
+        "伸懶腰打哈欠，背後太陽升起",
+        "一手高舉揮手，笑容燦爛",
+        "捧著熱咖啡微笑揮手"
+      ]
+    },
+    {
+      "text": "午安",
+      "aliases": [
+        "午安安",
+        "中午好"
+      ],
+      "category": "greeting",
+      "description": "中午打招呼，輕鬆愉快",
+      "visuals": [
+        "捧著便當開心揮手",
+        "坐在陽光下喝飲料，悠閒微笑"
+      ]
+    },
+    {
+      "text": "哈囉",
+      "aliases": [
+        "你好",
+        "Hello",
+        "Hi",
+        "嗨",
+        "嗨嗨",
+        "安安"
+      ],
+      "category": "greeting",
+      "description": "輕鬆打招呼",
+      "visuals": [
+        "從畫面側邊探出頭揮手",
+        "雙手在臉旁揮動，眼睛彎彎笑"
+      ]
+    },
+    {
+      "text": "在嗎",
+      "aliases": [
+        "在不在",
+        "有空嗎",
+        "在忙嗎"
+      ],
+      "category": "greeting",
+      "description": "試探對方是否有空",
+      "visuals": [
+        "從牆角偷偷探頭張望",
+        "拿著手機歪頭，頭上有問號"
+      ]
+    },
+    {
+      "text": "我來了",
+      "aliases": [
+        "登場",
+        "駕到"
+      ],
+      "category": "greeting",
+      "description": "宣告自己出現",
+      "visuals": [
+        "帥氣跳進畫面，背後有閃光",
+        "打開門大步走進來，雙手張開"
+      ]
+    },
+    {
+      "text": "好久不見",
+      "aliases": [
+        "久違了",
+        "想我了嗎"
+      ],
+      "category": "greeting",
+      "description": "久別重逢的打招呼",
+      "visuals": [
+        "張開雙手跑過來要抱抱",
+        "驚喜捂嘴，眼睛閃閃發亮"
+      ]
+    },
+    {
+      "text": "很高興認識你",
+      "aliases": [
+        "請多指教",
+        "請多多指教",
+        "初次見面"
+      ],
+      "category": "greeting",
+      "description": "初次見面的禮貌問候",
+      "visuals": [
+        "雙手併攏鞠躬，臉頰微紅",
+        "遞出名片，禮貌微笑"
+      ]
+    },
+    {
+      "text": "是我",
+      "aliases": [
+        "我啦",
+        "本人"
+      ],
+      "category": "greeting",
+      "description": "主動表明身分",
+      "visuals": [
+        "手指著自己，得意微笑",
+        "拉下口罩露出臉，眨眼"
+      ]
+    },
+    {
+      "text": "來打聲招呼",
+      "aliases": [
+        "路過",
+        "打個招呼"
+      ],
+      "category": "greeting",
+      "description": "輕鬆路過打招呼",
+      "visuals": [
+        "邊走邊揮手經過畫面",
+        "從花叢中探出頭打招呼"
+      ]
+    },
+    {
+      "text": "吃飽沒",
+      "aliases": [
+        "呷飽沒",
+        "粗飽沒",
+        "吃了嗎"
+      ],
+      "category": "greeting",
+      "description": "台式關心問候",
+      "visuals": [
+        "端著碗筷，好奇看向對方",
+        "拍拍肚子，關心地歪頭"
+      ]
+    },
+    {
+      "text": "早安安",
+      "aliases": [
+        "早安喔"
+      ],
+      "category": "greeting",
+      "description": "俏皮可愛的早安",
+      "visuals": [
+        "揉著惺忪睡眼，頭髮翹起來比 YA",
+        "從被窩裡伸出一隻手揮手"
+      ]
+    },
+    {
+      "text": "週末愉快",
+      "aliases": [
+        "週末快樂",
+        "周末愉快"
+      ],
+      "category": "greeting",
+      "description": "週末前的祝福",
+      "visuals": [
+        "戴墨鏡躺在海灘椅上",
+        "雙手高舉歡呼，背後有彩帶"
+      ]
+    },
+    {
+      "text": "新的一週",
+      "aliases": [
+        "週一加油",
+        "星期一"
+      ],
+      "category": "greeting",
+      "description": "週一開工打氣",
+      "visuals": [
+        "握拳綁頭巾，眼神堅定",
+        "抱著星期一的日曆，苦笑打氣"
+      ]
+    },
+    {
+      "text": "晚安",
+      "aliases": [
+        "晚安安",
+        "好夢",
+        "咕奈",
+        "Good night"
+      ],
+      "category": "farewell",
+      "description": "睡前道別，溫柔放鬆",
+      "visuals": [
+        "抱著枕頭揉眼睛，頭上有月亮和星星",
+        "蓋著被子只露出頭，微笑閉眼",
+        "戴睡帽揮手，背景夜空"
+      ]
+    },
+    {
+      "text": "掰掰",
+      "aliases": [
+        "拜拜",
+        "Bye",
+        "Bye bye",
+        "再見"
+      ],
+      "category": "farewell",
+      "description": "輕鬆道別",
+      "visuals": [
+        "背對畫面邊走邊揮手",
+        "雙手揮動，眼睛彎彎笑"
+      ]
+    },
+    {
+      "text": "先走囉",
+      "aliases": [
+        "我先走了",
+        "先閃",
+        "閃人"
+      ],
+      "category": "farewell",
+      "description": "離開時打招呼",
+      "visuals": [
+        "提著包包往外跑，回頭揮手",
+        "一溜煙跑走，只剩殘影和煙塵"
+      ]
+    },
+    {
+      "text": "明天見",
+      "aliases": [
+        "明天聊",
+        "See you"
+      ],
+      "category": "farewell",
+      "description": "約定明天再聯絡",
+      "visuals": [
+        "比出打勾勾手勢微笑",
+        "揮手道別，背景是夕陽"
+      ]
+    },
+    {
+      "text": "晚點聊",
+      "aliases": [
+        "再聊",
+        "等等聊",
+        "晚點說"
+      ],
+      "category": "farewell",
+      "description": "暫時結束對話",
+      "visuals": [
+        "指著時鐘，比 OK 手勢",
+        "拿著手機比「等一下」手勢"
+      ]
+    },
+    {
+      "text": "下次再約",
+      "aliases": [
+        "改天約",
+        "下次見"
+      ],
+      "category": "farewell",
+      "description": "婉轉結束邀約",
+      "visuals": [
+        "雙手合十，帶著歉意微笑",
+        "翻開行事曆，用筆圈起日期"
+      ]
+    },
+    {
+      "text": "路上小心",
+      "aliases": [
+        "小心慢走",
+        "注意安全"
+      ],
+      "category": "farewell",
+      "description": "關心對方出門",
+      "visuals": [
+        "雙手圍在嘴邊大聲叮嚀",
+        "揮手送別，旁邊有小汽車"
+      ]
+    },
+    {
+      "text": "一路順風",
+      "aliases": [
+        "一路平安",
+        "旅途愉快"
+      ],
+      "category": "farewell",
+      "description": "送行祝福",
+      "visuals": [
+        "揮著手帕送別，背景飛機起飛",
+        "比讚並眨眼，旁邊有行李箱"
+      ]
+    },
+    {
+      "text": "好好睡",
+      "aliases": [
+        "一覺好眠",
+        "做個好夢"
+      ],
+      "category": "farewell",
+      "description": "睡前溫柔祝福",
+      "visuals": [
+        "蓋好被子拍拍枕頭",
+        "抱著星星抱枕熟睡，冒出Zzz"
+      ]
+    },
+    {
+      "text": "睡覺去",
+      "aliases": [
+        "我先睡了",
+        "去睡了",
+        "要睡了"
+      ],
+      "category": "farewell",
+      "description": "宣告去睡覺",
+      "visuals": [
+        "抱著枕頭拖著腳步走開",
+        "打大哈欠，眼睛快閉上"
+      ]
+    },
+    {
+      "text": "下線",
+      "aliases": [
+        "下線了",
+        "登出",
+        "離線"
+      ],
+      "category": "farewell",
+      "description": "宣告結束上線",
+      "visuals": [
+        "按下大大的電源鍵，化成像素消失",
+        "拔掉插頭，倒在床上"
+      ]
+    },
+    {
+      "text": "OK",
+      "aliases": [
+        "好",
+        "好的",
+        "可以啊",
+        "OKAY",
+        "Okay"
+      ],
+      "category": "reply",
+      "description": "同意、沒問題",
+      "visuals": [
+        "雙手在頭上圍成大圓圈",
+        "比出 OK 手勢並眨眼"
+      ]
+    },
+    {
+      "text": "收到",
+      "aliases": [
+        "收到了",
+        "知道了",
+        "明白",
+        "Roger"
+      ],
+      "category": "reply",
+      "description": "確認收到訊息",
+      "visuals": [
+        "立正敬禮，表情認真",
+        "舉著寫有「收到」的牌子點頭"
+      ]
+    },
+    {
+      "text": "沒問題",
+      "aliases": [
+        "No problem",
+        "小意思"
+      ],
+      "category": "reply",
+      "description": "自信答應",
+      "visuals": [
+        "拍胸脯，自信滿滿",
+        "比讚，牙齒閃閃發光"
+      ]
+    },
+    {
+      "text": "好喔",
+      "aliases": [
+        "好唷",
+        "好哦",
+        "好啊"
+      ],
+      "category": "reply",
+      "description": "輕鬆答應",
+      "visuals": [
+        "點頭微笑，頭上有小花",
+        "比 OK 手勢，眼睛彎彎"
+      ]
+    },
+    {
+      "text": "嗯嗯",
+      "aliases": [
+        "嗯",
+        "恩恩"
+      ],
+      "category": "reply",
+      "description": "附和、表示有在聽",
+      "visuals": [
+        "用力點頭，頭上冒出兩個小音符",
+        "托著下巴認真點頭"
+      ]
+    },
+    {
+      "text": "了解",
+      "aliases": [
+        "瞭解",
+        "懂了",
+        "原來如此"
+      ],
+      "category": "reply",
+      "description": "理解對方的意思",
+      "visuals": [
+        "恍然大悟，頭上燈泡亮起",
+        "敲手心，表情豁然開朗"
+      ]
+    },
+    {
+      "text": "可以",
+      "aliases": [
+        "可以呀",
+        "我可以",
+        "行"
+      ],
+      "category": "reply",
+      "description": "表示允許或願意",
+      "visuals": [
+        "雙手比出大大的圈",
+        "點頭比讚"
+      ]
+    },
+    {
+      "text": "等我一下",
+      "aliases": [
+        "等等",
+        "稍等",
+        "等一下"
+      ],
+      "category": "reply",
+      "description": "請對方稍候",
+      "visuals": [
+        "伸出手掌比「稍等」手勢",
+        "手忙腳亂找東西，滿頭大汗"
+      ]
+    },
+    {
+      "text": "我看看",
+      "aliases": [
+        "讓我看看",
+        "我確認一下",
+        "查一下"
+      ],
+      "category": "reply",
+      "description": "需要確認後回覆",
+      "visuals": [
+        "拿放大鏡仔細查看",
+        "推眼鏡盯著螢幕"
+      ]
+    },
+    {
+      "text": "就這樣決定",
+      "aliases": [
+        "就這麼辦",
+        "成交",
+        "定案"
+      ],
+      "category": "reply",
+      "description": "拍板定案",
+      "visuals": [
+        "用力拍桌子，表情堅定",
+        "兩人擊掌，背後有閃光"
+      ]
+    },
+    {
+      "text": "+1",
+      "aliases": [
+        "加1",
+        "加一",
+        "我也要",
+        "算我一份"
+      ],
+      "category": "reply",
+      "description": "附和、參與",
+      "visuals": [
+        "高舉手並舉著「+1」牌子",
+        "從人群中跳起來舉手"
+      ]
+    },
+    {
+      "text": "沒錯",
+      "aliases": [
+        "就是這樣",
+        "對對對",
+        "正確"
+      ],
+      "category": "reply",
+      "description": "強烈同意",
+      "visuals": [
+        "用力點頭，手指比讚",
+        "指著對方，眼睛發亮"
+      ]
+    },
+    {
+      "text": "不行",
+      "aliases": [
+        "不可以",
+        "NO",
+        "不要",
+        "母湯",
+        "拒絕"
+      ],
+      "category": "reply",
+      "description": "拒絕或制止",
+      "visuals": [
+        "雙手在胸前比大叉",
+        "搖頭搖手，表情嚴肅"
+      ]
+    },
+    {
+      "text": "我想想",
+      "aliases": [
+        "讓我想想",
+        "考慮一下",
+        "我考慮看看"
+      ],
+      "category": "reply",
+      "description": "需要時間思考",
+      "visuals": [
+        "托腮望天，頭上有思考泡泡",
+        "抓頭，頭上冒出問號"
+      ]
+    },
+    {
+      "text": "打勾勾",
+      "aliases": [
+        "一言為定",
+        "說好囉",
+        "約定"
+      ],
+      "category": "reply",
+      "description": "做出約定",
+      "visuals": [
+        "伸出小指勾勾，臉上有決心",
+        "兩人小指相勾，背景有愛心"
+      ]
+    },
+    {
+      "text": "真的嗎",
+      "aliases": [
+        "真的假的",
+        "真假",
+        "是喔"
+      ],
+      "category": "reply",
+      "description": "半信半疑",
+      "visuals": [
+        "瞇眼斜看，頭上有問號",
+        "身體往後仰，眼睛睜大"
+      ]
+    },
+    {
+      "text": "蛤？",
+      "aliases": [
+        "蛤",
+        "啊？",
+        "什麼？"
+      ],
+      "category": "reply",
+      "description": "沒聽懂或不可置信",
+      "visuals": [
+        "手放耳邊做傾聽狀，表情疑惑",
+        "歪頭，臉上大大的問號"
+      ]
+    },
+    {
+      "text": "隨便",
+      "aliases": [
+        "都可以",
+        "隨你",
+        "都好"
+      ],
+      "category": "reply",
+      "description": "沒意見、讓對方決定",
+      "visuals": [
+        "攤手聳肩",
+        "躺平滑手機，表情無所謂"
+      ]
+    },
+    {
+      "text": "謝謝",
+      "aliases": [
+        "感謝",
+        "感謝你",
+        "謝啦",
+        "Thank you",
+        "Thanks",
+        "甘溫",
+        "乾蝦"
+      ],
+      "category": "thanks",
+      "description": "表達感謝",
+      "visuals": [
+        "鞠躬九十度，頭上冒愛心",
+        "雙手捧著愛心送出去",
+        "舉著「謝謝」牌子微笑"
+      ]
+    },
+    {
+      "text": "大感謝",
+      "aliases": [
+        "太感謝了",
+        "感激不盡",
+        "萬分感謝"
+      ],
+      "category": "thanks",
+      "description": "非常感謝",
+      "visuals": [
+        "跪下雙手合十，眼眶泛淚",
+        "捧著大花束送出"
+      ]
+    },
+    {
+      "text": "辛苦了",
+      "aliases": [
+        "辛苦啦",
+        "辛苦您了"
+      ],
+      "category": "thanks",
+      "description": "慰勞對方的付出",
+      "visuals": [
+        "遞上一杯熱茶，溫柔微笑",
+        "幫對方捶肩膀"
+      ]
+    },
+    {
+      "text": "麻煩你了",
+      "aliases": [
+        "拜託你了",
+        "再麻煩你"
+      ],
+      "category": "thanks",
+      "description": "請託並表達感謝",
+      "visuals": [
+        "雙手合十低頭請託",
+        "遞上小禮物，帶著歉意微笑"
+      ]
+    },
+    {
+      "text": "拜託",
+      "aliases": [
+        "拜託拜託",
+        "求求你",
+        "求你"
+      ],
+      "category": "thanks",
+      "description": "懇求對方",
+      "visuals": [
+        "雙手合十，眼睛水汪汪",
+        "抱住對方的腿哀求"
+      ]
+    },
+    {
+      "text": "有你真好",
+      "aliases": [
+        "還好有你",
+        "有你真幸福"
+      ],
+      "category": "thanks",
+      "description": "感謝對方的存在",
+      "visuals": [
+        "緊緊抱住對方，頭上冒愛心",
+        "靠在對方肩上微笑"
+      ]
+    },
+    {
+      "text": "好貼心",
+      "aliases": [
+        "太貼心了",
+        "好暖"
+      ],
+      "category": "thanks",
+      "description": "被對方的體貼感動",
+      "visuals": [
+        "雙手捧心，眼睛閃閃發亮",
+        "臉紅捂臉，身邊冒出小花"
+      ]
+    },
+    {
+      "text": "受教了",
+      "aliases": [
+        "學到了",
+        "長知識了"
+      ],
+      "category": "thanks",
+      "description": "表達學到東西",
+      "visuals": [
+        "拿筆記本認真抄寫",
+        "恍然大悟，頭上燈泡亮起"
+      ]
+    },
+    {
+      "text": "對不起",
+      "aliases": [
+        "抱歉",
+        "Sorry",
+        "歹勢",
+        "拍謝",
+        "不好意思"
+      ],
+      "category": "apology",
+      "description": "誠心道歉",
+      "visuals": [
+        "跪坐低頭雙手合十",
+        "低頭雙手合十，冒冷汗",
+        "抓頭苦笑，帶著歉意"
+      ]
+    },
+    {
+      "text": "我錯了",
+      "aliases": [
+        "是我的錯",
+        "我的鍋"
+      ],
+      "category": "apology",
+      "description": "承認錯誤",
+      "visuals": [
+        "跪坐低頭，頭上有烏雲",
+        "雙手舉起投降，眼眶含淚"
+      ]
+    },
+    {
+      "text": "不客氣",
+      "aliases": [
+        "不會",
+        "小事啦",
+        "應該的"
+      ],
+      "category": "apology",
+      "description": "回應感謝",
+      "visuals": [
+        "揮揮手微笑，表示沒什麼",
+        "拍胸脯，表情大方"
+      ]
+    },
+    {
+      "text": "沒關係",
+      "aliases": [
+        "沒事",
+        "別在意",
+        "別介意"
+      ],
+      "category": "apology",
+      "description": "原諒或安慰對方",
+      "visuals": [
+        "輕拍對方肩膀微笑",
+        "比 OK 手勢，溫柔微笑"
+      ]
+    },
+    {
+      "text": "別放心上",
+      "aliases": [
+        "不要在意",
+        "不用放心上"
+      ],
+      "category": "apology",
+      "description": "安撫對方的歉意",
+      "visuals": [
+        "揮手把烏雲趕走",
+        "遞上糖果，溫暖微笑"
+      ]
+    },
+    {
+      "text": "原諒你",
+      "aliases": [
+        "好啦原諒你",
+        "饒了你"
+      ],
+      "category": "apology",
+      "description": "勉強原諒",
+      "visuals": [
+        "雙手叉腰，鼓著臉頰但偷笑",
+        "轉頭哼一聲，嘴角上揚"
+      ]
+    },
+    {
+      "text": "打擾了",
+      "aliases": [
+        "失禮了",
+        "不好意思打擾"
+      ],
+      "category": "apology",
+      "description": "禮貌地打擾或退場",
+      "visuals": [
+        "鞠躬後倒退著離開",
+        "輕輕敲門探頭"
+      ]
+    },
+    {
+      "text": "讚",
+      "aliases": [
+        "好讚",
+        "很讚",
+        "Like"
+      ],
+      "category": "praise",
+      "description": "稱讚、肯定",
+      "visuals": [
+        "雙手比讚，眼睛發亮",
+        "舉著大大的讚手套"
+      ]
+    },
+    {
+      "text": "好棒",
+      "aliases": [
+        "太棒了",
+        "很棒",
+        "棒棒",
+        "棒棒der"
+      ],
+      "category": "praise",
+      "description": "誇獎對方",
+      "visuals": [
+        "拍手鼓掌，背後有彩花",
+        "舉起「100分」的牌子"
+      ]
+    },
+    {
+      "text": "厲害",
+      "aliases": [
+        "太厲害了",
+        "好厲害",
+        "強"
+      ],
+      "category": "praise",
+      "description": "佩服對方",
+      "visuals": [
+        "跪拜崇拜，眼睛冒星星",
+        "張大嘴驚嘆，雙手拍手"
+      ]
+    },
+    {
+      "text": "100分",
+      "aliases": [
+        "滿分",
+        "給你第一名",
+        "第一名"
+      ],
+      "category": "praise",
+      "description": "給予最高評價",
+      "visuals": [
+        "舉著金牌和「100」牌子",
+        "站在頒獎台上頒發獎盃"
+      ]
+    },
+    {
+      "text": "恭喜",
+      "aliases": [
+        "恭喜恭喜",
+        "賀喜",
+        "Congratulations",
+        "可喜可賀"
+      ],
+      "category": "praise",
+      "description": "祝賀對方",
+      "visuals": [
+        "拉響拉炮，彩帶飛舞",
+        "舉著香檳慶祝"
+      ]
+    },
+    {
+      "text": "替你開心",
+      "aliases": [
+        "為你高興",
+        "以你為榮"
+      ],
+      "category": "praise",
+      "description": "真心為對方高興",
+      "visuals": [
+        "開心轉圈圈，身邊有花瓣",
+        "雙手比愛心，眼眶泛淚"
+      ]
+    },
+    {
+      "text": "好可愛",
+      "aliases": [
+        "太可愛了",
+        "可愛",
+        "萌"
+      ],
+      "category": "praise",
+      "description": "稱讚可愛",
+      "visuals": [
+        "捧著臉頰尖叫，眼睛變愛心",
+        "被可愛擊中倒地"
+      ]
+    },
+    {
+      "text": "優秀",
+      "aliases": [
+        "太優秀了",
+        "天才"
+      ],
+      "category": "praise",
+      "description": "稱讚表現出色",
+      "visuals": [
+        "推眼鏡閃光，比讚",
+        "掛著「優秀」綬帶驕傲站著"
+      ]
+    },
+    {
+      "text": "好帥",
+      "aliases": [
+        "帥",
+        "帥喔",
+        "酷"
+      ],
+      "category": "praise",
+      "description": "稱讚帥氣",
+      "visuals": [
+        "戴墨鏡比讚，背景閃閃發光",
+        "被帥到睜大眼，臉紅"
+      ]
+    },
+    {
+      "text": "好美",
+      "aliases": [
+        "美",
+        "好漂亮",
+        "水"
+      ],
+      "category": "praise",
+      "description": "稱讚美麗",
+      "visuals": [
+        "捧臉陶醉，背景有花瓣",
+        "比讚，眼睛冒愛心"
+      ]
+    },
+    {
+      "text": "神操作",
+      "aliases": [
+        "傑出的一手",
+        "太神了"
+      ],
+      "category": "praise",
+      "description": "稱讚神來一筆",
+      "visuals": [
+        "雙手鼓掌，眼神佩服",
+        "舉起「神」字牌"
+      ]
+    },
+    {
+      "text": "耶",
+      "aliases": [
+        "耶！",
+        "YEAH",
+        "耶伊",
+        "呀比"
+      ],
+      "category": "happy",
+      "description": "開心歡呼",
+      "visuals": [
+        "跳到半空中雙手高舉",
+        "比 YA 手勢，背後有星星"
+      ]
+    },
+    {
+      "text": "哈哈",
+      "aliases": [
+        "哈哈哈",
+        "哈哈哈哈"
+      ],
+      "category": "happy",
+      "description": "大笑",
+      "visuals": [
+        "捧腹大笑，眼角有淚",
+        "笑到在地上打滾"
+      ]
+    },
+    {
+      "text": "笑死",
+      "aliases": [
+        "笑爛",
+        "好好笑",
+        "笑到往生"
+      ],
+      "category": "happy",
+      "description": "覺得非常好笑",
+      "visuals": [
+        "笑到倒地捶地板",
+        "笑到靈魂出竅飄起來"
+      ]
+    },
+    {
+      "text": "開心",
+      "aliases": [
+        "好開心",
+        "好開勳",
+        "Happy"
+      ],
+      "category": "happy",
+      "description": "心情很好",
+      "visuals": [
+        "開心轉圈圈，身邊有花",
+        "蹦蹦跳跳，頭上有音符"
+      ]
+    },
+    {
+      "text": "呵呵",
+      "aliases": [
+        "ㄎㄎ",
+        "ㄏㄏ",
+        "嘿嘿"
+      ],
+      "category": "happy",
+      "description": "偷笑或意味深長的笑",
+      "visuals": [
+        "捂嘴偷笑，眼睛瞇成線",
+        "露出意味深長的微笑"
+      ]
+    },
+    {
+      "text": "撒花",
+      "aliases": [
+        "灑花",
+        "太好了"
+      ],
+      "category": "happy",
+      "description": "慶祝、開心",
+      "visuals": [
+        "從籃子裡撒出花瓣",
+        "站在花瓣雨中歡呼"
+      ]
+    },
+    {
+      "text": "好幸福",
+      "aliases": [
+        "小確幸",
+        "好滿足"
+      ],
+      "category": "happy",
+      "description": "感到幸福",
+      "visuals": [
+        "抱著自己陶醉，頭上冒愛心",
+        "喝一口熱可可，滿足微笑"
+      ]
+    },
+    {
+      "text": "期待",
+      "aliases": [
+        "好期待",
+        "等不及了"
+      ],
+      "category": "happy",
+      "description": "充滿期待",
+      "visuals": [
+        "雙手托臉，眼睛閃閃發亮",
+        "在日曆上畫圈，興奮跺腳"
+      ]
+    },
+    {
+      "text": "好感動",
+      "aliases": [
+        "太感動了",
+        "感動",
+        "超感動"
+      ],
+      "category": "happy",
+      "description": "被感動",
+      "visuals": [
+        "淚流滿面，雙手捧心",
+        "用手帕擦眼淚，嘴角上揚"
+      ]
+    },
+    {
+      "text": "轉圈圈",
+      "aliases": [
+        "開心到轉圈"
+      ],
+      "category": "happy",
+      "description": "開心到停不下來",
+      "visuals": [
+        "快速旋轉，周圍有星星",
+        "踮腳跳芭蕾轉圈"
+      ]
+    },
+    {
+      "text": "好吃",
+      "aliases": [
+        "好好吃",
+        "美味",
+        "好美味"
+      ],
+      "category": "happy",
+      "description": "食物很好吃",
+      "visuals": [
+        "吃得滿臉幸福，臉頰鼓鼓",
+        "豎起大拇指，背景有閃光"
+      ]
+    },
+    {
+      "text": "真幸運",
+      "aliases": [
+        "好幸運",
+        "賺到了"
+      ],
+      "category": "happy",
+      "description": "覺得幸運",
+      "visuals": [
+        "撿到四葉草開心大叫",
+        "像中大獎一樣高舉雙手"
+      ]
+    },
+    {
+      "text": "哭哭",
+      "aliases": [
+        "嗚嗚",
+        "嗚嗚嗚",
+        "QQ",
+        "哭"
+      ],
+      "category": "sad",
+      "description": "難過想哭",
+      "visuals": [
+        "大哭，眼淚像瀑布",
+        "抱著膝蓋縮在角落啜泣"
+      ]
+    },
+    {
+      "text": "難過",
+      "aliases": [
+        "好難過",
+        "傷心",
+        "桑心"
+      ],
+      "category": "sad",
+      "description": "心情低落",
+      "visuals": [
+        "頭上有烏雲下雨",
+        "低頭垂肩，眼眶含淚"
+      ]
+    },
+    {
+      "text": "心碎",
+      "aliases": [
+        "心好痛",
+        "心碎了"
+      ],
+      "category": "sad",
+      "description": "受到打擊",
+      "visuals": [
+        "捧著裂開的愛心",
+        "被箭射中胸口倒下"
+      ]
+    },
+    {
+      "text": "好想哭",
+      "aliases": [
+        "想哭",
+        "我要哭了"
+      ],
+      "category": "sad",
+      "description": "情緒快潰堤",
+      "visuals": [
+        "嘴巴扁扁，眼眶滿是淚水",
+        "咬著手帕忍住眼淚"
+      ]
+    },
+    {
+      "text": "崩潰",
+      "aliases": [
+        "大崩潰",
+        "我崩潰了"
+      ],
+      "category": "sad",
+      "description": "情緒崩潰",
+      "visuals": [
+        "抱頭尖叫，背景閃電",
+        "身體裂成碎片"
+      ]
+    },
+    {
+      "text": "抱抱",
+      "aliases": [
+        "抱一個",
+        "給你抱抱",
+        "抱"
+      ],
+      "category": "sad",
+      "description": "安慰或討抱",
+      "visuals": [
+        "張開雙手要擁抱",
+        "緊緊抱住對方，頭上冒愛心"
+      ]
+    },
+    {
+      "text": "別哭",
+      "aliases": [
+        "不哭",
+        "不要哭",
+        "乖不哭"
+      ],
+      "category": "sad",
+      "description": "安慰對方",
+      "visuals": [
+        "遞上面紙，溫柔微笑",
+        "幫對方擦眼淚"
+      ]
+    },
+    {
+      "text": "摸摸頭",
+      "aliases": [
+        "秀秀",
+        "惜惜",
+        "拍拍"
+      ],
+      "category": "sad",
+      "description": "溫柔安慰",
+      "visuals": [
+        "輕拍對方的頭",
+        "踮腳摸頭，表情溫柔"
+      ]
+    },
+    {
+      "text": "別擔心",
+      "aliases": [
+        "不用擔心",
+        "會沒事的",
+        "沒事的"
+      ],
+      "category": "sad",
+      "description": "安撫對方的不安",
+      "visuals": [
+        "拍拍胸脯，溫暖微笑",
+        "握住對方的手點頭"
+      ]
+    },
+    {
+      "text": "別想太多",
+      "aliases": [
+        "想開點",
+        "放寬心"
+      ],
+      "category": "sad",
+      "description": "勸對方放寬心",
+      "visuals": [
+        "把對方頭上的烏雲吹走",
+        "遞上一杯熱茶"
+      ]
+    },
+    {
+      "text": "今天心情不美麗",
+      "aliases": [
+        "心情不好",
+        "不開心"
+      ],
+      "category": "sad",
+      "description": "心情不佳",
+      "visuals": [
+        "頭上有烏雲，嘴巴嘟起",
+        "趴在桌上嘆氣"
+      ]
+    },
+    {
+      "text": "我還好",
+      "aliases": [
+        "還可以",
+        "撐著"
+      ],
+      "category": "sad",
+      "description": "故作堅強",
+      "visuals": [
+        "勉強擠出笑容，背後有烏雲",
+        "比讚但眼眶含淚"
+      ]
+    },
+    {
+      "text": "嚇到",
+      "aliases": [
+        "嚇死",
+        "嚇我一跳",
+        "嚇到吃手手"
+      ],
+      "category": "surprise",
+      "description": "受到驚嚇",
+      "visuals": [
+        "嚇到跳起來，頭髮豎直",
+        "嚇到吃手指，渾身發抖"
+      ]
+    },
+    {
+      "text": "驚",
+      "aliases": [
+        "好驚",
+        "驚！"
+      ],
+      "category": "surprise",
+      "description": "吃驚",
+      "visuals": [
+        "眼睛瞪大，背後閃電",
+        "嘴巴張成O型"
+      ]
+    },
+    {
+      "text": "天啊",
+      "aliases": [
+        "我的天",
+        "OMG",
+        "天哪",
+        "我的老天鵝"
+      ],
+      "category": "surprise",
+      "description": "非常驚訝",
+      "visuals": [
+        "雙手抱頭，表情震驚",
+        "仰天長嘯，背景有天鵝飛過"
+      ]
+    },
+    {
+      "text": "傻眼",
+      "aliases": [
+        "傻眼貓咪",
+        "無言",
+        "呃"
+      ],
+      "category": "surprise",
+      "description": "對狀況無言",
+      "visuals": [
+        "呆住，頭上有烏鴉飛過",
+        "眼神死，嘴角抽動"
+      ]
+    },
+    {
+      "text": "哇",
+      "aliases": [
+        "哇塞",
+        "哇嗚",
+        "哇哇哇"
+      ],
+      "category": "surprise",
+      "description": "驚嘆",
+      "visuals": [
+        "雙手捧臉，眼睛閃閃發亮",
+        "張大嘴，身邊有驚嘆號"
+      ]
+    },
+    {
+      "text": "不敢相信",
+      "aliases": [
+        "不可能",
+        "怎麼可能",
+        "這不科學"
+      ],
+      "category": "surprise",
+      "description": "難以置信",
+      "visuals": [
+        "揉眼睛再看一次",
+        "下巴掉到地上"
+      ]
+    },
+    {
+      "text": "暈倒",
+      "aliases": [
+        "我暈",
+        "昏倒"
+      ],
+      "category": "surprise",
+      "description": "受不了到要暈倒",
+      "visuals": [
+        "眼睛轉圈圈倒地",
+        "扶著額頭搖搖晃晃"
+      ]
+    },
+    {
+      "text": "是在哈囉",
+      "aliases": [
+        "有事嗎",
+        "很有事"
+      ],
+      "category": "surprise",
+      "description": "傻眼吐槽",
+      "visuals": [
+        "雙手一攤，表情扭曲",
+        "歪頭皺眉，頭上有問號"
+      ]
+    },
+    {
+      "text": "離譜",
+      "aliases": [
+        "太扯了",
+        "扯",
+        "誇張"
+      ],
+      "category": "surprise",
+      "description": "覺得太誇張",
+      "visuals": [
+        "雙手抱頭往後仰",
+        "指著對方，表情誇張"
+      ]
+    },
+    {
+      "text": "登愣",
+      "aliases": [
+        "噔噔"
+      ],
+      "category": "surprise",
+      "description": "驚嚇或驚覺的音效感",
+      "visuals": [
+        "背景閃電，表情錯愕",
+        "被聚光燈照到，愣住"
+      ]
+    },
+    {
+      "text": "沒救了",
+      "aliases": [
+        "完蛋了",
+        "完了"
+      ],
+      "category": "surprise",
+      "description": "覺得無可救藥",
+      "visuals": [
+        "雙手合十看天，表情絕望",
+        "搖搖頭，背後有墓碑"
+      ]
+    },
+    {
+      "text": "尷尬",
+      "aliases": [
+        "好尷尬",
+        "尷尬了"
+      ],
+      "category": "surprise",
+      "description": "氣氛尷尬",
+      "visuals": [
+        "冒冷汗，嘴角僵硬微笑",
+        "想找地洞鑽進去"
+      ]
+    },
+    {
+      "text": "誤會大了",
+      "aliases": [
+        "誤會了",
+        "不是你想的那樣"
+      ],
+      "category": "surprise",
+      "description": "急著解釋誤會",
+      "visuals": [
+        "雙手狂揮否認，滿頭大汗",
+        "比大叉，表情慌張"
+      ]
+    },
+    {
+      "text": "生氣",
+      "aliases": [
+        "氣氣",
+        "我生氣了",
+        "哼"
+      ],
+      "category": "angry",
+      "description": "表達不滿",
+      "visuals": [
+        "雙手叉腰，頭上冒火",
+        "鼓著臉頰，臉漲紅"
+      ]
+    },
+    {
+      "text": "氣死",
+      "aliases": [
+        "氣死我了",
+        "火大"
+      ],
+      "category": "angry",
+      "description": "非常生氣",
+      "visuals": [
+        "頭頂冒煙，像火山爆發",
+        "咬牙切齒握拳"
+      ]
+    },
+    {
+      "text": "森77",
+      "aliases": [
+        "森七七",
+        "生氣氣"
+      ],
+      "category": "angry",
+      "description": "俏皮地生氣",
+      "visuals": [
+        "鼓起腮幫子，臉紅跺腳",
+        "抱胸轉頭，頭上冒小火苗"
+      ]
+    },
+    {
+      "text": "超級不爽",
+      "aliases": [
+        "不爽",
+        "很不爽"
+      ],
+      "category": "angry",
+      "description": "強烈不滿",
+      "visuals": [
+        "表情扭曲，背景黑色火焰",
+        "用力翻白眼"
+      ]
+    },
+    {
+      "text": "很躁",
+      "aliases": [
+        "阿雜",
+        "好煩",
+        "煩死了"
+      ],
+      "category": "angry",
+      "description": "感到煩躁",
+      "visuals": [
+        "抓頭髮，頭上一團亂線",
+        "抱頭，頭上有雷雲"
+      ]
+    },
+    {
+      "text": "給我小心點",
+      "aliases": [
+        "小心點",
+        "警告"
+      ],
+      "category": "angry",
+      "description": "嚴肅警告",
+      "visuals": [
+        "手指著對方，眼神凌厲",
+        "握拳，背後有火焰"
+      ]
+    },
+    {
+      "text": "不理你了",
+      "aliases": [
+        "哼不理你",
+        "不要理你"
+      ],
+      "category": "angry",
+      "description": "賭氣",
+      "visuals": [
+        "背對對方，雙手抱胸",
+        "嘟嘴把臉轉開"
+      ]
+    },
+    {
+      "text": "走著瞧",
+      "aliases": [
+        "你給我記住",
+        "記住了"
+      ],
+      "category": "angry",
+      "description": "撂狠話",
+      "visuals": [
+        "握拳咬牙，背後有閃電",
+        "一邊退場一邊回頭瞪"
+      ]
+    },
+    {
+      "text": "惡人退散",
+      "aliases": [
+        "退散",
+        "滾開吧"
+      ],
+      "category": "angry",
+      "description": "驅趕壞事",
+      "visuals": [
+        "揮舞掃把趕走烏雲",
+        "伸出手掌往前推，表情堅定"
+      ]
+    },
+    {
+      "text": "好累",
+      "aliases": [
+        "累",
+        "累累",
+        "累死了",
+        "好疲憊"
+      ],
+      "category": "tired",
+      "description": "感到疲憊",
+      "visuals": [
+        "趴在桌上，靈魂飄出來",
+        "拖著身體走路，有黑眼圈"
+      ]
+    },
+    {
+      "text": "心好累",
+      "aliases": [
+        "心累",
+        "好心累"
+      ],
+      "category": "tired",
+      "description": "心理疲憊",
+      "visuals": [
+        "眼神死，坐在角落",
+        "嘆一口長長的氣，頭上有烏雲"
+      ]
+    },
+    {
+      "text": "累癱",
+      "aliases": [
+        "已攤",
+        "攤了",
+        "累歪"
+      ],
+      "category": "tired",
+      "description": "累到攤平",
+      "visuals": [
+        "像融化一樣攤在地上",
+        "整個人掛在椅背上"
+      ]
+    },
+    {
+      "text": "不想動",
+      "aliases": [
+        "好懶",
+        "不想起床",
+        "懶"
+      ],
+      "category": "tired",
+      "description": "懶得動",
+      "visuals": [
+        "躺在沙發上滑手機",
+        "裹著棉被不肯起來"
+      ]
+    },
+    {
+      "text": "讓我靜靜",
+      "aliases": [
+        "別吵我",
+        "讓我冷靜"
+      ],
+      "category": "tired",
+      "description": "想要獨處",
+      "visuals": [
+        "戴耳機閉眼，頭上有「勿擾」牌",
+        "躲進紙箱裡"
+      ]
+    },
+    {
+      "text": "別逼我",
+      "aliases": [
+        "不要逼我",
+        "為什麼要逼我"
+      ],
+      "category": "tired",
+      "description": "被逼到極限",
+      "visuals": [
+        "雙手抱頭，表情痛苦",
+        "縮在牆角發抖"
+      ]
+    },
+    {
+      "text": "懷疑人生",
+      "aliases": [
+        "我是誰我在哪"
+      ],
+      "category": "tired",
+      "description": "對一切感到茫然",
+      "visuals": [
+        "仰望天空發呆",
+        "頭上浮著一堆問號"
+      ]
+    },
+    {
+      "text": "不想面對",
+      "aliases": [
+        "逃避",
+        "不想努力"
+      ],
+      "category": "tired",
+      "description": "逃避現實",
+      "visuals": [
+        "把頭埋進枕頭",
+        "躲在被窩裡只露出眼睛"
+      ]
+    },
+    {
+      "text": "好睏",
+      "aliases": [
+        "想睡",
+        "好想睡",
+        "睏"
+      ],
+      "category": "tired",
+      "description": "很想睡覺",
+      "visuals": [
+        "眼皮下垂，頭一點一點",
+        "站著打瞌睡，嘴角流口水"
+      ]
+    },
+    {
+      "text": "好衰",
+      "aliases": [
+        "也太衰了吧",
+        "衰",
+        "有夠衰",
+        "好倒楣"
+      ],
+      "category": "tired",
+      "description": "運氣很差",
+      "visuals": [
+        "頭上被鳥大便，表情無奈",
+        "走路被雷劈，頭髮焦黑"
+      ]
+    },
+    {
+      "text": "我就爛",
+      "aliases": [
+        "我就廢",
+        "擺爛"
+      ],
+      "category": "tired",
+      "description": "自嘲放棄努力",
+      "visuals": [
+        "躺平在地，雙手攤開",
+        "坐在沙發吃洋芋片，眼神空洞"
+      ]
+    },
+    {
+      "text": "廢到笑",
+      "aliases": [
+        "好廢"
+      ],
+      "category": "tired",
+      "description": "自嘲很廢",
+      "visuals": [
+        "躺平傻笑，旁邊有零食",
+        "趴著無力地比讚"
+      ]
+    },
+    {
+      "text": "沒力了",
+      "aliases": [
+        "沒電了",
+        "電量不足"
+      ],
+      "category": "tired",
+      "description": "精力耗盡",
+      "visuals": [
+        "頭上有快沒電的電池圖示",
+        "像洩氣的氣球癱軟"
+      ]
+    },
+    {
+      "text": "上班中",
+      "aliases": [
+        "工作中",
+        "忙碌中"
+      ],
+      "category": "status",
+      "description": "正在工作",
+      "visuals": [
+        "戴眼鏡專心打電腦",
+        "桌上堆滿文件，埋頭苦幹"
+      ]
+    },
+    {
+      "text": "下班了",
+      "aliases": [
+        "下班啦",
+        "收工"
+      ],
+      "category": "status",
+      "description": "結束工作的開心",
+      "visuals": [
+        "拎包衝出公司，背後有煙塵",
+        "在辦公室門口歡呼"
+      ]
+    },
+    {
+      "text": "吃飯中",
+      "aliases": [
+        "在吃飯",
+        "開動",
+        "開飯"
+      ],
+      "category": "status",
+      "description": "正在用餐",
+      "visuals": [
+        "端著大碗吃得很香",
+        "拿筷子雙手合十說開動"
+      ]
+    },
+    {
+      "text": "在路上",
+      "aliases": [
+        "在路上了",
+        "On the way",
+        "出發了"
+      ],
+      "category": "status",
+      "description": "正在前往途中",
+      "visuals": [
+        "邊跑邊看手錶",
+        "騎著腳踏車往前衝"
+      ]
+    },
+    {
+      "text": "快到了",
+      "aliases": [
+        "馬上到",
+        "快到囉"
+      ],
+      "category": "status",
+      "description": "即將抵達",
+      "visuals": [
+        "邊跑邊揮手，滿頭大汗",
+        "從遠方跑來，背後有速度線"
+      ]
+    },
+    {
+      "text": "到家了",
+      "aliases": [
+        "我到家了",
+        "到了",
+        "我到了"
+      ],
+      "category": "status",
+      "description": "已抵達",
+      "visuals": [
+        "打開家門，鬆一口氣",
+        "躺在沙發上比 YA"
+      ]
+    },
+    {
+      "text": "出門了",
+      "aliases": [
+        "我出門了",
+        "走囉"
+      ],
+      "category": "status",
+      "description": "正要出門",
+      "visuals": [
+        "揹著包包揮手出門",
+        "坐在玄關穿鞋準備出門"
+      ]
+    },
+    {
+      "text": "在忙",
+      "aliases": [
+        "好忙",
+        "忙翻了",
+        "忙到爆"
+      ],
+      "category": "status",
+      "description": "現在很忙",
+      "visuals": [
+        "分身成好幾個同時做事",
+        "手腳並用打字，滿頭大汗"
+      ]
+    },
+    {
+      "text": "洗澡去",
+      "aliases": [
+        "去洗澡",
+        "洗澎澎"
+      ],
+      "category": "status",
+      "description": "去洗澡",
+      "visuals": [
+        "頭上頂著毛巾，抱著小鴨",
+        "泡在浴缸裡冒泡泡"
+      ]
+    },
+    {
+      "text": "補眠中",
+      "aliases": [
+        "小睡片刻",
+        "午睡",
+        "睡一下"
+      ],
+      "category": "status",
+      "description": "正在休息",
+      "visuals": [
+        "戴眼罩睡覺，冒出Zzz",
+        "靠著牆打盹"
+      ]
+    },
+    {
+      "text": "耍廢中",
+      "aliases": [
+        "放空",
+        "休息中"
+      ],
+      "category": "status",
+      "description": "正在放鬆耍廢",
+      "visuals": [
+        "躺在懶骨頭上吃零食",
+        "泡在泳圈上漂浮"
+      ]
+    },
+    {
+      "text": "追劇中",
+      "aliases": [
+        "看劇",
+        "看劇中"
+      ],
+      "category": "status",
+      "description": "正在追劇",
+      "visuals": [
+        "抱著爆米花盯著電視",
+        "蓋毯子看平板，表情投入"
+      ]
+    },
+    {
+      "text": "運動中",
+      "aliases": [
+        "健身",
+        "去運動"
+      ],
+      "category": "status",
+      "description": "正在運動",
+      "visuals": [
+        "舉啞鈴，汗水飛濺",
+        "在跑步機上奔跑"
+      ]
+    },
+    {
+      "text": "購物中",
+      "aliases": [
+        "血拚",
+        "買買買"
+      ],
+      "category": "status",
+      "description": "正在購物",
+      "visuals": [
+        "雙手提滿購物袋",
+        "刷卡，眼睛冒愛心"
+      ]
+    },
+    {
+      "text": "排隊中",
+      "aliases": [
+        "在排隊"
+      ],
+      "category": "status",
+      "description": "正在排隊",
+      "visuals": [
+        "在長長的隊伍裡踮腳張望",
+        "拿著號碼牌發呆"
+      ]
+    },
+    {
+      "text": "馬上處理",
+      "aliases": [
+        "立刻處理",
+        "馬上辦"
+      ],
+      "category": "status",
+      "description": "即刻行動",
+      "visuals": [
+        "捲起袖子衝刺",
+        "戴頭巾，雙手快速打字"
+      ]
+    },
+    {
+      "text": "晚點回覆",
+      "aliases": [
+        "晚點回",
+        "稍後回覆",
+        "晚點回你"
+      ],
+      "category": "status",
+      "description": "暫時無法回覆",
+      "visuals": [
+        "一手講電話一手揮手示意",
+        "手機放在一旁，埋頭工作"
+      ]
+    },
+    {
+      "text": "等你",
+      "aliases": [
+        "我等你",
+        "等你喔"
+      ],
+      "category": "status",
+      "description": "表示會等對方",
+      "visuals": [
+        "坐在長椅上看手錶",
+        "抱著膝蓋，望向遠方"
+      ]
+    },
+    {
+      "text": "開會中",
+      "aliases": [
+        "會議中",
+        "在開會"
+      ],
+      "category": "work",
+      "description": "正在開會",
+      "visuals": [
+        "坐在會議桌前認真做筆記",
+        "在白板前比手畫腳"
+      ]
+    },
+    {
+      "text": "加班中",
+      "aliases": [
+        "加班",
+        "又加班"
+      ],
+      "category": "work",
+      "description": "正在加班",
+      "visuals": [
+        "深夜在電腦前，旁邊堆滿咖啡杯",
+        "趴在鍵盤上，窗外是月亮"
+      ]
+    },
+    {
+      "text": "想下班",
+      "aliases": [
+        "好想下班",
+        "我要下班"
+      ],
+      "category": "work",
+      "description": "渴望下班",
+      "visuals": [
+        "盯著時鐘倒數",
+        "靈魂已經飄出辦公室"
+      ]
+    },
+    {
+      "text": "不想上班",
+      "aliases": [
+        "厭世上班",
+        "拒絕上班"
+      ],
+      "category": "work",
+      "description": "不想去上班",
+      "visuals": [
+        "抱著床柱不肯出門",
+        "被拖著腳往公司走"
+      ]
+    },
+    {
+      "text": "交給我",
+      "aliases": [
+        "包在我身上",
+        "我來"
+      ],
+      "category": "work",
+      "description": "主動承擔",
+      "visuals": [
+        "拍胸脯，自信微笑",
+        "捲起袖子，眼神堅定"
+      ]
+    },
+    {
+      "text": "使命必達",
+      "aliases": [
+        "任務完成",
+        "搞定"
+      ],
+      "category": "work",
+      "description": "保證完成任務",
+      "visuals": [
+        "立正敬禮，背後有光芒",
+        "手持文件比 YA"
+      ]
+    },
+    {
+      "text": "事情做不完",
+      "aliases": [
+        "做不完",
+        "工作好多"
+      ],
+      "category": "work",
+      "description": "工作量爆炸",
+      "visuals": [
+        "被文件山淹沒，只露出手",
+        "六隻手同時工作"
+      ]
+    },
+    {
+      "text": "訊息回不完",
+      "aliases": [
+        "信回不完",
+        "回不完"
+      ],
+      "category": "work",
+      "description": "訊息太多",
+      "visuals": [
+        "被信封雪崩掩埋",
+        "對著滿屏通知流汗"
+      ]
+    },
+    {
+      "text": "來杯咖啡",
+      "aliases": [
+        "咖啡續命",
+        "需要咖啡"
+      ],
+      "category": "work",
+      "description": "靠咖啡打起精神",
+      "visuals": [
+        "雙手捧著超大杯咖啡",
+        "把咖啡當點滴吊著"
+      ]
+    },
+    {
+      "text": "放假了",
+      "aliases": [
+        "放假愉快",
+        "終於放假"
+      ],
+      "category": "work",
+      "description": "迎接放假",
+      "visuals": [
+        "雙手高舉衝出辦公室",
+        "戴上墨鏡出發去玩"
+      ]
+    },
+    {
+      "text": "一起努力",
+      "aliases": [
+        "一起加油",
+        "共勉之"
+      ],
+      "category": "work",
+      "description": "團隊打氣",
+      "visuals": [
+        "大家手疊手喊加油",
+        "握拳並肩站"
+      ]
+    },
+    {
+      "text": "做好了",
+      "aliases": [
+        "報告好了",
+        "已完成",
+        "完成了"
+      ],
+      "category": "work",
+      "description": "回報完成",
+      "visuals": [
+        "雙手遞出文件，表情自信",
+        "比讚，背後一疊完成的文件"
+      ]
+    },
+    {
+      "text": "請假",
+      "aliases": [
+        "我要請假",
+        "休假中"
+      ],
+      "category": "work",
+      "description": "請假或休假",
+      "visuals": [
+        "揮著假單開心離開",
+        "在海邊躺椅上喝飲料"
+      ]
+    },
+    {
+      "text": "考試加油",
+      "aliases": [
+        "期末加油",
+        "考試順利"
+      ],
+      "category": "work",
+      "description": "考試打氣",
+      "visuals": [
+        "綁頭巾拿鉛筆，眼神燃燒",
+        "抱著書本熬夜苦讀"
+      ]
+    },
+    {
+      "text": "摸魚中",
+      "aliases": [
+        "偷懶",
+        "划水"
+      ],
+      "category": "work",
+      "description": "上班偷懶",
+      "visuals": [
+        "躲在螢幕後滑手機",
+        "假裝工作，其實在發呆"
+      ]
+    },
+    {
+      "text": "老闆來了",
+      "aliases": [
+        "小心老闆",
+        "老闆在看"
+      ],
+      "category": "work",
+      "description": "提醒有主管在場",
+      "visuals": [
+        "慌張切換螢幕，滿頭大汗",
+        "躲在文件夾後偷看"
+      ]
+    },
+    {
+      "text": "已讀",
+      "aliases": [
+        "已閱",
+        "已讀了"
+      ],
+      "category": "work",
+      "description": "表示已看到",
+      "visuals": [
+        "手指著眼睛點頭",
+        "拿著「已讀」印章蓋下"
+      ]
+    },
+    {
+      "text": "班味",
+      "aliases": [
+        "上班味",
+        "社畜味"
+      ],
+      "category": "work",
+      "description": "自嘲上班疲憊感",
+      "visuals": [
+        "拖著公事包，身上冒灰色氣息",
+        "眼神空洞，領帶歪掉"
+      ]
+    },
+    {
+      "text": "精神離職",
+      "aliases": [
+        "精神登出",
+        "心已離職"
+      ],
+      "category": "work",
+      "description": "人在心不在",
+      "visuals": [
+        "身體坐著，靈魂飄到海邊",
+        "坐在辦公桌前眼神死"
+      ]
+    },
+    {
+      "text": "發薪日",
+      "aliases": [
+        "領薪水",
+        "薪水入帳"
+      ],
+      "category": "work",
+      "description": "領薪水的開心",
+      "visuals": [
+        "抱著錢袋轉圈",
+        "看著手機帳戶，眼睛變成錢"
+      ]
+    },
+    {
+      "text": "愛你",
+      "aliases": [
+        "我愛你",
+        "愛你喔",
+        "Love you",
+        "愛你唷"
+      ],
+      "category": "love",
+      "description": "表達愛意",
+      "visuals": [
+        "雙手比大愛心",
+        "丟出一顆顆愛心",
+        "抱著大愛心臉紅"
+      ]
+    },
+    {
+      "text": "想你",
+      "aliases": [
+        "好想你",
+        "想念你",
+        "想你了"
+      ],
+      "category": "love",
+      "description": "思念對方",
+      "visuals": [
+        "抱著枕頭望著窗外",
+        "手機貼胸口，閉眼想念"
+      ]
+    },
+    {
+      "text": "親親",
+      "aliases": [
+        "啾",
+        "啾咪",
+        "親一個",
+        "Mua"
+      ],
+      "category": "love",
+      "description": "送上親吻",
+      "visuals": [
+        "嘟嘴送飛吻，冒出愛心",
+        "親臉頰，背景粉紅泡泡"
+      ]
+    },
+    {
+      "text": "喜歡你",
+      "aliases": [
+        "超喜歡你",
+        "好喜歡你"
+      ],
+      "category": "love",
+      "description": "告白",
+      "visuals": [
+        "臉紅遞出情書",
+        "雙手比愛心，害羞低頭"
+      ]
+    },
+    {
+      "text": "陪我",
+      "aliases": [
+        "陪陪我",
+        "陪我玩"
+      ],
+      "category": "love",
+      "description": "想要陪伴",
+      "visuals": [
+        "拉著對方衣角，眼神撒嬌",
+        "抱著膝蓋，眼睛水汪汪"
+      ]
+    },
+    {
+      "text": "來接我",
+      "aliases": [
+        "接我",
+        "來載我"
+      ],
+      "category": "love",
+      "description": "撒嬌請對方接送",
+      "visuals": [
+        "站在路邊揮手等候",
+        "蹲在門口拿著手機"
+      ]
+    },
+    {
+      "text": "一起吃飯吧",
+      "aliases": [
+        "約吃飯",
+        "吃飯嗎"
+      ],
+      "category": "love",
+      "description": "邀請約會吃飯",
+      "visuals": [
+        "雙手捧著兩碗飯",
+        "指著餐廳，眼睛發亮"
+      ]
+    },
+    {
+      "text": "心動",
+      "aliases": [
+        "好心動",
+        "怦然心動"
+      ],
+      "category": "love",
+      "description": "被打動的心跳感",
+      "visuals": [
+        "捂胸口，心臟跳出來",
+        "臉紅，背後有閃光"
+      ]
+    },
+    {
+      "text": "暈船",
+      "aliases": [
+        "我暈船了",
+        "暈爛"
+      ],
+      "category": "love",
+      "description": "陷入戀愛",
+      "visuals": [
+        "頭暈轉圈，眼睛變愛心",
+        "坐在小船上搖晃，臉紅"
+      ]
+    },
+    {
+      "text": "不想分開",
+      "aliases": [
+        "捨不得你",
+        "不要走"
+      ],
+      "category": "love",
+      "description": "依依不捨",
+      "visuals": [
+        "抱住對方的手臂",
+        "拉著衣角，眼眶含淚"
+      ]
+    },
+    {
+      "text": "想見你",
+      "aliases": [
+        "想看到你"
+      ],
+      "category": "love",
+      "description": "想見面",
+      "visuals": [
+        "貼著窗戶望向遠方",
+        "看著照片傻笑"
+      ]
+    },
+    {
+      "text": "好幸福喔",
+      "aliases": [
+        "有你好幸福",
+        "幸福"
+      ],
+      "category": "love",
+      "description": "戀愛中的幸福感",
+      "visuals": [
+        "抱著對方臉紅微笑",
+        "被愛心包圍"
+      ]
+    },
+    {
+      "text": "寶貝",
+      "aliases": [
+        "我的寶",
+        "親愛的"
+      ],
+      "category": "love",
+      "description": "親暱稱呼",
+      "visuals": [
+        "捧著對方的臉微笑",
+        "抱著對方蹭蹭"
+      ]
+    },
+    {
+      "text": "吃醋",
+      "aliases": [
+        "我吃醋了",
+        "哼哼"
+      ],
+      "category": "love",
+      "description": "戀愛中的醋意",
+      "visuals": [
+        "鼓臉抱著醋瓶",
+        "背對對方，偷偷回頭"
+      ]
+    },
+    {
+      "text": "晚安我的寶",
+      "aliases": [
+        "晚安親愛的",
+        "晚安寶貝"
+      ],
+      "category": "love",
+      "description": "情侶的晚安",
+      "visuals": [
+        "蓋被子送飛吻",
+        "抱著枕頭，身邊有愛心月亮"
+      ]
+    },
+    {
+      "text": "早安親親",
+      "aliases": [
+        "早安寶貝",
+        "早安愛你"
+      ],
+      "category": "love",
+      "description": "情侶的早安",
+      "visuals": [
+        "帶著早餐送到面前",
+        "伸懶腰後送飛吻"
+      ]
+    },
+    {
+      "text": "抱緊處理",
+      "aliases": [
+        "抱緊",
+        "緊緊抱"
+      ],
+      "category": "love",
+      "description": "想要緊緊擁抱",
+      "visuals": [
+        "飛撲過去緊緊抱住",
+        "張開雙臂衝過來"
+      ]
+    },
+    {
+      "text": "牽牽",
+      "aliases": [
+        "牽手",
+        "牽牽手"
+      ],
+      "category": "love",
+      "description": "撒嬌想牽手",
+      "visuals": [
+        "伸出手，眼神期待",
+        "兩隻手牽在一起，背景有愛心"
+      ]
+    },
+    {
+      "text": "你是我的",
+      "aliases": [
+        "專屬於我"
+      ],
+      "category": "love",
+      "description": "宣示主權",
+      "visuals": [
+        "緊抱對方，對外比叉",
+        "在對方頭上蓋「我的」印章"
+      ]
+    },
+    {
+      "text": "這感我付",
+      "aliases": [
+        "只有我在付出"
+      ],
+      "category": "love",
+      "description": "自嘲單方面付出",
+      "visuals": [
+        "一個人抱著大愛心，表情委屈",
+        "遞出禮物但沒人接"
+      ]
+    },
+    {
+      "text": "聽你在唬爛",
+      "aliases": [
+        "唬爛",
+        "你繼續吹",
+        "聽你在吹"
+      ],
+      "category": "funny",
+      "description": "吐槽對方誇大",
+      "visuals": [
+        "挖耳朵，表情不屑",
+        "拿爆米花看戲"
+      ]
+    },
+    {
+      "text": "來啊誰怕誰",
+      "aliases": [
+        "來啊",
+        "誰怕誰"
+      ],
+      "category": "funny",
+      "description": "故意挑釁",
+      "visuals": [
+        "擺出拳擊姿勢，表情囂張",
+        "勾手指挑釁"
+      ]
+    },
+    {
+      "text": "好棒棒",
+      "aliases": [
+        "啊不就好棒棒"
+      ],
+      "category": "funny",
+      "description": "反諷式稱讚",
+      "visuals": [
+        "面無表情拍手",
+        "翻白眼豎起大拇指"
+      ]
+    },
+    {
+      "text": "不要問很可怕",
+      "aliases": [
+        "不要問"
+      ],
+      "category": "funny",
+      "description": "神秘又可怕",
+      "visuals": [
+        "在黑暗中只露出眼睛",
+        "手指放嘴邊噓"
+      ]
+    },
+    {
+      "text": "被自己美醒",
+      "aliases": [
+        "被自己帥醒",
+        "自戀"
+      ],
+      "category": "funny",
+      "description": "自戀",
+      "visuals": [
+        "照鏡子陶醉，閃閃發光",
+        "撥頭髮，背後有玫瑰花"
+      ]
+    },
+    {
+      "text": "突破盲點",
+      "aliases": [
+        "一針見血"
+      ],
+      "category": "funny",
+      "description": "點破關鍵",
+      "visuals": [
+        "推眼鏡，鏡片反光",
+        "手指指向前方，背景閃電"
+      ]
+    },
+    {
+      "text": "尷尬又不失禮的微笑",
+      "aliases": [
+        "尷尬微笑",
+        "禮貌微笑"
+      ],
+      "category": "funny",
+      "description": "尷尬但保持禮貌",
+      "visuals": [
+        "嘴角僵硬微笑，冒冷汗",
+        "僵笑，背景一片空白"
+      ]
+    },
+    {
+      "text": "靜靜看著你",
+      "aliases": [
+        "看著你",
+        "盯"
+      ],
+      "category": "funny",
+      "description": "默默觀察",
+      "visuals": [
+        "從牆後探頭盯著",
+        "瞇眼盯著，一動不動"
+      ]
+    },
+    {
+      "text": "窮到被鬼抓走",
+      "aliases": [
+        "窮",
+        "好窮",
+        "沒錢了"
+      ],
+      "category": "funny",
+      "description": "自嘲貧窮",
+      "visuals": [
+        "翻開空錢包，飛出一隻蛾",
+        "吃泡麵，頭上有烏雲"
+      ]
+    },
+    {
+      "text": "認真就輸了",
+      "aliases": [
+        "別認真",
+        "開玩笑的啦"
+      ],
+      "category": "funny",
+      "description": "化解尷尬",
+      "visuals": [
+        "聳肩攤手，吐舌頭",
+        "比 YA 眨眼"
+      ]
+    },
+    {
+      "text": "讓專業的來",
+      "aliases": [
+        "專業的來"
+      ],
+      "category": "funny",
+      "description": "自信接手",
+      "visuals": [
+        "戴上墨鏡登場",
+        "拉起袖子，眼神銳利"
+      ]
+    },
+    {
+      "text": "看戲",
+      "aliases": [
+        "吃瓜",
+        "坐等",
+        "前排看戲"
+      ],
+      "category": "funny",
+      "description": "旁觀看熱鬧",
+      "visuals": [
+        "拿著爆米花坐在前排",
+        "啃西瓜，表情興奮"
+      ]
+    },
+    {
+      "text": "已知用火",
+      "aliases": [
+        "好厲害喔"
+      ],
+      "category": "funny",
+      "description": "反諷對方發現常識",
+      "visuals": [
+        "舉著火把，表情驚嘆",
+        "面無表情地鼓掌"
+      ]
+    },
+    {
+      "text": "我看你是",
+      "aliases": [
+        "我看倒像"
+      ],
+      "category": "funny",
+      "description": "吐槽對方",
+      "visuals": [
+        "推眼鏡，表情懷疑",
+        "斜眼看，嘴角上揚"
+      ]
+    },
+    {
+      "text": "腦波弱",
+      "aliases": [
+        "容易被說服"
+      ],
+      "category": "funny",
+      "description": "自嘲容易被影響",
+      "visuals": [
+        "眼睛轉圈圈被牽著走",
+        "頭上有天線接收訊號"
+      ]
+    },
+    {
+      "text": "裝死",
+      "aliases": [
+        "假裝沒看到"
+      ],
+      "category": "funny",
+      "description": "迴避",
+      "visuals": [
+        "倒地吐舌頭裝死",
+        "用報紙蓋住臉"
+      ]
+    },
+    {
+      "text": "你怪怪的",
+      "aliases": [
+        "怪怪的",
+        "有事嗎你"
+      ],
+      "category": "funny",
+      "description": "覺得對方奇怪",
+      "visuals": [
+        "瞇眼盯著對方",
+        "後退一步，表情防備"
+      ]
+    },
+    {
+      "text": "加油",
+      "aliases": [
+        "加油加油",
+        "Fighting"
+      ],
+      "category": "cheer",
+      "description": "為對方打氣",
+      "visuals": [
+        "綁頭巾揮舞旗子",
+        "雙手握拳，背後有火焰",
+        "拿著加油棒跳舞"
+      ]
+    },
+    {
+      "text": "你可以的",
+      "aliases": [
+        "你一定可以",
+        "我相信你"
+      ],
+      "category": "cheer",
+      "description": "鼓勵對方",
+      "visuals": [
+        "雙手握住對方的手",
+        "拍肩，豎起大拇指"
+      ]
+    },
+    {
+      "text": "我會加油的",
+      "aliases": [
+        "我會努力",
+        "我會加油"
+      ],
+      "category": "cheer",
+      "description": "自我打氣",
+      "visuals": [
+        "握拳，眼神燃燒",
+        "捲起袖子準備開工"
+      ]
+    },
+    {
+      "text": "打起精神",
+      "aliases": [
+        "振作",
+        "打起精神來"
+      ],
+      "category": "cheer",
+      "description": "鼓勵振作",
+      "visuals": [
+        "拍臉頰，表情振作",
+        "喝提神飲料，全身發光"
+      ]
+    },
+    {
+      "text": "一切都會好的",
+      "aliases": [
+        "會越來越好",
+        "都會過去的"
+      ],
+      "category": "cheer",
+      "description": "安慰並給予希望",
+      "visuals": [
+        "指著雨後彩虹微笑",
+        "在陽光下伸懶腰"
+      ]
+    },
+    {
+      "text": "你超棒",
+      "aliases": [
+        "你很棒",
+        "相信自己"
+      ],
+      "category": "cheer",
+      "description": "肯定對方",
+      "visuals": [
+        "豎起大拇指，眼睛閃亮",
+        "在對方頭上戴皇冠"
+      ]
+    },
+    {
+      "text": "別緊張",
+      "aliases": [
+        "放輕鬆",
+        "深呼吸"
+      ],
+      "category": "cheer",
+      "description": "安撫緊張情緒",
+      "visuals": [
+        "做深呼吸動作",
+        "輕拍對方的背"
+      ]
+    },
+    {
+      "text": "拍拍手",
+      "aliases": [
+        "給你拍拍手",
+        "鼓掌"
+      ],
+      "category": "cheer",
+      "description": "鼓勵或讚揚",
+      "visuals": [
+        "用力鼓掌，周圍有彩帶",
+        "站起來熱烈拍手"
+      ]
+    },
+    {
+      "text": "衝啊",
+      "aliases": [
+        "衝衝衝",
+        "GO",
+        "出發"
+      ],
+      "category": "cheer",
+      "description": "充滿幹勁出發",
+      "visuals": [
+        "向前衝刺，背後有煙塵",
+        "揮舞旗幟往前跑"
+      ]
+    },
+    {
+      "text": "觸爛",
+      "aliases": [
+        "true爛",
+        "超同意"
+      ],
+      "category": "trend",
+      "description": "超級認同",
+      "visuals": [
+        "用力點頭比讚",
+        "舉著「觸」字牌子"
+      ]
+    },
+    {
+      "text": "破防了",
+      "aliases": [
+        "大破防",
+        "破防"
+      ],
+      "category": "trend",
+      "description": "情緒防線被擊破",
+      "visuals": [
+        "盾牌碎裂，眼眶含淚",
+        "被箭射中倒地"
+      ]
+    },
+    {
+      "text": "接住你",
+      "aliases": [
+        "我接住你了"
+      ],
+      "category": "trend",
+      "description": "給予情緒支持",
+      "visuals": [
+        "張開雙手接住掉下來的人",
+        "溫柔抱住對方"
+      ]
+    },
+    {
+      "text": "留友看",
+      "aliases": [
+        "留著給朋友看"
+      ],
+      "category": "trend",
+      "description": "分享給朋友看",
+      "visuals": [
+        "指著螢幕呼叫朋友",
+        "比手勢招朋友過來看"
+      ]
+    },
+    {
+      "text": "真冰涼",
+      "aliases": [
+        "好冰涼",
+        "爽"
+      ],
+      "category": "trend",
+      "description": "爽快的感受",
+      "visuals": [
+        "大口喝冰飲，背後冒冷氣",
+        "舉起冰飲，表情暢快"
+      ]
+    },
+    {
+      "text": "暈碳",
+      "aliases": [
+        "吃太飽",
+        "飯後昏睡"
+      ],
+      "category": "trend",
+      "description": "吃太多碳水想睡",
+      "visuals": [
+        "抱著肚子癱軟打瞌睡",
+        "躺在大碗旁邊睡著"
+      ]
+    },
+    {
+      "text": "要確欸",
+      "aliases": [
+        "你要確欸",
+        "確?",
+        "確"
+      ],
+      "category": "trend",
+      "description": "傻眼質疑",
+      "visuals": [
+        "瞇眼斜視，表情懷疑",
+        "指著對方，歪頭"
+      ]
+    },
+    {
+      "text": "M3",
+      "aliases": [
+        "你懂我意思吧",
+        "懂吧"
+      ],
+      "category": "trend",
+      "description": "你懂我意思吧",
+      "visuals": [
+        "眨眼比手指",
+        "挑眉，意味深長地微笑"
+      ]
+    },
+    {
+      "text": "包的",
+      "aliases": [
+        "保證",
+        "沒在怕"
+      ],
+      "category": "trend",
+      "description": "保證沒問題",
+      "visuals": [
+        "拍胸脯，自信眨眼",
+        "比 OK，背後閃光"
+      ]
+    },
+    {
+      "text": "很解",
+      "aliases": [
+        "好解",
+        "掃興"
+      ],
+      "category": "trend",
+      "description": "覺得掃興",
+      "visuals": [
+        "面無表情，頭上有往下的箭頭",
+        "嘆氣搖頭"
+      ]
+    },
+    {
+      "text": "硬控",
+      "aliases": [
+        "被硬控",
+        "移不開眼"
+      ],
+      "category": "trend",
+      "description": "被深深吸引",
+      "visuals": [
+        "眼睛被黏住，動彈不得",
+        "被無形的繩子綁住，盯著前方"
+      ]
+    },
+    {
+      "text": "還得是你",
+      "aliases": [
+        "果然是你",
+        "還是你行"
+      ],
+      "category": "trend",
+      "description": "讚嘆或無奈認可",
+      "visuals": [
+        "豎起大拇指，表情佩服",
+        "攤手苦笑"
+      ]
+    },
+    {
+      "text": "嘻嘻",
+      "aliases": [
+        "嘻嘻嘻"
+      ],
+      "category": "trend",
+      "description": "輕鬆愉快",
+      "visuals": [
+        "捂嘴偷笑，身邊有小花",
+        "蹦蹦跳跳"
+      ]
+    },
+    {
+      "text": "不嘻嘻",
+      "aliases": [
+        "不太嘻嘻"
+      ],
+      "category": "trend",
+      "description": "嚴肅或不高興",
+      "visuals": [
+        "嘴角下垂，表情嚴肅",
+        "雙手抱胸皺眉"
+      ]
+    },
+    {
+      "text": "i人",
+      "aliases": [
+        "我是i人",
+        "社恐"
+      ],
+      "category": "trend",
+      "description": "內向、不想社交",
+      "visuals": [
+        "躲在紙箱裡只露出眼睛",
+        "戴耳機背對人群"
+      ]
+    },
+    {
+      "text": "e人",
+      "aliases": [
+        "我是e人",
+        "社牛"
+      ],
+      "category": "trend",
+      "description": "外向、愛社交",
+      "visuals": [
+        "站在桌上拿麥克風",
+        "熱情地跟大家揮手"
+      ]
+    },
+    {
+      "text": "活人感",
+      "aliases": [
+        "有活人感"
+      ],
+      "category": "trend",
+      "description": "充滿生命力",
+      "visuals": [
+        "突然活過來，全身發光",
+        "從無精打采變成元氣滿滿"
+      ]
+    },
+    {
+      "text": "各各",
+      "aliases": [
+        "各付各的"
+      ],
+      "category": "trend",
+      "description": "聚餐各付各的",
+      "visuals": [
+        "拿著帳單比手勢分開算",
+        "每人手上一張發票"
+      ]
+    },
+    {
+      "text": "尊嘟假嘟",
+      "aliases": [
+        "尊的假的"
+      ],
+      "category": "trend",
+      "description": "半信半疑撒嬌問",
+      "visuals": [
+        "歪頭嘟嘴，頭上問號",
+        "瞇眼盯著，雙手托腮"
+      ]
+    },
+    {
+      "text": "誰懂",
+      "aliases": [
+        "誰懂啊",
+        "有人懂嗎"
+      ],
+      "category": "trend",
+      "description": "渴望共鳴",
+      "visuals": [
+        "雙手攤開望天",
+        "對著人群大喊"
+      ]
+    },
+    {
+      "text": "新年快樂",
+      "aliases": [
+        "新年好",
+        "Happy New Year",
+        "過年好"
+      ],
+      "category": "holiday",
+      "description": "祝賀新年",
+      "visuals": [
+        "放煙火，雙手高舉",
+        "戴新年帽，背後有煙火"
+      ]
+    },
+    {
+      "text": "恭喜發財",
+      "aliases": [
+        "發財",
+        "恭喜恭喜發大財"
+      ],
+      "category": "holiday",
+      "description": "農曆新年祝福",
+      "visuals": [
+        "雙手作揖拜年，身穿紅衣",
+        "抱著金元寶微笑"
+      ]
+    },
+    {
+      "text": "紅包拿來",
+      "aliases": [
+        "紅包",
+        "給紅包"
+      ],
+      "category": "holiday",
+      "description": "俏皮討紅包",
+      "visuals": [
+        "雙手攤開伸向前，眼睛發亮",
+        "捧著紅包開心跳"
+      ]
+    },
+    {
+      "text": "新春快樂",
+      "aliases": [
+        "春節快樂",
+        "新春愉快"
+      ],
+      "category": "holiday",
+      "description": "春節祝福",
+      "visuals": [
+        "手持春聯微笑",
+        "舞獅頭探出來"
+      ]
+    },
+    {
+      "text": "大吉大利",
+      "aliases": [
+        "新年大吉",
+        "歲歲平安"
+      ],
+      "category": "holiday",
+      "description": "年節吉祥話",
+      "visuals": [
+        "拿著毛筆寫春聯",
+        "放鞭炮，背景金光"
+      ]
+    },
+    {
+      "text": "元宵節快樂",
+      "aliases": [
+        "元宵快樂"
+      ],
+      "category": "holiday",
+      "description": "元宵節祝福",
+      "visuals": [
+        "提著燈籠微笑",
+        "捧著湯圓碗"
+      ]
+    },
+    {
+      "text": "情人節快樂",
+      "aliases": [
+        "Happy Valentine's Day"
+      ],
+      "category": "holiday",
+      "description": "情人節祝福",
+      "visuals": [
+        "捧著巧克力和玫瑰",
+        "兩人一起比愛心"
+      ]
+    },
+    {
+      "text": "母親節快樂",
+      "aliases": [
+        "媽媽我愛你",
+        "媽媽辛苦了"
+      ],
+      "category": "holiday",
+      "description": "母親節祝福",
+      "visuals": [
+        "捧著康乃馨遞出",
+        "抱住媽媽，頭上冒愛心"
+      ]
+    },
+    {
+      "text": "父親節快樂",
+      "aliases": [
+        "爸爸我愛你",
+        "爸爸辛苦了"
+      ],
+      "category": "holiday",
+      "description": "父親節祝福",
+      "visuals": [
+        "送上領帶禮物",
+        "幫爸爸捶背"
+      ]
+    },
+    {
+      "text": "端午節快樂",
+      "aliases": [
+        "端午安康",
+        "端午快樂"
+      ],
+      "category": "holiday",
+      "description": "端午節祝福",
+      "visuals": [
+        "捧著粽子微笑",
+        "划龍舟，表情帶勁"
+      ]
+    },
+    {
+      "text": "中秋節快樂",
+      "aliases": [
+        "中秋快樂",
+        "月圓人團圓"
+      ],
+      "category": "holiday",
+      "description": "中秋節祝福",
+      "visuals": [
+        "抱著柚子，背後有滿月",
+        "戴柚子帽烤肉"
+      ]
+    },
+    {
+      "text": "教師節快樂",
+      "aliases": [
+        "老師辛苦了"
+      ],
+      "category": "holiday",
+      "description": "教師節祝福",
+      "visuals": [
+        "捧花送給老師",
+        "鞠躬，手拿感謝卡"
+      ]
+    },
+    {
+      "text": "重陽節快樂",
+      "aliases": [
+        "重陽安康"
+      ],
+      "category": "holiday",
+      "description": "重陽節敬老祝福",
+      "visuals": [
+        "扶著長輩散步",
+        "捧著菊花微笑"
+      ]
+    },
+    {
+      "text": "萬聖節快樂",
+      "aliases": [
+        "不給糖就搗蛋"
+      ],
+      "category": "holiday",
+      "description": "萬聖節",
+      "visuals": [
+        "扮成南瓜捧糖果",
+        "披白床單扮鬼"
+      ]
+    },
+    {
+      "text": "聖誕快樂",
+      "aliases": [
+        "Merry Christmas",
+        "聖誕節快樂"
+      ],
+      "category": "holiday",
+      "description": "聖誕節祝福",
+      "visuals": [
+        "戴聖誕帽送禮物",
+        "站在聖誕樹旁，背景下雪"
+      ]
+    },
+    {
+      "text": "生日快樂",
+      "aliases": [
+        "Happy Birthday",
+        "生快"
+      ],
+      "category": "holiday",
+      "description": "生日祝福",
+      "visuals": [
+        "捧著插蠟燭的蛋糕",
+        "戴派對帽拉拉炮"
+      ]
+    },
+    {
+      "text": "佳節愉快",
+      "aliases": [
+        "節日快樂",
+        "假期愉快"
+      ],
+      "category": "holiday",
+      "description": "通用節日祝福",
+      "visuals": [
+        "雙手捧禮物盒",
+        "放煙火，笑容滿面"
+      ]
+    },
+    {
+      "text": "跨年快樂",
+      "aliases": [
+        "倒數",
+        "一起跨年"
+      ],
+      "category": "holiday",
+      "description": "跨年祝福",
+      "visuals": [
+        "看著倒數計時，表情興奮",
+        "舉杯慶祝，背後煙火"
+      ]
+    },
+    {
+      "text": "畢業快樂",
+      "aliases": [
+        "畢業了",
+        "恭喜畢業"
+      ],
+      "category": "holiday",
+      "description": "畢業祝福",
+      "visuals": [
+        "戴學士帽拋向空中",
+        "捧著畢業證書微笑"
+      ]
+    },
+    {
+      "text": "新婚快樂",
+      "aliases": [
+        "百年好合",
+        "恭喜結婚"
+      ],
+      "category": "holiday",
+      "description": "婚禮祝福",
+      "visuals": [
+        "撒花瓣祝福新人",
+        "舉杯，背景有愛心和鐘聲"
+      ]
+    },
+    {
+      "text": "早安吉祥",
+      "aliases": [
+        "早安平安",
+        "吉祥如意"
+      ],
+      "category": "elder",
+      "description": "長輩式早安問候",
+      "visuals": [
+        "背景有朝陽和蓮花，雙手作揖",
+        "捧著一束花，背景有山水"
+      ]
+    },
+    {
+      "text": "平安喜樂",
+      "aliases": [
+        "平安",
+        "喜樂"
+      ],
+      "category": "elder",
+      "description": "祝福平安喜樂",
+      "visuals": [
+        "雙手合十微笑，背景有花",
+        "站在花海中揮手"
+      ]
+    },
+    {
+      "text": "身體健康",
+      "aliases": [
+        "身體勇健",
+        "健康平安"
+      ],
+      "category": "elder",
+      "description": "祝福健康",
+      "visuals": [
+        "打太極拳，表情安詳",
+        "舉著啞鈴，笑容燦爛"
+      ]
+    },
+    {
+      "text": "天天開心",
+      "aliases": [
+        "每天開心",
+        "天天快樂"
+      ],
+      "category": "elder",
+      "description": "日常祝福",
+      "visuals": [
+        "捧著向日葵笑",
+        "在花叢中轉圈"
+      ]
+    },
+    {
+      "text": "感恩",
+      "aliases": [
+        "感恩的心",
+        "感謝天"
+      ],
+      "category": "elder",
+      "description": "表達感恩",
+      "visuals": [
+        "雙手捧心，背景有陽光",
+        "低頭鞠躬，身邊有花"
+      ]
+    },
+    {
+      "text": "好運連連",
+      "aliases": [
+        "福氣滿滿",
+        "好運"
+      ],
+      "category": "elder",
+      "description": "祝福好運",
+      "visuals": [
+        "抱著福字微笑",
+        "身邊飄著金色光點"
+      ]
+    },
+    {
+      "text": "萬事如意",
+      "aliases": [
+        "心想事成",
+        "事事順心"
+      ],
+      "category": "elder",
+      "description": "祝福順利",
+      "visuals": [
+        "捧著寫有「如意」的卷軸，笑容滿面",
+        "比讚，背景有彩雲"
+      ]
+    },
+    {
+      "text": "多喝水",
+      "aliases": [
+        "記得喝水",
+        "補充水分"
+      ],
+      "category": "elder",
+      "description": "健康叮嚀",
+      "visuals": [
+        "舉著大水壺微笑",
+        "遞上一杯水"
+      ]
+    },
+    {
+      "text": "早點休息",
+      "aliases": [
+        "早睡早起",
+        "別熬夜"
+      ],
+      "category": "elder",
+      "description": "作息叮嚀",
+      "visuals": [
+        "指著時鐘，溫柔叮嚀",
+        "幫對方蓋被子"
+      ]
+    },
+    {
+      "text": "記得吃飯",
+      "aliases": [
+        "按時吃飯",
+        "要吃飯喔"
+      ],
+      "category": "elder",
+      "description": "關心飲食",
+      "visuals": [
+        "端上熱騰騰的飯菜",
+        "拿著便當遞給對方"
+      ]
+    },
+    {
+      "text": "保重",
+      "aliases": [
+        "多保重",
+        "照顧好自己"
+      ],
+      "category": "elder",
+      "description": "關心身體",
+      "visuals": [
+        "雙手握住對方的手",
+        "遞上圍巾，溫柔微笑"
+      ]
+    },
+    {
+      "text": "平安就好",
+      "aliases": [
+        "平安是福"
+      ],
+      "category": "elder",
+      "description": "安慰與祝福",
+      "visuals": [
+        "雙手合十，背景有柔和光芒",
+        "微笑點頭，背景有花"
+      ]
+    },
+    {
+      "text": "好熱",
+      "aliases": [
+        "熱死了",
+        "熱",
+        "好熱喔"
+      ],
+      "category": "weather",
+      "description": "天氣炎熱",
+      "visuals": [
+        "融化成一灘，頭上有大太陽",
+        "拿電風扇狂吹，滿頭大汗"
+      ]
+    },
+    {
+      "text": "好冷",
+      "aliases": [
+        "冷死了",
+        "冷",
+        "好冷喔"
+      ],
+      "category": "weather",
+      "description": "天氣寒冷",
+      "visuals": [
+        "裹著厚棉被發抖",
+        "戴毛帽圍巾，鼻子凍紅"
+      ]
+    },
+    {
+      "text": "多穿點",
+      "aliases": [
+        "記得加衣",
+        "穿暖一點"
+      ],
+      "category": "weather",
+      "description": "天冷叮嚀",
+      "visuals": [
+        "遞上外套微笑",
+        "幫對方圍上圍巾"
+      ]
+    },
+    {
+      "text": "下雨了",
+      "aliases": [
+        "帶傘",
+        "記得帶傘"
+      ],
+      "category": "weather",
+      "description": "下雨提醒",
+      "visuals": [
+        "撐著傘，雨滴落下",
+        "遞上一把傘"
+      ]
+    },
+    {
+      "text": "颱風天",
+      "aliases": [
+        "颱風",
+        "防颱"
+      ],
+      "category": "weather",
+      "description": "颱風來襲",
+      "visuals": [
+        "抱著電線桿被風吹",
+        "躲在窗邊看狂風"
+      ]
+    },
+    {
+      "text": "注意保暖",
+      "aliases": [
+        "保暖"
+      ],
+      "category": "weather",
+      "description": "寒流關心",
+      "visuals": [
+        "捧著熱可可裹毯子",
+        "貼暖暖包，比讚"
+      ]
+    },
+    {
+      "text": "記得防曬",
+      "aliases": [
+        "防曬",
+        "擦防曬"
+      ],
+      "category": "weather",
+      "description": "夏天叮嚀",
+      "visuals": [
+        "戴大草帽擦防曬",
+        "撐陽傘，戴墨鏡"
+      ]
+    },
+    {
+      "text": "空氣不好",
+      "aliases": [
+        "戴口罩"
+      ],
+      "category": "weather",
+      "description": "空汙提醒",
+      "visuals": [
+        "戴口罩比讚",
+        "指著灰濛濛的天空"
+      ]
+    }
+  ]
+}
