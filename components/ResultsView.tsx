@@ -3,10 +3,17 @@ import { downloadImage, downloadAllImages, loadStickerFile, validateSticker, enf
 import { ValidationResult } from '../types';
 import { StickerEditor } from './StickerEditor';
 import { ChatPreview } from './ChatPreview';
+import { ConfirmDialog } from './Toast';
+import { useToast } from '../hooks/useToast';
 
 interface ResultsViewProps {
   originalImage: string;
   slices: string[];
+  failedSlots?: number[];
+  mainIndex: number;
+  tabIndex: number;
+  onSelectMainIndex: (index: number) => void;
+  onSelectTabIndex: (index: number) => void;
   onRegenerateSlice: (index: number) => void;
   onReplaceSlice: (index: number, newBase64: string) => void;
   loadingIndices: number[]; // Which stickers are currently regenerating
@@ -15,31 +22,37 @@ interface ResultsViewProps {
 export const ResultsView: React.FC<ResultsViewProps> = ({ 
   originalImage, 
   slices, 
+  failedSlots = [],
+  mainIndex,
+  tabIndex,
+  onSelectMainIndex,
+  onSelectTabIndex,
   onRegenerateSlice, 
   onReplaceSlice,
   loadingIndices 
 }) => {
+  const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState<'sheet' | 'cuts' | 'review' | 'chat'>('cuts');
-  const [mainIndex, setMainIndex] = useState<number>(0);
-  const [tabIndex, setTabIndex] = useState<number>(0);
   const [validationResults, setValidationResults] = useState<Record<number, ValidationResult>>({});
   const [isValidating, setIsValidating] = useState(false);
   const [bgMode, setBgMode] = useState<'transparent' | 'red' | 'black' | 'white'>('transparent');
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [isBatchMode, setIsBatchMode] = useState(false);
   const [batchTexts, setBatchTexts] = useState<string>('');
+  const [isIncompleteZipConfirmOpen, setIsIncompleteZipConfirmOpen] = useState(false);
 
   const handleBatchApply = async () => {
     const lines = batchTexts.split('\n').filter(l => l.trim() !== '');
     if (lines.length === 0) {
-      alert("請輸入至少一行文字。");
+      showToast("請輸入至少一行文字。", "warning");
       return;
     }
 
     setIsValidating(true);
     
-    // Process each slice
+    // Process each non-empty slice
     for (let i = 0; i < slices.length; i++) {
+      if (!slices[i]) continue;
       const text = lines[i % lines.length];
       try {
         const processed = await applyTextToImage(slices[i], text);
@@ -52,7 +65,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
     
     setIsBatchMode(false);
     setIsValidating(false);
-    alert("批次文字合成完成！");
+    showToast("批次文字合成完成！", "success");
   };
 
   const applyTextToImage = (base64: string, text: string): Promise<string> => {
@@ -105,6 +118,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
   };
 
   const handleAutoFix = async (index: number) => {
+    if (!slices[index]) return;
     const fixed = await enforceLineSpec(slices[index]);
     onReplaceSlice(index, fixed);
     // Re-validate after fix
@@ -122,9 +136,31 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
               setValidationResults(prev => ({ ...prev, [index]: result }));
           } catch (err) {
               console.error("Failed to upload replacement", err);
-              alert(err instanceof Error ? err.message : '不支援此圖片格式，請上傳 PNG');
+              showToast(err instanceof Error ? err.message : '不支援此圖片格式，請上傳 PNG', 'error');
           }
       }
+  };
+
+  const performDownloadZip = async () => {
+    try {
+      await downloadAllImages(slices, 'lulu_sticker', mainIndex, tabIndex);
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : '打包 ZIP 失敗，請再試一次。', 'error');
+    }
+  };
+
+  const incompleteCount = slices.filter((s, idx) => !s || failedSlots.includes(idx)).length;
+
+  const handleDownloadZip = async () => {
+    if (slices.every((s) => !s)) {
+      showToast('目前沒有可匯出的貼圖，請先完成生成。', 'warning');
+      return;
+    }
+    if (incompleteCount > 0) {
+      setIsIncompleteZipConfirmOpen(true);
+      return;
+    }
+    await performDownloadZip();
   };
 
   const handleSaveEdit = async (newImage: string) => {
@@ -179,20 +215,32 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
         </div>
       </div>
 
-      {activeTab === 'sheet' && (
-        <div className="space-y-4">
-          <div className="rounded-2xl overflow-hidden border-2 border-slate-100 shadow-inner bg-slate-50 p-2">
-            <img src={originalImage} alt="Full Sticker Sheet" className="w-full h-auto rounded-xl" />
+      {activeTab === 'sheet' && (() => {
+        if (!originalImage) {
+          return (
+            <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-10 text-center space-y-2">
+              <div className="text-3xl">🧩</div>
+              <p className="text-sm font-bold text-slate-600">尚無完整預覽大圖</p>
+              <p className="text-xs text-slate-400">逐格生成全部完成後，會自動將成功的貼圖拼成預覽大圖。</p>
+            </div>
+          );
+        }
+        const isOriginalJpeg = originalImage.startsWith('data:image/jpeg');
+        return (
+          <div className="space-y-4">
+            <div className="rounded-2xl overflow-hidden border-2 border-slate-100 shadow-inner bg-slate-50 p-2">
+              <img src={originalImage} alt="Full Sticker Sheet" className="w-full h-auto rounded-xl" />
+            </div>
+            <p className="text-xs text-slate-400 text-center">注意：在「切片」分頁中對個別貼圖的重繪，不會更新此張原始大圖。</p>
+            <button
+              onClick={() => downloadImage(originalImage, isOriginalJpeg ? 'lulu-sticker-sheet.jpg' : 'lulu-sticker-sheet.png')}
+              className="w-full py-3 rounded-xl bg-slate-800 text-white font-bold hover:bg-slate-900 transition-colors"
+            >
+              {isOriginalJpeg ? '下載完整大圖 (JPG)' : '下載完整大圖 (PNG)'}
+            </button>
           </div>
-          <p className="text-xs text-slate-400 text-center">注意：在「切片」分頁中對個別貼圖的重繪，不會更新此張原始大圖。</p>
-          <button
-            onClick={() => downloadImage(originalImage, 'lulu-sticker-sheet.png')}
-            className="w-full py-3 rounded-xl bg-slate-800 text-white font-bold hover:bg-slate-900 transition-colors"
-          >
-            下載完整大圖 (PNG)
-          </button>
-        </div>
-      )}
+        );
+      })()}
 
       {activeTab === 'cuts' && !isBatchMode && (
         <div className="space-y-6">
@@ -226,6 +274,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
               {slices.map((slice, idx) => {
                 const isLoading = loadingIndices.includes(idx);
+                const isFailed = failedSlots.includes(idx);
                 const isMain = mainIndex === idx;
                 const isTab = tabIndex === idx;
 
@@ -235,6 +284,43 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                   backgroundSize: '12px 12px',
                   backgroundPosition: '0 0, 0 6px, 6px 6px, 6px 0'
                 };
+
+                if (!slice) {
+                  return (
+                    <div
+                      key={idx}
+                      className={`relative aspect-square rounded-xl border-2 p-3 flex flex-col items-center justify-center gap-2 text-center ${
+                        isFailed && !isLoading
+                          ? 'border-red-200 bg-red-50/70'
+                          : 'border-slate-200 bg-slate-50/80'
+                      }`}
+                    >
+                      {isLoading ? (
+                        <>
+                          <div className="w-6 h-6 border-2 border-lulu-500 border-t-transparent rounded-full animate-spin"></div>
+                          <span className="text-[11px] font-bold text-slate-500">生成中...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-xl">{isFailed ? '⚠️' : '🖼️'}</span>
+                          <span className={`text-xs font-bold ${isFailed ? 'text-red-600' : 'text-slate-500'}`}>
+                            {isFailed ? '生成失敗' : '尚未生成'}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => onRegenerateSlice(idx)}
+                            className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-lulu-400 text-[11px] font-bold text-lulu-600 shadow-sm transition-colors"
+                          >
+                            🔄 重新生成
+                          </button>
+                        </>
+                      )}
+                      <span className="absolute bottom-1 right-2 text-[10px] text-slate-300 font-mono pointer-events-none">
+                        {(idx + 1).toString().padStart(2, '0')}
+                      </span>
+                    </div>
+                  );
+                }
 
                 return (
                 <div key={idx} style={bgStyle} className={`group relative rounded-xl border-2 transition-all p-2 flex items-center justify-center ${isMain ? 'border-lulu-500 ring-2 ring-lulu-100' : isTab ? 'border-blue-400' : 'border-slate-100 hover:border-lulu-300'}`}>
@@ -268,8 +354,8 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                         </label>
                     </div>
                     <div className="flex gap-1 mt-1">
-                        <button onClick={() => setMainIndex(idx)} className={`text-[10px] font-bold px-2 py-1 rounded bg-slate-800 text-white hover:bg-lulu-500 ${isMain ? 'opacity-50 cursor-default' : ''}`}>設為主圖</button>
-                        <button onClick={() => setTabIndex(idx)} className={`text-[10px] font-bold px-2 py-1 rounded bg-slate-800 text-white hover:bg-blue-500 ${isTab ? 'opacity-50 cursor-default' : ''}`}>設為標籤</button>
+                        <button onClick={() => onSelectMainIndex(idx)} className={`text-[10px] font-bold px-2 py-1 rounded bg-slate-800 text-white hover:bg-lulu-500 ${isMain ? 'opacity-50 cursor-default' : ''}`}>設為主圖</button>
+                        <button onClick={() => onSelectTabIndex(idx)} className={`text-[10px] font-bold px-2 py-1 rounded bg-slate-800 text-white hover:bg-blue-500 ${isTab ? 'opacity-50 cursor-default' : ''}`}>設為標籤</button>
                     </div>
                  </div>
                  <span className="absolute bottom-1 right-2 text-[10px] text-slate-300 font-mono pointer-events-none">{(idx+1).toString().padStart(2, '0')}</span>
@@ -278,7 +364,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
             </div>
             
             <button
-            onClick={() => downloadAllImages(slices, 'lulu_sticker', mainIndex, tabIndex)}
+            onClick={handleDownloadZip}
             className="w-full py-3 rounded-xl bg-lulu-500 text-white font-bold hover:bg-lulu-600 transition-colors shadow-lg shadow-lulu-200 flex items-center justify-center gap-2"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -334,7 +420,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
           <div className="grid grid-cols-4 sm:grid-cols-6 gap-3 opacity-40 grayscale pointer-events-none">
             {slices.map((slice, idx) => (
               <div key={idx} className="aspect-square rounded-xl border-2 border-slate-100 overflow-hidden bg-slate-50 p-1 flex items-center justify-center">
-                <img src={slice} className="max-w-full max-h-full object-contain" />
+                {slice ? <img src={slice} className="max-w-full max-h-full object-contain" /> : <span className="text-xs text-slate-300">#{idx + 1}</span>}
               </div>
             ))}
           </div>
@@ -364,7 +450,11 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
               return (
                 <div key={idx} className={`p-4 rounded-2xl border-2 flex items-start gap-4 transition-all ${result.passed ? 'border-green-100 bg-green-50/30' : 'border-amber-100 bg-amber-50/30'}`}>
                   <div className="w-16 h-16 bg-white rounded-xl border border-slate-100 p-1 shrink-0 flex items-center justify-center relative">
-                    <img src={slice} alt={`Preview ${idx}`} className="max-w-full max-h-full object-contain" />
+                    {slice ? (
+                      <img src={slice} alt={`Preview ${idx}`} className="max-w-full max-h-full object-contain" />
+                    ) : (
+                      <span className="text-lg">⚠️</span>
+                    )}
                     <span className="absolute -top-2 -left-2 bg-slate-800 text-white text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full">{(idx+1)}</span>
                   </div>
                   <div className="flex-grow">
@@ -392,9 +482,23 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
         </div>
       )}
 
-      {editingIndex !== null && (
+      {editingIndex !== null && slices[editingIndex] && (
         <StickerEditor image={slices[editingIndex]} initialText="" onSave={handleSaveEdit} onClose={() => setEditingIndex(null)} />
       )}
+
+      <ConfirmDialog
+        isOpen={isIncompleteZipConfirmOpen}
+        title="尚有未完成的貼圖"
+        message={`目前有 ${incompleteCount} 格尚未完成或生成失敗。確定要先打包嗎？下載的 ZIP 會跳過空白的格子。`}
+        confirmLabel="仍要打包下載"
+        cancelLabel="回去重試"
+        danger={false}
+        onConfirm={() => {
+          setIsIncompleteZipConfirmOpen(false);
+          void performDownloadZip();
+        }}
+        onCancel={() => setIsIncompleteZipConfirmOpen(false)}
+      />
     </div>
   );
 };

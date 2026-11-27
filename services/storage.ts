@@ -1,0 +1,202 @@
+import { openDB, DBSchema, IDBPDatabase } from 'idb';
+import { Character, Project } from '../types';
+
+const DB_NAME = 'lulu-sticker';
+const DB_VERSION = 1;
+
+interface LuluStickerDB extends DBSchema {
+  characters: {
+    key: string;
+    value: Character;
+  };
+  projects: {
+    key: string;
+    value: Project;
+    indexes: { updatedAt: number };
+  };
+  settings: {
+    key: string;
+    value: unknown;
+  };
+}
+
+let dbPromise: Promise<IDBPDatabase<LuluStickerDB>> | null = null;
+
+/** Open (or return cached) IndexedDB connection for lulu-sticker v1. */
+export function getDB(): Promise<IDBPDatabase<LuluStickerDB>> {
+  if (!dbPromise) {
+    dbPromise = openDB<LuluStickerDB>(DB_NAME, DB_VERSION, {
+      upgrade(db) {
+        if (!db.objectStoreNames.contains('characters')) {
+          db.createObjectStore('characters', { keyPath: 'id' });
+        }
+        if (!db.objectStoreNames.contains('projects')) {
+          const projectStore = db.createObjectStore('projects', { keyPath: 'id' });
+          projectStore.createIndex('updatedAt', 'updatedAt');
+        }
+        if (!db.objectStoreNames.contains('settings')) {
+          db.createObjectStore('settings');
+        }
+      },
+    });
+  }
+  return dbPromise;
+}
+
+/** Close and clear the cached DB connection (useful for test isolation). */
+export async function resetDBConnection(): Promise<void> {
+  if (dbPromise) {
+    const db = await dbPromise;
+    db.close();
+    dbPromise = null;
+  }
+}
+
+export async function saveCharacter(character: Character): Promise<void> {
+  const db = await getDB();
+  await db.put('characters', character);
+}
+
+export async function getCharacter(id: string): Promise<Character | undefined> {
+  const db = await getDB();
+  return db.get('characters', id);
+}
+
+export async function listCharacters(): Promise<Character[]> {
+  const db = await getDB();
+  const all = await db.getAll('characters');
+  return all.sort((a, b) => b.createdAt - a.createdAt);
+}
+
+export async function deleteCharacter(id: string): Promise<void> {
+  const db = await getDB();
+  await db.delete('characters', id);
+}
+
+export async function saveProject(project: Project): Promise<void> {
+  const db = await getDB();
+  await db.put('projects', project);
+}
+
+export async function getProject(id: string): Promise<Project | undefined> {
+  const db = await getDB();
+  return db.get('projects', id);
+}
+
+export async function listProjects(): Promise<Project[]> {
+  const db = await getDB();
+  const all = await db.getAllFromIndex('projects', 'updatedAt');
+  return all.reverse();
+}
+
+export async function getLatestProject(): Promise<Project | undefined> {
+  const projects = await listProjects();
+  return projects[0];
+}
+
+export async function deleteProject(id: string): Promise<void> {
+  const db = await getDB();
+  await db.delete('projects', id);
+}
+
+export async function setSetting<T>(key: string, value: T): Promise<void> {
+  if (/api[_-]?key/i.test(key)) {
+    throw new Error('API Key 不得儲存於 IndexedDB');
+  }
+  const db = await getDB();
+  await db.put('settings', value, key);
+}
+
+export async function getSetting<T>(key: string): Promise<T | undefined> {
+  const db = await getDB();
+  return (await db.get('settings', key)) as T | undefined;
+}
+
+export async function deleteSetting(key: string): Promise<void> {
+  const db = await getDB();
+  await db.delete('settings', key);
+}
+
+/** Detect browser storage quota exceeded errors (e.g. IndexedDB QuotaExceededError). */
+export function isStorageQuotaError(err: unknown): boolean {
+  if (!err || typeof err !== 'object') return false;
+  const name = (err as { name?: unknown }).name;
+  return name === 'QuotaExceededError' || name === 'NS_ERROR_DOM_QUOTA_REACHED';
+}
+
+export const STORAGE_WARNING_THRESHOLD = 0.8;
+
+export interface StorageUsageInfo {
+  usage: number;
+  quota: number;
+  ratio: number;
+  isNearLimit: boolean;
+}
+
+/** Compute normalized storage usage info from raw byte counts. */
+export function computeStorageUsage(usage?: number, quota?: number): StorageUsageInfo | null {
+  if (
+    usage === undefined ||
+    quota === undefined ||
+    !Number.isFinite(usage) ||
+    !Number.isFinite(quota) ||
+    usage < 0 ||
+    quota <= 0
+  ) {
+    return null;
+  }
+  const ratio = Math.min(1, Math.max(0, usage / quota));
+  return {
+    usage,
+    quota,
+    ratio,
+    isNearLimit: ratio > STORAGE_WARNING_THRESHOLD,
+  };
+}
+
+/** Format byte counts into human-readable units. */
+export function formatBytes(bytes: number): string {
+  if (!Number.isFinite(bytes) || bytes <= 0) return '0 B';
+  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+  let idx = 0;
+  let value = bytes;
+  while (value >= 1024 && idx < units.length - 1) {
+    value /= 1024;
+    idx++;
+  }
+  return idx === 0 ? `${Math.round(value)} ${units[idx]}` : `${value.toFixed(1)} ${units[idx]}`;
+}
+
+/** Estimate current origin storage usage using navigator.storage.estimate(). */
+export async function getStorageUsage(): Promise<StorageUsageInfo | null> {
+  if (typeof navigator === 'undefined' || !navigator.storage?.estimate) {
+    return null;
+  }
+  try {
+    const estimate = await navigator.storage.estimate();
+    return computeStorageUsage(estimate.usage, estimate.quota);
+  } catch {
+    return null;
+  }
+}
+
+let persistRequested = false;
+
+/** Reset the one-shot persistence guard (for unit tests). */
+export function resetPersistRequestState(): void {
+  persistRequested = false;
+}
+
+/** Request persistent storage at most once per session; silently ignores unsupported environments. */
+export async function requestPersistentStorageOnce(): Promise<boolean> {
+  if (persistRequested) return false;
+  persistRequested = true;
+  if (typeof navigator === 'undefined' || !navigator.storage?.persist) {
+    return false;
+  }
+  try {
+    return await navigator.storage.persist();
+  } catch {
+    return false;
+  }
+}

@@ -1,6 +1,7 @@
 import { GoogleGenAI, Part, GenerateContentConfig } from "@google/genai";
 import { ModelOption, GridOption, GenerationSettings, StickerIntent } from "../types";
 import { gridDims } from "../utils/stickerMath";
+import { withGeminiRetry } from "./errors";
 
 const MODEL_IDS: Record<ModelOption, string> = {
   [ModelOption.NanoBananaPro]: 'gemini-3-pro-image-preview',
@@ -416,11 +417,138 @@ const getIntentsForSettings = (settings: GenerationSettings): StickerIntent[] =>
     return fullList.slice(0, count);
 };
 
+export type RetryCallback = (attempt: number, maxRetries: number) => void;
+
+function extractInlineImage(response: {
+  candidates?: Array<{
+    finishReason?: string;
+    content?: { parts?: Array<{ inlineData?: { mimeType?: string; data?: string } }> };
+  }>;
+}): string {
+  const candidate = response.candidates?.[0];
+  if (candidate?.finishReason === 'SAFETY') {
+    throw new Error('SAFETY: 內容被安全過濾');
+  }
+
+  const parts = candidate?.content?.parts;
+  if (parts) {
+    for (const part of parts) {
+      if (part.inlineData?.data && part.inlineData?.mimeType) {
+        return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+      }
+    }
+  }
+
+  throw new Error('SAFETY: no inlineData returned');
+}
+
+function appendDataUrlPart(parts: Part[], dataUrl?: string | null): boolean {
+  if (!dataUrl) return false;
+  const m = dataUrl.match(/^data:(.+);base64,(.+)$/);
+  if (!m) return false;
+  parts.push({ inlineData: { mimeType: m[1], data: m[2] } });
+  return true;
+}
+
+/**
+ * Build a strict character-locking instruction block referencing Image 1 (Character Sheet).
+ * Used only when `settings.characterSheet` is present.
+ */
+export function buildCharacterLockBlock(gridSize?: number): string {
+  const scope =
+    gridSize && gridSize > 1
+      ? `Every single sticker in all ${gridSize} slots`
+      : 'This sticker';
+  return `[STRICT CHARACTER LOCK - IMAGE 1]
+${scope} MUST depict the exact same character shown in Image 1: identical face shape, hairstyle, colors, outfit, accessories, and body proportions. Do NOT redesign the character or change clothes.
+Image 1 is a character turnaround and expression model sheet—ONLY reference the character's appearance, and do NOT copy its turnaround layout, poses, or background.`;
+}
+
+function buildReferencePartsAndInstruction(
+  settings: Pick<GenerationSettings, 'prompt' | 'characterSheet' | 'referenceImage' | 'referenceImage2'>
+): { imageParts: Part[]; referenceInstruction: string; hasCharacterSheet: boolean } {
+  const { prompt, characterSheet, referenceImage, referenceImage2 } = settings;
+  const imageParts: Part[] = [];
+
+  if (characterSheet && appendDataUrlPart(imageParts, characterSheet)) {
+    const notes = ['[CHARACTER SHEET] Image 1 is the locked character design. Match proportions, colors, outfit exactly.'];
+    let nextIdx = 2;
+    if (referenceImage && appendDataUrlPart(imageParts, referenceImage)) {
+      notes.push(`Image ${nextIdx} is an additional main character reference.`);
+      nextIdx++;
+    }
+    if (referenceImage2 && appendDataUrlPart(imageParts, referenceImage2)) {
+      notes.push(`Image ${nextIdx} is the sidekick reference.`);
+    }
+    return { imageParts, referenceInstruction: notes.join(' '), hasCharacterSheet: true };
+  }
+
+  let referenceInstruction = `[Character Description] Create characters based on: ${prompt}`;
+  if (referenceImage && referenceImage2) {
+    referenceInstruction = `[DUAL REFERENCE] IMAGE 1: MAIN PROTAGONIST. IMAGE 2: SIDEKICK. Maintain strict likeness. Use both for interactions.`;
+  } else if (referenceImage) {
+    referenceInstruction = `[SINGLE REFERENCE] Use the provided image for the character's facial and hair features. Ensure consistency.`;
+  }
+  appendDataUrlPart(imageParts, referenceImage);
+  appendDataUrlPart(imageParts, referenceImage2);
+
+  return { imageParts, referenceInstruction, hasCharacterSheet: false };
+}
+
+export const generateCharacterSheet = async (
+  settings: Pick<GenerationSettings, 'prompt' | 'stylePreset' | 'model' | 'referenceImage' | 'referenceImage2'>,
+  apiKey: string,
+  onRetry?: RetryCallback
+): Promise<string> => {
+  const { prompt, stylePreset, model, referenceImage, referenceImage2 } = settings;
+  const actualModelId = MODEL_IDS[model] ?? MODEL_IDS[ModelOption.NanoBananaPro];
+
+  let refNote = '';
+  if (referenceImage && referenceImage2) {
+    refNote = '[Reference] Image 1 is the main character reference; Image 2 is the sidekick reference.';
+  } else if (referenceImage) {
+    refNote = '[Reference] Match the character appearance from the provided reference image.';
+  }
+
+  const systemPrompt = `You are a professional character designer creating a locked character model sheet.
+
+[Character DNA]
+- Subject: ${prompt}
+- Art Style: ${stylePreset}
+${refNote}
+
+[Layout & Views - 16:9 Sheet]
+Draw a clean character turnaround and expression sheet in 16:9 widescreen format containing:
+1. Full-body turnaround views: Front view, Side profile view, and Back view standing neutrally side by side.
+2. Three distinct close-up facial expressions: Happy (smiling joyfully), Angry (furious/pouting), and Crying (tears flowing).
+
+[MANDATORY RULES]
+- Background MUST be a completely solid, flat, uniform bright green (#00FF00) chroma-key screen. No paper texture, gradients, shadows, or grid lines.
+- DO NOT draw ANY text, labels, captions, arrows, titles, or letters anywhere in the image.
+- Keep colors, outfit details, accessories, and proportions 100% consistent across every view and expression.`;
+
+  const parts: Part[] = [{ text: systemPrompt }];
+  appendDataUrlPart(parts, referenceImage);
+  appendDataUrlPart(parts, referenceImage2);
+
+  const ai = new GoogleGenAI({ apiKey });
+  const config: GenerateContentConfig = { imageConfig: { aspectRatio: "16:9" } };
+  if (model === ModelOption.NanoBananaPro) config.imageConfig.imageSize = "2K";
+
+  const response = await withGeminiRetry(
+    () => ai.models.generateContent({ model: actualModelId, contents: { parts }, config }),
+    { onRetry: onRetry ? (attempt, maxRetries) => onRetry(attempt, maxRetries) : undefined }
+  );
+
+  return extractInlineImage(response);
+};
+
 export const generateStickerImage = async (
   settings: GenerationSettings,
-  apiKey: string
+  apiKey: string,
+  onRetry?: RetryCallback
 ): Promise<string> => {
-  const { prompt, referenceImage, referenceImage2, gridSize, model, stylePreset, textStylePreset, vibePreset, relationshipMode } = settings;
+  const { prompt, gridSize, model, stylePreset, textStylePreset, vibePreset, relationshipMode } = settings;
 
   const actualModelId = MODEL_IDS[model] ?? MODEL_IDS[ModelOption.NanoBananaPro];
 
@@ -435,14 +563,44 @@ export const generateStickerImage = async (
     `Slot ${i+1}: [Text: "${s.text}"] [Context: ${s.description}] [Visual: ${s.visual}]`
   ).join("\n  ");
 
-  let referenceInstruction = `[Character Description] Create characters based on: ${prompt}`;
-  if (referenceImage && referenceImage2) {
-      referenceInstruction = `[DUAL REFERENCE] IMAGE 1: MAIN PROTAGONIST. IMAGE 2: SIDEKICK. Maintain strict likeness. Use both for interactions.`;
-  } else if (referenceImage) {
-      referenceInstruction = `[SINGLE REFERENCE] Use the provided image for the character's facial and hair features. Ensure consistency.`;
-  }
+  const { imageParts, referenceInstruction, hasCharacterSheet } = buildReferencePartsAndInstruction(settings);
 
-  const systemPrompt = `You are a LINE sticker artist.
+  const lockBlock = hasCharacterSheet ? buildCharacterLockBlock(gridSize) : '';
+
+  const systemPrompt = hasCharacterSheet
+    ? `${lockBlock}
+
+You are a LINE sticker artist.
+  
+  [Task] Create a sticker sheet.
+  ${referenceInstruction}
+  
+  [Character DNA & Context]
+  - Subject (secondary reference; if anything conflicts with Image 1, Image 1 takes precedence): ${prompt}
+  - Style: Match Image 1's art style strictly.
+  - Vibe: ${vibePreset}
+  - Relationship Context: ${relationshipMode}
+  
+  [MANDATORY CHROMA-KEY GREEN SCREEN REQUIREMENT]
+  CRITICAL: Regardless of the art style or Vibe, the ENTIRE canvas background behind the stickers MUST be a solid, flat, uniform bright green (#00FF00).
+  - DO NOT generate paper textures, cardboard, notebooks, gradients, shadows, or environmental scenery behind the grid.
+  - Every sticker character and its white outline must float on a completely flat, solid green screen (#00FF00) background to allow clean background removal.
+
+  [Rules]
+  1. Write the EXACT text provided for each slot. Integrated with clean WHITE outline.
+  2. Art Style: Match Image 1's art style strictly. Keep characters consistent across all stickers.
+  3. No duplicates across slots.
+  4. Layout: ${gridSize} stickers arranged cleanly in a ${rows}x${cols} grid with clear space between each slot.
+  
+  [Slots]
+  ${specList}
+  
+  [Text Style] Font: ${textStylePreset}
+  
+  Generate the sheet.
+
+${lockBlock}`
+    : `You are a LINE sticker artist.
   
   [Task] Create a sticker sheet.
   ${referenceInstruction}
@@ -471,63 +629,59 @@ export const generateStickerImage = async (
   
   Generate the sheet.`;
 
-  const parts: Part[] = [{ text: systemPrompt }];
-  if (referenceImage) {
-    const m = referenceImage.match(/^data:(.+);base64,(.+)$/);
-    if (m) parts.push({ inlineData: { mimeType: m[1], data: m[2] } });
-  }
-  if (referenceImage2) {
-    const m = referenceImage2.match(/^data:(.+);base64,(.+)$/);
-    if (m) parts.push({ inlineData: { mimeType: m[1], data: m[2] } });
-  }
+  const parts: Part[] = [{ text: systemPrompt }, ...imageParts];
 
   const ai = new GoogleGenAI({ apiKey });
   const config: GenerateContentConfig = { imageConfig: { aspectRatio } };
   if (model === ModelOption.NanoBananaPro) config.imageConfig.imageSize = "2K";
 
-  const response = await ai.models.generateContent({ model: actualModelId, contents: { parts }, config });
+  const response = await withGeminiRetry(
+    () => ai.models.generateContent({ model: actualModelId, contents: { parts }, config }),
+    { onRetry: onRetry ? (attempt, maxRetries) => onRetry(attempt, maxRetries) : undefined }
+  );
 
-  if (response.candidates && response.candidates[0].content.parts) {
-    for (const part of response.candidates[0].content.parts) {
-      if (part.inlineData) return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
-    }
-  }
-  throw new Error("Generation failed.");
+  return extractInlineImage(response);
 };
 
 export const generateSingleSticker = async (
     settings: GenerationSettings,
     targetIndex: number,
-    apiKey: string
+    apiKey: string,
+    onRetry?: RetryCallback
   ): Promise<string> => {
-    const { prompt, referenceImage, referenceImage2, model, stylePreset, textStylePreset, vibePreset, relationshipMode } = settings;
+    const { prompt, model, stylePreset, textStylePreset, vibePreset, relationshipMode } = settings;
     const allIntents = getIntentsForSettings(settings);
     const targetIntent = allIntents[targetIndex];
+    const otherVisuals = allIntents
+      .filter((_, i) => i !== targetIndex)
+      .map((i) => i.visual)
+      .filter(Boolean);
+    const avoidPosesLine =
+      otherVisuals.length > 0 ? `\n    Do NOT reuse these poses: ${otherVisuals.join('; ')}` : '';
     
     const actualModelId = MODEL_IDS[model] ?? MODEL_IDS[ModelOption.NanoBananaPro];
-  
-    const systemPrompt = `Create a SINGLE sticker.
+    const { imageParts, referenceInstruction, hasCharacterSheet } = buildReferencePartsAndInstruction(settings);
+
+    const systemPrompt = hasCharacterSheet
+      ? `${buildCharacterLockBlock()}
+    ${referenceInstruction}
+    Create a SINGLE sticker.
+    [Character DNA] Subject (secondary reference; if anything conflicts with Image 1, Image 1 takes precedence): ${prompt}, Style: Match Image 1's art style strictly, Vibe: ${vibePreset}, Context: ${relationshipMode}
+    [Target] Text: "${targetIntent?.text}", Visual: ${targetIntent?.visual}${avoidPosesLine}
+    [Rules] Pure Green (#00FF00) bg, Thick White outline, Style: Match Image 1's art style strictly, Font: ${textStylePreset}`
+      : `Create a SINGLE sticker.
+    ${referenceInstruction}
     [Character DNA] Subject: ${prompt}, Style: ${stylePreset}, Vibe: ${vibePreset}, Context: ${relationshipMode}
-    [Target] Text: "${targetIntent?.text}", Visual: ${targetIntent?.visual}
+    [Target] Text: "${targetIntent?.text}", Visual: ${targetIntent?.visual}${avoidPosesLine}
     [Rules] Pure Green (#00FF00) bg, Thick White outline, Style: ${stylePreset}, Font: ${textStylePreset}`;
   
-    const parts: Part[] = [{ text: systemPrompt }];
-    if (referenceImage) {
-      const m = referenceImage.match(/^data:(.+);base64,(.+)$/);
-      if (m) parts.push({ inlineData: { mimeType: m[1], data: m[2] } });
-    }
-    if (referenceImage2) {
-      const m = referenceImage2.match(/^data:(.+);base64,(.+)$/);
-      if (m) parts.push({ inlineData: { mimeType: m[1], data: m[2] } });
-    }
+    const parts: Part[] = [{ text: systemPrompt }, ...imageParts];
   
     const ai = new GoogleGenAI({ apiKey });
-    const response = await ai.models.generateContent({ model: actualModelId, contents: { parts }, config: { imageConfig: { aspectRatio: "1:1" } } });
-  
-    if (response.candidates && response.candidates[0].content.parts) {
-      for (const part of response.candidates[0].content.parts) {
-        if (part.inlineData) return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
-      }
-    }
-    throw new Error("Generation failed.");
+    const response = await withGeminiRetry(
+      () => ai.models.generateContent({ model: actualModelId, contents: { parts }, config: { imageConfig: { aspectRatio: "4:3" } } }),
+      { onRetry: onRetry ? (attempt, maxRetries) => onRetry(attempt, maxRetries) : undefined }
+    );
+
+    return extractInlineImage(response);
   };

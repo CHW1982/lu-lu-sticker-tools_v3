@@ -36,6 +36,36 @@ export interface GenerationSettings {
   
   // Customization
   customIntents?: StickerIntent[];
+
+  // Character persistence
+  characterSheet?: string | null;
+  characterId?: string | null;
+  generationMode?: 'perSlot' | 'sheet';
+}
+
+export interface Character {
+  id: string;
+  name: string;
+  prompt: string;
+  stylePreset: string;
+  textStylePreset: string;
+  referenceImage: string | null;
+  referenceImage2: string | null;
+  characterSheet: string | null;
+  createdAt: number;
+}
+
+export interface Project {
+  id: string;
+  characterId: string | null;
+  settings: GenerationSettings;
+  original: string;
+  slices: string[];
+  failedSlots?: number[];
+  mainIndex: number;
+  tabIndex: number;
+  createdAt: number;
+  updatedAt: number;
 }
 
 export interface ValidationIssue {

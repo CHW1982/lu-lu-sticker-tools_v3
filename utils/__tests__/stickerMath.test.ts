@@ -116,6 +116,7 @@ describe('computeSpecLayout', () => {
   });
 
   it.each([
+    [1, 1],
     [350, 300],
     [1024, 1024],
     [2000, 100],
@@ -125,6 +126,30 @@ describe('computeSpecLayout', () => {
     const second = computeSpecLayout(first.drawW, first.drawH);
     expect(second.canvasW).toBe(first.canvasW);
     expect(second.canvasH).toBe(first.canvasH);
+  });
+
+  it('pads odd 101x99 dimensions by 1px instead of shrinking content at scale=1', () => {
+    const layout = computeSpecLayout(101, 99);
+    expect(layout.drawW).toBe(101);
+    expect(layout.drawH).toBe(99);
+    expect(layout.canvasW).toBe(122);
+    expect(layout.canvasH).toBe(120);
+    expect(layout.offsetX).toBeGreaterThanOrEqual(LINE_SAFE_PADDING);
+    expect(layout.canvasW - layout.offsetX - layout.drawW).toBeGreaterThanOrEqual(LINE_SAFE_PADDING);
+    expect(layout.offsetY).toBeGreaterThanOrEqual(LINE_SAFE_PADDING);
+    expect(layout.canvasH - layout.offsetY - layout.drawH).toBeGreaterThanOrEqual(LINE_SAFE_PADDING);
+  });
+
+  it('falls back to shrinking 1px when padding 1px would exceed maxW/maxH', () => {
+    const layout = computeSpecLayout(313, 279, { maxW: 333, maxH: 299 });
+    expect(layout.canvasW % 2).toBe(0);
+    expect(layout.canvasH % 2).toBe(0);
+    expect(layout.canvasW).toBeLessThanOrEqual(333);
+    expect(layout.canvasH).toBeLessThanOrEqual(299);
+    expect(layout.offsetX).toBeGreaterThanOrEqual(LINE_SAFE_PADDING);
+    expect(layout.canvasW - layout.offsetX - layout.drawW).toBeGreaterThanOrEqual(LINE_SAFE_PADDING);
+    expect(layout.offsetY).toBeGreaterThanOrEqual(LINE_SAFE_PADDING);
+    expect(layout.canvasH - layout.offsetY - layout.drawH).toBeGreaterThanOrEqual(LINE_SAFE_PADDING);
   });
 });
 

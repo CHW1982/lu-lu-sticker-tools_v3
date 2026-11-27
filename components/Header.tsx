@@ -31,7 +31,12 @@ const CAT_AVATAR_URI = `data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" xmlns
   <text x="50" y="20" font-family="sans-serif" font-weight="bold" font-size="14" text-anchor="middle" fill="%233e2723">加油</text>
 </svg>`;
 
-export const Header: React.FC = () => {
+interface HeaderProps {
+  projectCount?: number;
+  onOpenHistory?: () => void;
+}
+
+export const Header: React.FC<HeaderProps> = ({ projectCount = 0, onOpenHistory }) => {
   return (
     <header className="bg-white/80 backdrop-blur-sm border-b-4 border-lulu-200 sticky top-0 z-50">
       <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
@@ -47,14 +52,31 @@ export const Header: React.FC = () => {
             <p className="text-xs text-lulu-400 font-bold">可愛風 GenAI 貼圖製作工具</p>
           </div>
         </div>
-        <a 
-            href="https://miner.tw/line_cutter/" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="hidden sm:block text-xs font-bold text-lulu-400 hover:text-lulu-600 underline"
-        >
-            靈感來源：Line Cutter
-        </a>
+        <div className="flex items-center gap-3">
+          {onOpenHistory && (
+            <button
+              type="button"
+              onClick={onOpenHistory}
+              className="px-3 py-2 rounded-xl bg-lulu-50 hover:bg-lulu-100 border-2 border-lulu-200 text-xs font-bold text-lulu-600 transition-colors flex items-center gap-1.5 shadow-sm"
+            >
+              <span>📂</span>
+              <span>歷史作品</span>
+              {projectCount > 0 && (
+                <span className="bg-lulu-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full">
+                  {projectCount}
+                </span>
+              )}
+            </button>
+          )}
+          <a 
+              href="https://miner.tw/line_cutter/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="hidden sm:block text-xs font-bold text-lulu-400 hover:text-lulu-600 underline"
+          >
+              靈感來源：Line Cutter
+          </a>
+        </div>
       </div>
     </header>
   );
