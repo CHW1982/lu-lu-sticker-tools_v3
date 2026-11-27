@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { applySliceUpdate } from '../projectState';
+import { applyProjectUpdate, applySliceUpdate, applySlotsFailure } from '../projectState';
 import { GridOption, ModelOption, Project } from '../../types';
 
 function makeProject(id: string, slices: string[], updatedAt = 1000): Project {
@@ -76,5 +76,48 @@ describe('applySliceUpdate', () => {
 
     expect(applySliceUpdate(initial, 'p1', -1, 'x', 2000).updatedProject).toBeNull();
     expect(applySliceUpdate(initial, 'p1', 2, 'x', 2000).updatedProject).toBeNull();
+  });
+
+  it('clears the updated index from failedSlots and removes failedSlots when empty', () => {
+    const p1: Project = { ...makeProject('p1', ['', '', 's2'], 1000), failedSlots: [0, 1] };
+
+    const afterFirst = applySliceUpdate([p1], 'p1', 0, 's0-ok', 2000);
+    expect(afterFirst.updatedProject?.failedSlots).toEqual([1]);
+
+    const afterSecond = applySliceUpdate(afterFirst.projects, 'p1', 1, 's1-ok', 3000);
+    expect(afterSecond.updatedProject?.failedSlots).toBeUndefined();
+  });
+});
+
+describe('applySlotsFailure', () => {
+  it('marks valid failed indices deduplicated and sorted', () => {
+    const p1 = makeProject('p1', ['', '', ''], 1000);
+    const first = applySlotsFailure([p1], 'p1', [2, 0, 2], 2000);
+    expect(first.updatedProject?.failedSlots).toEqual([0, 2]);
+
+    const second = applySlotsFailure(first.projects, 'p1', [1, 0], 3000);
+    expect(second.updatedProject?.failedSlots).toEqual([0, 1, 2]);
+  });
+
+  it('ignores deleted projects and out-of-bounds indices', () => {
+    const p1 = makeProject('p1', ['a', 'b'], 1000);
+    expect(applySlotsFailure([p1], 'missing', [0], 2000).updatedProject).toBeNull();
+    expect(applySlotsFailure([p1], 'p1', [-1, 2], 2000).updatedProject).toBeNull();
+  });
+});
+
+describe('applyProjectUpdate', () => {
+  it('updates targeted background project without mutating others and returns null when missing', () => {
+    const p1 = makeProject('p1', ['a0', 'a1'], 1000);
+    const p2 = makeProject('p2', ['b0', 'b1'], 2000);
+    const initial = [p2, p1];
+
+    const res = applyProjectUpdate(initial, 'p1', (p) => ({ ...p, original: 'stitched' }), 5000);
+    expect(res.updatedProject?.original).toBe('stitched');
+    expect(res.updatedProject?.updatedAt).toBe(5000);
+    expect(res.projects.map((p) => p.id)).toEqual(['p1', 'p2']);
+    expect(p1.original).toBe('data:image/png;base64,ORIG_p1');
+
+    expect(applyProjectUpdate(initial, 'deleted', (p) => p, 5000).updatedProject).toBeNull();
   });
 });

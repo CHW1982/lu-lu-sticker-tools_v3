@@ -95,6 +95,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   const [characterId, setCharacterId] = useState<string | null>(null);
   const [characterName, setCharacterName] = useState('');
   const [isSavingCharacter, setIsSavingCharacter] = useState(false);
+  const [generationMode, setGenerationMode] = useState<'perSlot' | 'sheet'>('perSlot');
   const [removeBackground, setRemoveBackground] = useState(true);
 
   const [stylePreset, setStylePreset] = useState(STYLE_PRESETS[0].value);
@@ -154,6 +155,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
     });
     if (sheet) {
       setCharacterSheet(sheet);
+      setGenerationMode('perSlot');
       if (!characterName.trim()) {
         setCharacterName(prompt.trim().slice(0, 16));
       }
@@ -170,6 +172,9 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
     setReferenceImage(char.referenceImage);
     setReferenceImage2(char.referenceImage2);
     setCharacterSheet(char.characterSheet);
+    if (char.characterSheet) {
+      setGenerationMode('perSlot');
+    }
     setCharacterId(char.id);
     setCharacterName(char.name);
   };
@@ -207,6 +212,9 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
     }
   };
 
+  const effectiveGenerationMode: 'perSlot' | 'sheet' = characterSheet ? generationMode : 'sheet';
+  const apiCallCount = effectiveGenerationMode === 'perSlot' ? gridSize : 1;
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const finalVibe = vibePreset === 'Custom' ? customVibeDesc : vibePreset;
@@ -219,6 +227,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
       referenceImage2,
       characterSheet,
       characterId: activeCharacterId,
+      generationMode: effectiveGenerationMode,
       removeBackground,
       stylePreset,
       textStylePreset,
@@ -574,18 +583,62 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
            <span className="text-sm font-bold text-slate-600">自動去背 (去除綠幕)</span>
         </div>
 
+        {/* Generation Mode (when character sheet is present) */}
+        {characterSheet && (
+          <div className="bg-lulu-50/60 p-4 rounded-2xl border-2 border-lulu-100 space-y-2.5">
+            <label className="block text-sm font-bold text-lulu-700">生成模式（已啟用角色設定圖）</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <button
+                type="button"
+                onClick={() => setGenerationMode('perSlot')}
+                className={`p-3 rounded-xl border-2 text-left transition-all ${
+                  generationMode === 'perSlot'
+                    ? 'border-lulu-500 bg-white text-lulu-700 shadow-sm'
+                    : 'border-white/80 bg-white/60 text-slate-500 hover:border-lulu-200'
+                }`}
+              >
+                <div className="text-xs font-black">🎯 逐格生成（角色最一致，{gridSize} 次 API 呼叫）</div>
+                <div className="text-[11px] opacity-80 mt-0.5">
+                  每格獨立呼叫 1 次 API，費用約為整張生成的 {gridSize} 倍。
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setGenerationMode('sheet')}
+                className={`p-3 rounded-xl border-2 text-left transition-all ${
+                  generationMode === 'sheet'
+                    ? 'border-lulu-500 bg-white text-lulu-700 shadow-sm'
+                    : 'border-white/80 bg-white/60 text-slate-500 hover:border-lulu-200'
+                }`}
+              >
+                <div className="text-xs font-black">⚡ 整張生成（快、1 次 API 呼叫）</div>
+                <div className="text-[11px] opacity-80 mt-0.5">
+                  一次繪製整張大圖後切片，較省額度但角色細節較容易跑掉。
+                </div>
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Submit */}
-        <button
-          type="submit"
-          disabled={isLoading || !prompt || (vibePreset === 'Custom' && !customVibeDesc)}
-          className={`w-full py-4 rounded-2xl font-black text-white text-lg shadow-lg transform transition-all active:scale-95 ${
-            isLoading || !prompt || (vibePreset === 'Custom' && !customVibeDesc)
-              ? 'bg-slate-300 cursor-not-allowed'
-              : 'bg-lulu-500 hover:bg-lulu-600 hover:shadow-xl hover:-translate-y-0.5'
-          }`}
-        >
-          {isLoading ? <span className="flex items-center justify-center gap-2"><span className="animate-spin">🌀</span> {statusText || '生成中...'}</span> : '立即生成貼圖！'}
-        </button>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <button
+            type="submit"
+            disabled={isLoading || !prompt || (vibePreset === 'Custom' && !customVibeDesc)}
+            className={`flex-1 py-4 rounded-2xl font-black text-white text-lg shadow-lg transform transition-all active:scale-95 ${
+              isLoading || !prompt || (vibePreset === 'Custom' && !customVibeDesc)
+                ? 'bg-slate-300 cursor-not-allowed'
+                : 'bg-lulu-500 hover:bg-lulu-600 hover:shadow-xl hover:-translate-y-0.5'
+            }`}
+          >
+            {isLoading ? <span className="flex items-center justify-center gap-2"><span className="animate-spin">🌀</span> {statusText || '生成中...'}</span> : '立即生成貼圖！'}
+          </button>
+          {characterSheet && (
+            <div className="text-xs font-bold text-slate-500 bg-slate-100 px-3.5 py-2.5 rounded-xl text-center shrink-0">
+              將呼叫 API {apiCallCount} 次
+            </div>
+          )}
+        </div>
       </form>
     </div>
   );

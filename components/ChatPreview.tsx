@@ -36,14 +36,24 @@ export const ChatPreview: React.FC<ChatPreviewProps> = ({ slices }) => {
 
         {/* Sticker Previews (User) */}
         <div className="flex flex-col items-end gap-6">
-            {slices.slice(0, 3).map((slice, idx) => (
-                <div key={idx} className="group relative flex flex-col items-end">
-                    <div className="text-[10px] text-slate-100 font-bold mb-1 opacity-60 mr-1">下午 2:03</div>
-                    <div className="max-w-[150px] transition-transform hover:scale-105 cursor-pointer">
-                        <img src={slice} alt="Preview" className="w-full h-auto drop-shadow-md" />
+            {(() => {
+                const readySlices = slices.filter(Boolean).slice(0, 3);
+                if (readySlices.length === 0) {
+                    return (
+                        <div className="text-xs text-white/80 bg-black/20 px-3 py-1.5 rounded-xl">
+                            貼圖生成後將顯示於此預覽
+                        </div>
+                    );
+                }
+                return readySlices.map((slice, idx) => (
+                    <div key={idx} className="group relative flex flex-col items-end">
+                        <div className="text-[10px] text-slate-100 font-bold mb-1 opacity-60 mr-1">下午 2:03</div>
+                        <div className="max-w-[150px] transition-transform hover:scale-105 cursor-pointer">
+                            <img src={slice} alt="Preview" className="w-full h-auto drop-shadow-md" />
+                        </div>
                     </div>
-                </div>
-            ))}
+                ));
+            })()}
         </div>
 
         {/* System Message */}

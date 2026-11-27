@@ -7,15 +7,36 @@ import { HistoryDrawer } from './components/HistoryDrawer';
 import { ConfirmDialog } from './components/Toast';
 import { useToast } from './hooks/useToast';
 import { generateCharacterSheet, generateStickerImage, generateSingleSticker } from './services/geminiService';
-import { classifyGeminiError } from './services/errors';
-import { splitImage, removeSingleImageBackground, enforceLineSpec, compressDataUrlToJpeg } from './utils/imageProcessor';
+import { classifyGeminiError, ClassifiedGeminiError } from './services/errors';
+import {
+  splitImage,
+  removeSingleImageBackground,
+  enforceLineSpec,
+  compressDataUrlToJpeg,
+  composeStickerSheet,
+} from './utils/imageProcessor';
 import { listProjects, saveProject, deleteProject, listCharacters, saveCharacter, deleteCharacter, isStorageQuotaError, requestPersistentStorageOnce } from './services/storage';
-import { applySliceUpdate } from './services/projectState';
+import { applyProjectUpdate, applySliceUpdate, applySlotsFailure } from './services/projectState';
 import { createDebouncedSaver, DebouncedSaver } from './utils/debouncedSaver';
+import { runWithConcurrency } from './utils/concurrency';
 import { Character, GenerationSettings, Project } from './types';
 
 const EMPTY_LOADING_INDICES: number[] = [];
 const STORAGE_QUOTA_TOAST_MESSAGE = '瀏覽器儲存空間不足，這組作品沒有保存，請到歷史作品刪除舊作品';
+const PER_SLOT_CONCURRENCY_LIMIT = 2;
+
+async function generateAndProcessSingleSticker(
+  settings: GenerationSettings,
+  index: number,
+  apiKey: string,
+  onRetry?: (attempt: number, maxRetries: number) => void
+): Promise<string> {
+  let processedImage = await generateSingleSticker(settings, index, apiKey, onRetry);
+  if (settings.removeBackground) {
+    processedImage = await removeSingleImageBackground(processedImage);
+  }
+  return enforceLineSpec(processedImage);
+}
 
 const getStoredApiKey = (): string => {
   const storedKey = localStorage.getItem('gemini_api_key');
@@ -109,6 +130,73 @@ function App() {
     scheduleProjectSave(next);
   };
 
+  const persistBackgroundProject = async (updatedProject: Project) => {
+    try {
+      await saveProject(updatedProject);
+      failedSaveProjectIdsRef.current.delete(updatedProject.id);
+      void requestPersistentStorageOnce();
+    } catch (saveErr) {
+      console.error('Failed to save background project update', saveErr);
+      notifyProjectSaveError(updatedProject.id, saveErr);
+    }
+  };
+
+  const applyUpdateResult = async (
+    projectId: string,
+    result: { projects: Project[]; updatedProject: Project | null }
+  ): Promise<Project | null> => {
+    if (!result.updatedProject) return null;
+    projectsRef.current = result.projects;
+    setProjects(result.projects);
+
+    if (activeProjectRef.current?.id === projectId) {
+      activeProjectRef.current = result.updatedProject;
+      setActiveProject(result.updatedProject);
+      getProjectSaver().schedule(result.updatedProject);
+    } else {
+      await persistBackgroundProject(result.updatedProject);
+    }
+    return result.updatedProject;
+  };
+
+  const mutateProjectById = (
+    projectId: string,
+    updater: (current: Project) => Project
+  ): Promise<Project | null> => {
+    const result = applyProjectUpdate(projectsRef.current, projectId, updater);
+    return applyUpdateResult(projectId, result);
+  };
+
+  const commitSliceUpdate = (
+    projectId: string,
+    index: number,
+    image: string
+  ): Promise<Project | null> => {
+    const result = applySliceUpdate(projectsRef.current, projectId, index, image);
+    return applyUpdateResult(projectId, result);
+  };
+
+  const markSlotsFailed = (projectId: string, indices: number[]): Promise<Project | null> => {
+    const result = applySlotsFailure(projectsRef.current, projectId, indices);
+    return applyUpdateResult(projectId, result);
+  };
+
+  const clearProjectLoading = (projectId: string, index?: number) => {
+    setLoadingByProject((prev) => {
+      if (index === undefined) {
+        if (!(projectId in prev)) return prev;
+        const { [projectId]: _removed, ...rest } = prev;
+        return rest;
+      }
+      const remaining = (prev[projectId] ?? []).filter((i) => i !== index);
+      if (remaining.length === 0) {
+        const { [projectId]: _removed, ...rest } = prev;
+        return rest;
+      }
+      return { ...prev, [projectId]: remaining };
+    });
+  };
+
   // Clear an expired key from storage on mount and load saved projects.
   useEffect(() => {
     const storedKey = localStorage.getItem('gemini_api_key');
@@ -193,12 +281,146 @@ function App() {
       return;
     }
 
+    const isPerSlot =
+      Boolean(settings.characterSheet) && (settings.generationMode ?? 'perSlot') === 'perSlot';
+
     setIsLoading(true);
     setRetryStatus(null);
     setError(null);
     await getProjectSaver().flush();
     commitActiveProject(null);
     setRestoreCandidate(null);
+
+    if (isPerSlot) {
+      const total = settings.gridSize;
+      const now = Date.now();
+      const projectId = crypto.randomUUID();
+      const initialProject: Project = {
+        id: projectId,
+        characterId: settings.characterId ?? null,
+        settings: { ...settings, generationMode: 'perSlot' },
+        original: '',
+        slices: Array.from({ length: total }, () => ''),
+        mainIndex: 0,
+        tabIndex: 0,
+        createdAt: now,
+        updatedAt: now,
+      };
+
+      commitActiveProject(initialProject);
+      updateProjects((prev) => [initialProject, ...prev]);
+
+      try {
+        await saveProject(initialProject);
+        failedSaveProjectIdsRef.current.delete(projectId);
+        void requestPersistentStorageOnce();
+      } catch (saveErr) {
+        console.error('Failed to save initial per-slot project', saveErr);
+        notifyProjectSaveError(projectId, saveErr);
+      }
+
+      setLoadingByProject((prev) => ({
+        ...prev,
+        [projectId]: Array.from({ length: total }, (_, i) => i),
+      }));
+      setRetryStatus(`生成中 0/${total}`);
+
+      let completedCount = 0;
+      let fatalError: ClassifiedGeminiError | null = null;
+      const pendingSaves: Promise<unknown>[] = [];
+
+      const tasks = Array.from({ length: total }, (_, index) => () =>
+        generateAndProcessSingleSticker(settings, index, apiKey, (attempt, maxRetries) => {
+          showToast(`第 ${index + 1} 格重試中（${attempt}/${maxRetries}）`, 'info');
+        })
+      );
+
+      try {
+        await runWithConcurrency(tasks, PER_SLOT_CONCURRENCY_LIMIT, {
+          shouldStop: (err) => {
+            const classified = classifyGeminiError(err);
+            if (
+              classified.kind === 'quota' ||
+              classified.kind === 'billing' ||
+              classified.kind === 'auth'
+            ) {
+              fatalError ??= classified;
+              return true;
+            }
+            return false;
+          },
+          onSettled: (index, result) => {
+            completedCount++;
+            setRetryStatus(`生成中 ${completedCount}/${total}`);
+            clearProjectLoading(projectId, index);
+
+            if (result.ok) {
+              pendingSaves.push(commitSliceUpdate(projectId, index, result.value));
+            } else if ('error' in result) {
+              const classified = classifyGeminiError(result.error);
+              pendingSaves.push(markSlotsFailed(projectId, [index]));
+              if (
+                classified.kind !== 'quota' &&
+                classified.kind !== 'billing' &&
+                classified.kind !== 'auth'
+              ) {
+                showToast(`第 ${index + 1} 格生成失敗：${classified.message}`, 'error');
+              }
+            }
+          },
+        });
+
+        clearProjectLoading(projectId);
+        await Promise.allSettled(pendingSaves);
+
+        const latest = projectsRef.current.find((p) => p.id === projectId);
+        if (latest) {
+          const emptyIndices = latest.slices
+            .map((s, i) => (s ? -1 : i))
+            .filter((i) => i >= 0);
+          if (emptyIndices.length > 0) {
+            await markSlotsFailed(projectId, emptyIndices);
+          }
+
+          const refreshed = projectsRef.current.find((p) => p.id === projectId);
+          if (refreshed && refreshed.slices.some(Boolean)) {
+            const stitched = await composeStickerSheet(refreshed.slices, settings.gridSize);
+            const storedOriginal = stitched
+              ? await compressDataUrlToJpeg(stitched, { quality: 0.9 })
+              : '';
+            const firstValidIndex = refreshed.slices.findIndex(Boolean);
+            await mutateProjectById(projectId, (current) => ({
+              ...current,
+              original: storedOriginal || current.original,
+              mainIndex: current.slices[current.mainIndex]
+                ? current.mainIndex
+                : Math.max(0, firstValidIndex),
+              tabIndex: current.slices[current.tabIndex]
+                ? current.tabIndex
+                : Math.max(0, firstValidIndex),
+            }));
+          }
+        }
+
+        if (fatalError) {
+          const errInfo: ClassifiedGeminiError = fatalError;
+          setError(errInfo.message);
+          showToast(errInfo.message, 'error');
+          if (errInfo.openApiKeyModal) {
+            setIsApiKeyModalOpen(true);
+          }
+        }
+
+        if (activeProjectRef.current?.id === projectId) {
+          await getProjectSaver().flush();
+        }
+      } finally {
+        clearProjectLoading(projectId);
+        setIsLoading(false);
+        setRetryStatus(null);
+      }
+      return;
+    }
 
     let createdProject: Project | null = null;
     try {
@@ -217,7 +439,7 @@ function App() {
       createdProject = {
         id: crypto.randomUUID(),
         characterId: settings.characterId ?? null,
-        settings,
+        settings: { ...settings, generationMode: 'sheet' },
         original: storedOriginal,
         slices,
         mainIndex: 0,
@@ -267,8 +489,7 @@ function App() {
     });
 
     try {
-      // Generate single image for this slot - passing the API Key
-      const newImageBase64 = await generateSingleSticker(
+      const processedImage = await generateAndProcessSingleSticker(
         targetSettings,
         index,
         apiKey,
@@ -277,38 +498,7 @@ function App() {
         }
       );
 
-      let processedImage = newImageBase64;
-      if (targetSettings.removeBackground) {
-        processedImage = await removeSingleImageBackground(processedImage);
-      }
-      processedImage = await enforceLineSpec(processedImage);
-
-      if (activeProjectRef.current?.id === projectId) {
-        updateActiveProject((prev) => {
-          const newSlices = [...prev.slices];
-          newSlices[index] = processedImage;
-          return { ...prev, slices: newSlices };
-        });
-      } else {
-        const { projects: nextProjects, updatedProject } = applySliceUpdate(
-          projectsRef.current,
-          projectId,
-          index,
-          processedImage
-        );
-        if (updatedProject) {
-          projectsRef.current = nextProjects;
-          setProjects(nextProjects);
-          try {
-            await saveProject(updatedProject);
-            failedSaveProjectIdsRef.current.delete(updatedProject.id);
-            void requestPersistentStorageOnce();
-          } catch (saveErr) {
-            console.error('Failed to save regenerated slice for background project', saveErr);
-            notifyProjectSaveError(updatedProject.id, saveErr);
-          }
-        }
-      }
+      await commitSliceUpdate(projectId, index, processedImage);
     } catch (err) {
       console.error("Failed to regenerate single sticker", err);
       const classified = classifyGeminiError(err);
@@ -317,14 +507,7 @@ function App() {
         setIsApiKeyModalOpen(true);
       }
     } finally {
-      setLoadingByProject((prev) => {
-        const remaining = (prev[projectId] ?? []).filter((i) => i !== index);
-        if (remaining.length === 0) {
-          const { [projectId]: _removed, ...rest } = prev;
-          return rest;
-        }
-        return { ...prev, [projectId]: remaining };
-      });
+      clearProjectLoading(projectId, index);
     }
   };
 
@@ -332,7 +515,12 @@ function App() {
     updateActiveProject((prev) => {
       const newSlices = [...prev.slices];
       newSlices[index] = newBase64;
-      return { ...prev, slices: newSlices };
+      const remainingFailed = prev.failedSlots?.filter((i) => i !== index);
+      return {
+        ...prev,
+        slices: newSlices,
+        failedSlots: remainingFailed && remainingFailed.length > 0 ? remainingFailed : undefined,
+      };
     });
   };
 
@@ -496,15 +684,21 @@ function App() {
           <div className="mb-6 bg-white rounded-2xl p-4 border-2 border-lulu-200 shadow-md flex flex-col sm:flex-row items-center justify-between gap-4 animate-fade-in">
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-12 h-12 rounded-xl bg-lulu-50 border border-lulu-100 p-1 shrink-0 flex items-center justify-center overflow-hidden">
-                {restoreCandidate.slices[restoreCandidate.mainIndex] ?? restoreCandidate.slices[0] ? (
-                  <img
-                    src={restoreCandidate.slices[restoreCandidate.mainIndex] ?? restoreCandidate.slices[0]}
-                    alt="上次作品縮圖"
-                    className="max-w-full max-h-full object-contain"
-                  />
-                ) : (
-                  <span className="text-xl">🎨</span>
-                )}
+                {(() => {
+                  const thumb =
+                    restoreCandidate.slices[restoreCandidate.mainIndex] ||
+                    restoreCandidate.slices.find(Boolean) ||
+                    restoreCandidate.original;
+                  return thumb ? (
+                    <img
+                      src={thumb}
+                      alt="上次作品縮圖"
+                      className="max-w-full max-h-full object-contain"
+                    />
+                  ) : (
+                    <span className="text-xl">🎨</span>
+                  );
+                })()}
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-black text-lulu-600">繼續上次的作品？</p>
@@ -566,6 +760,7 @@ function App() {
             key={activeProject.id}
             originalImage={activeProject.original}
             slices={activeProject.slices}
+            failedSlots={activeProject.failedSlots}
             mainIndex={activeProject.mainIndex}
             tabIndex={activeProject.tabIndex}
             onSelectMainIndex={handleSelectMainIndex}

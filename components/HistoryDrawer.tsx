@@ -97,8 +97,8 @@ export const HistoryDrawer: React.FC<HistoryDrawerProps> = ({
           ) : (
             projects.map((project) => {
               const thumb =
-                project.slices[project.mainIndex] ??
-                project.slices[0] ??
+                project.slices[project.mainIndex] ||
+                project.slices.find(Boolean) ||
                 project.original;
               const isActive = project.id === activeProjectId;
               const updatedLabel = new Date(project.updatedAt).toLocaleString('zh-TW', {

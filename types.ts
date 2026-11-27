@@ -40,6 +40,7 @@ export interface GenerationSettings {
   // Character persistence
   characterSheet?: string | null;
   characterId?: string | null;
+  generationMode?: 'perSlot' | 'sheet';
 }
 
 export interface Character {
@@ -60,6 +61,7 @@ export interface Project {
   settings: GenerationSettings;
   original: string;
   slices: string[];
+  failedSlots?: number[];
   mainIndex: number;
   tabIndex: number;
   createdAt: number;

@@ -370,6 +370,12 @@ export const splitImage = (
 };
 
 export const validateSticker = async (stickerBase64: string): Promise<ValidationResult> => {
+  if (!stickerBase64) {
+    return {
+      passed: false,
+      issues: [{ type: 'dimension', severity: 'error', message: '此格尚未生成或生成失敗，請重新生成。', autoFixable: false }],
+    };
+  }
   return new Promise((resolve) => {
     const img = new Image();
     img.crossOrigin = "anonymous";
@@ -486,6 +492,7 @@ export const enforceLineSpec = async (
   dataUrl: string,
   opts?: { padding?: number; allowUpscale?: boolean }
 ): Promise<string> => {
+  if (!dataUrl) return '';
   return new Promise((resolve) => {
     const img = new Image();
     img.crossOrigin = "anonymous";
@@ -652,6 +659,59 @@ export const downloadImage = (dataUrl: string, filename: string) => {
   document.body.removeChild(link);
 };
 
+export const composeStickerSheet = async (
+  slices: string[],
+  gridSize: GridOption
+): Promise<string> => {
+  if (slices.every((s) => !s)) return '';
+
+  const { rows, cols } = gridDims(gridSize);
+  const cellW = LINE_STICKER_MAX_W;
+  const cellH = LINE_STICKER_MAX_H;
+  const gap = 16;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = cols * cellW + (cols + 1) * gap;
+  canvas.height = rows * cellH + (rows + 1) * gap;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return '';
+
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+
+  const loadImg = (src: string): Promise<HTMLImageElement | null> =>
+    new Promise((resolve) => {
+      if (!src) {
+        resolve(null);
+        return;
+      }
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => resolve(img);
+      img.onerror = () => resolve(null);
+      img.src = src;
+    });
+
+  const images = await Promise.all(slices.slice(0, rows * cols).map(loadImg));
+  images.forEach((img, index) => {
+    if (!img || img.width === 0 || img.height === 0) return;
+    const r = Math.floor(index / cols);
+    const c = index % cols;
+    const cellX = gap + c * (cellW + gap);
+    const cellY = gap + r * (cellH + gap);
+    const scale = Math.min(cellW / img.width, cellH / img.height);
+    const drawW = img.width * scale;
+    const drawH = img.height * scale;
+    const drawX = cellX + (cellW - drawW) / 2;
+    const drawY = cellY + (cellH - drawH) / 2;
+    ctx.drawImage(img, drawX, drawY, drawW, drawH);
+  });
+
+  return canvas.toDataURL('image/png');
+};
+
 export const downloadAllImages = async (
     slices: string[], 
     prefix: string, 
@@ -659,10 +719,13 @@ export const downloadAllImages = async (
     tabIndex: number = 0
 ) => {
     const zip = new JSZip();
-    const enforcedSlices = await Promise.all(slices.map(s => enforceLineSpec(s)));
+    const enforcedSlices = await Promise.all(
+      slices.map((s) => (s ? enforceLineSpec(s) : Promise.resolve('')))
+    );
 
     // 1. Add numbered stickers with STRICT LINE FILENAMES (01.png, 02.png...)
     enforcedSlices.forEach((slice, index) => {
+        if (!slice) return;
         // LINE requires strict "01.png", "02.png" format for batch upload
         const num = (index + 1).toString().padStart(2, '0');
         const base64Data = slice.split(',')[1];
@@ -672,17 +735,19 @@ export const downloadAllImages = async (
     });
 
     // 2. Add Main Image (240x240)
-    if (enforcedSlices[mainIndex]) {
+    const mainSource = enforcedSlices[mainIndex] || enforcedSlices.find(Boolean);
+    if (mainSource) {
         // Resize with Aspect Ratio Contain logic (handled in updated resizeImage)
-        const mainResized = await resizeImage(enforcedSlices[mainIndex], 240, 240);
+        const mainResized = await resizeImage(mainSource, 240, 240);
         const mainData = mainResized.split(',')[1];
         if (mainData) zip.file('main.png', mainData, { base64: true });
     }
 
     // 3. Add Tab Image (96x74)
-    if (enforcedSlices[tabIndex]) {
+    const tabSource = enforcedSlices[tabIndex] || enforcedSlices.find(Boolean);
+    if (tabSource) {
         // Resize with Aspect Ratio Contain logic
-        const tabResized = await resizeImage(enforcedSlices[tabIndex], 96, 74);
+        const tabResized = await resizeImage(tabSource, 96, 74);
         const tabData = tabResized.split(',')[1];
         if (tabData) zip.file('tab.png', tabData, { base64: true });
     }
